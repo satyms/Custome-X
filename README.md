@@ -1,4 +1,4 @@
-# CXPilot (Custome-X)
+# Custome-X
 
 > **Agentic AI Platform for E-commerce Customer Support & Operations**  
 > *Single-agent, tool-using support system  ·  The LLM proposes, deterministic code decides.*
@@ -12,14 +12,14 @@
 
 ## 1. Project Overview
 
-**CXPilot** is a full-stack, agentic AI platform engineered for D2C and e-commerce enterprises. It unifies hybrid RAG knowledge retrieval, LLM tool calling, deterministic order tracking, automated ticket routing, and human-in-the-loop (HITL) approval gates into an operational workspace.
+**Custome-X** is a full-stack, agentic AI platform engineered for D2C and e-commerce enterprises. It unifies hybrid RAG knowledge retrieval, LLM tool calling, deterministic order tracking, automated ticket routing, and human-in-the-loop (HITL) approval gates into an operational workspace.
 
 The platform demonstrates how to connect modern LLMs (Gemini / Claude) safely to real application databases and business APIs without hallucinating facts, leaking customer data, or executing unauthorized state changes.
 
 ### Core Problem Solved
 E-commerce support teams suffer from disconnected systems across order tracking, warehouse shipping events, return policies, and messaging channels. Repetitive inquiries consume 70%+ of agent capacity, while sensitive actions (refunds, order modifications) risk expensive mistakes if delegated blindly to probabilistic models.
 
-### The CXPilot Solution
+### The Custome-X Solution
 * **Verified Facts Only:** The AI agent queries verified database tables and vector embeddings for business facts. It is strictly prohibited from inventing tracking events or policy rules.
 * **The LLM Proposes, Deterministic Code Decides:** While the LLM classifies intent and drafts proposals, deterministic application code validates parameters, checks customer ownership, and enforces policy eligibility.
 * **Human-in-the-Loop (HITL) Safety:** High-impact operations (e.g., refunds over \$50, address changes, cancellations) automatically pause and require human staff approval.
