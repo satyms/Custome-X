@@ -32,6 +32,17 @@ MANIFEST
 *.manifest
 *.spec
 
+# Node
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -151,6 +162,8 @@ activemq-data/
 
 # Environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
