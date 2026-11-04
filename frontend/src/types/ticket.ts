@@ -32,7 +32,17 @@ export interface TicketUpdatePayload {
   assigned_to?: string | null;
 }
 
+export interface TicketEventItem {
+  id: string;
+  ticket_id: string;
+  actor_id?: string | null;
+  event_type: string;
+  event_metadata?: Record<string, unknown>;
+  created_at: string;
+}
+
 export interface TicketDetail extends Ticket {
   messages: Message[];
   customer?: Customer | null;
+  events?: TicketEventItem[];
 }
