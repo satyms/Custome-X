@@ -30,9 +30,21 @@ async def test_router_structure_and_status_codes():
         assert data["offset"] == 0
 
         # 2. POST /api/v1/tickets (201 Created)
-        create_ticket_res = await client.post("/api/v1/tickets", json={"title": "Test Ticket"})
+        sample_org_id = str(uuid.uuid4())
+        sample_cust_id = str(uuid.uuid4())
+        create_ticket_res = await client.post(
+            "/api/v1/tickets",
+            json={
+                "organization_id": sample_org_id,
+                "customer_id": sample_cust_id,
+                "title": "Test Ticket",
+                "priority": "normal",
+                "initial_message": "Initial test message",
+            },
+        )
         assert create_ticket_res.status_code == 201
-        assert create_ticket_res.json()["status"] == "ticket_created_stub"
+        assert create_ticket_res.json()["title"] == "Test Ticket"
+
 
         # 3. GET /api/v1/tickets/{id} (200 OK)
         sample_id = uuid.uuid4()
@@ -58,9 +70,16 @@ async def test_router_structure_and_status_codes():
 
         # 2. POST /api/v1/customers (201 Created)
         create_cust_res = await client.post(
-            "/api/v1/customers", json={"email": "test@example.com", "name": "Test"}
+            "/api/v1/customers",
+            json={
+                "organization_id": sample_org_id,
+                "email": "test@example.com",
+                "full_name": "Test User",
+            },
         )
         assert create_cust_res.status_code == 201
+        assert create_cust_res.json()["email"] == "test@example.com"
+
 
         # 3. GET /api/v1/customers/{id} (200 OK)
         get_cust_res = await client.get(f"/api/v1/customers/{sample_id}")

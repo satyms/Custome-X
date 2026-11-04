@@ -1,103 +1,134 @@
 import uuid
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from datetime import datetime, timezone
+from typing import Optional
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
+from app.schemas.common import PaginatedResponse, TicketPriority, TicketStatus
+from app.schemas.ticket import (
+    TicketCreate,
+    TicketDetailResponse,
+    TicketResponse,
+    TicketUpdate,
+)
 
 router = APIRouter()
 
 
 @router.get(
     "",
+    response_model=PaginatedResponse[TicketResponse],
     status_code=status.HTTP_200_OK,
     summary="List all tickets",
-    description="Retrieve a paginated list of customer support tickets.",
+    description="Retrieve a paginated list of customer support tickets with filters.",
 )
 @router.get(
     "/",
+    response_model=PaginatedResponse[TicketResponse],
     status_code=status.HTTP_200_OK,
     include_in_schema=False,
 )
 async def list_tickets(
-
-    organization_id: Optional[uuid.UUID] = None,
-    status_filter: Optional[str] = None,
-    priority: Optional[str] = None,
-    limit: int = 20,
-    offset: int = 0,
+    organization_id: Optional[uuid.UUID] = Query(None, description="Filter by tenant organization"),
+    status: Optional[TicketStatus] = Query(None, description="Filter by ticket status"),
+    priority: Optional[TicketPriority] = Query(None, description="Filter by urgency priority"),
+    limit: int = Query(20, ge=1, le=100, description="Max records to return"),
+    offset: int = Query(0, ge=0, description="Records offset"),
     db: AsyncSession = Depends(get_db),
 ):
-    """Placeholder endpoint establishing HTTP GET contract for ticket listing."""
-    return {
-        "items": [],
-        "total": 0,
-        "limit": limit,
-        "offset": offset,
-        "filters": {
-            "organization_id": str(organization_id) if organization_id else None,
-            "status": status_filter,
-            "priority": priority,
-        },
-    }
+    return PaginatedResponse(
+        items=[],
+        total=0,
+        limit=limit,
+        offset=offset,
+        has_more=False,
+    )
 
 
 @router.post(
     "",
+    response_model=TicketResponse,
     status_code=status.HTTP_201_CREATED,
     summary="Create a new ticket",
     description="Creates a support ticket along with its initial message and audit log.",
 )
 @router.post(
     "/",
+    response_model=TicketResponse,
     status_code=status.HTTP_201_CREATED,
     include_in_schema=False,
 )
 async def create_ticket(
-
-    payload: dict,
+    payload: TicketCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    """Placeholder endpoint establishing HTTP POST contract (HTTP 201 Created)."""
-    return {
-        "status": "ticket_created_stub",
-        "received_payload": payload,
-    }
+    now = datetime.now(timezone.utc)
+    # Stub response matching TicketResponse model; wired to DB service in Feature 3.5
+    return TicketResponse(
+        id=uuid.uuid4(),
+        organization_id=payload.organization_id,
+        customer_id=payload.customer_id,
+        assigned_to=payload.assigned_to,
+        title=payload.title,
+        status=TicketStatus.OPEN,
+        priority=payload.priority,
+        created_at=now,
+        updated_at=now,
+    )
 
 
 @router.get(
     "/{ticket_id}",
+    response_model=TicketDetailResponse,
     status_code=status.HTTP_200_OK,
     summary="Get ticket details",
-    description="Retrieve a single support ticket by UUID including its messages and history.",
+    description="Retrieve a single support ticket by UUID including messages.",
 )
 async def get_ticket(
     ticket_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    """Placeholder endpoint establishing HTTP GET /{id} contract."""
-    return {
-        "id": str(ticket_id),
-        "status": "stub",
-    }
+    now = datetime.now(timezone.utc)
+    return TicketDetailResponse(
+        id=ticket_id,
+        organization_id=uuid.uuid4(),
+        customer_id=uuid.uuid4(),
+        assigned_to=None,
+        title="Sample Ticket",
+        status=TicketStatus.OPEN,
+        priority=TicketPriority.NORMAL,
+        created_at=now,
+        updated_at=now,
+        messages=[],
+        customer=None,
+    )
 
 
 @router.patch(
     "/{ticket_id}",
+    response_model=TicketResponse,
     status_code=status.HTTP_200_OK,
     summary="Update ticket status or assignment",
     description="Partially update ticket fields such as status, priority, or assigned agent.",
 )
 async def update_ticket(
     ticket_id: uuid.UUID,
-    payload: dict,
+    payload: TicketUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    """Placeholder endpoint establishing HTTP PATCH (partial update) contract."""
-    return {
-        "id": str(ticket_id),
-        "updated_fields": payload,
-    }
+    now = datetime.now(timezone.utc)
+    return TicketResponse(
+        id=ticket_id,
+        organization_id=uuid.uuid4(),
+        customer_id=uuid.uuid4(),
+        assigned_to=payload.assigned_to,
+        title=payload.title or "Updated Ticket",
+        status=payload.status or TicketStatus.IN_PROGRESS,
+        priority=payload.priority or TicketPriority.NORMAL,
+        created_at=now,
+        updated_at=now,
+    )
 
 
 @router.delete(
@@ -110,5 +141,4 @@ async def delete_ticket(
     ticket_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    """Placeholder endpoint establishing HTTP DELETE (HTTP 204 No Content) contract."""
     return None
