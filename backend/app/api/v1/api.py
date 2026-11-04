@@ -1,8 +1,9 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import tickets, customers
+from app.api.v1.endpoints import tickets, customers, auth
 
 api_router = APIRouter(prefix="/api/v1")
 
 # Mount sub-routers with explicit prefixes and OpenAPI tags
+api_router.include_router(auth.router, prefix="/auth", tags=["Auth"])
 api_router.include_router(tickets.router, prefix="/tickets", tags=["Tickets"])
 api_router.include_router(customers.router, prefix="/customers", tags=["Customers"])
