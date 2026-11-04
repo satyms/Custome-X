@@ -1,5 +1,14 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import tickets, customers, auth
+from app.api.v1.endpoints import (
+    tickets,
+    customers,
+    auth,
+    commerce,
+    agent,
+    knowledge,
+    approvals,
+    webhooks,
+)
 
 api_router = APIRouter(prefix="/api/v1")
 
@@ -7,3 +16,8 @@ api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth.router, prefix="/auth", tags=["Auth"])
 api_router.include_router(tickets.router, prefix="/tickets", tags=["Tickets"])
 api_router.include_router(customers.router, prefix="/customers", tags=["Customers"])
+api_router.include_router(commerce.router, prefix="", tags=["Commerce"])
+api_router.include_router(agent.router, prefix="/agent", tags=["Agent"])
+api_router.include_router(knowledge.router, prefix="/knowledge", tags=["Knowledge Base"])
+api_router.include_router(approvals.router, prefix="/approvals", tags=["Human Approvals"])
+api_router.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"])

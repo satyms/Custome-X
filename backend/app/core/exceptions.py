@@ -74,3 +74,16 @@ class InvalidStatusTransitionError(CustomeXException):
             message=f"Cannot transition ticket from '{current_status}' to '{attempted_status}'.",
             code="INVALID_STATUS_TRANSITION",
         )
+
+
+class RateLimitExceededError(CustomeXException):
+    """Raised when a client or tenant exceeds token-bucket rate limits."""
+    def __init__(self, retry_after: int = 1, message: str = "Rate limit exceeded. Please wait before retrying."):
+        self.retry_after = retry_after
+        super().__init__(message=message, code="RATE_LIMIT_EXCEEDED")
+
+
+class WebhookVerificationError(CustomeXException):
+    """Raised when webhook HMAC SHA-256 signature verification fails."""
+    def __init__(self, message: str = "Invalid webhook signature."):
+        super().__init__(message=message, code="INVALID_WEBHOOK_SIGNATURE")

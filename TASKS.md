@@ -30,6 +30,13 @@
   - [x] Role-Based Access Control (RBAC: `agent`, `supervisor`, `admin`) via `require_role`
   - [x] Automatic multi-tenant query scoping by `organization_id` with 404 cross-tenant isolation
   - [x] PostgreSQL Row-Level Security (RLS) policies on all domain tables applied via Alembic migration
+- [x] **Task 1.5: Layer 2 Backend API Gateway Expansion**
+  - [x] Commerce sub-router mounted under `/api/v1/` (`/orders`, `/shipments`, `/products`)
+  - [x] Agent endpoints (`/api/v1/agent/run-agent`, `/api/v1/agent/reply-suggestion`)
+  - [x] Knowledge Base RAG retrieval router (`/api/v1/knowledge/search`, `/api/v1/knowledge/upload`)
+  - [x] Human Approvals router (`/api/v1/approvals`, `/api/v1/approvals/pending`, approve, reject)
+  - [x] Webhook Gateway with HMAC-SHA256 verification (Shopify Base64, Stripe timestamped) and event deduplication
+  - [x] Token-bucket rate-limiting dependency on AI-invoking endpoints with standard `Retry-After` headers
 
 ---
 
