@@ -9,15 +9,27 @@
 
 ## Milestone 1: Foundation & Data Architecture
 
-- [ ] **Task 1.1: Project Scaffolding & Repository Config**
+- [x] **Task 1.1: Project Scaffolding & Repository Config**
   - [x] Initialize Git repository & core documentation (`AGENTS.md`, `ARCHITECTURE.md`, `DECISIONS.md`, `TASKS.md`)
-  - [ ] Set up project structure (`/apps/api`, `/apps/web`, `/packages/core`, `/packages/tools`)
-  - [ ] Configure linting, formatting (Prettier, ESLint), and pre-commit hooks
-- [ ] **Task 1.2: Supabase & PostgreSQL Schema Setup**
-  - [ ] Provision database schema: `tenants`, `customers`, `orders`, `tickets`, `messages`
-  - [ ] Enable `pgvector` extension and configure vector tables for knowledge documents
-  - [ ] Write and verify Row Level Security (RLS) policies for tenant isolation
-  - [ ] Seed test dataset (sample e-commerce store with orders and mock customers)
+  - [x] Set up FastAPI backend architecture (`backend/app/api/v1/`, `core/`, `models/`, `schemas/`, `services/`)
+  - [x] Configure pytest-asyncio, testing harness, and uniform error handlers
+- [x] **Task 1.2: Supabase & PostgreSQL Schema Setup (Phase 2)**
+  - [x] Provision core relational schema via SQLAlchemy 2.0: `organizations`, `users`, `customers`, `tickets`, `messages`, `ticket_events`
+  - [x] Versioned migrations with Alembic (`4045d08861b6_create_initial_core_schema.py`)
+  - [x] Foreign key constraints, cascade rules, composite indexes, and check constraints
+  - [x] ACID atomic transactions with rollback verification (`create_ticket_atomic`)
+- [x] **Task 1.3: REST API & Routing Architecture (Phase 3)**
+  - [x] FastAPI modular sub-routers mounted under `/api/v1/` (`tickets`, `customers`, `auth`)
+  - [x] Pydantic v2 request validation schemas and serialized response models
+  - [x] Service layer abstraction and full CRUD operations with PostgreSQL asyncpg persistence
+  - [x] Centralized error handlers with uniform envelope (`{"error": {"code", "message", "request_id"}}`)
+  - [x] Standard pagination metadata headers (`X-Total-Count`, `X-Limit`, `X-Offset`, `X-Has-More`)
+- [x] **Task 1.4: Authentication, Authorization & Security (Phase 4)**
+  - [x] Supabase Auth integration for registration, login, and token refresh
+  - [x] Stateless JWT session management with bearer token extraction & expiration verification
+  - [x] Role-Based Access Control (RBAC: `agent`, `supervisor`, `admin`) via `require_role`
+  - [x] Automatic multi-tenant query scoping by `organization_id` with 404 cross-tenant isolation
+  - [x] PostgreSQL Row-Level Security (RLS) policies on all domain tables applied via Alembic migration
 
 ---
 
