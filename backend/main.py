@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.session import get_db, close_db_connection
+from app.api.v1.api import api_router
 
 
 @asynccontextmanager
@@ -34,6 +35,10 @@ app.add_middleware(
 )
 
 
+# Mount API v1 Master Router
+app.include_router(api_router)
+
+
 @app.get("/")
 def root():
     return {
@@ -41,7 +46,10 @@ def root():
         "docs": "/docs",
         "health": "/api/health",
         "db_health": "/api/health/db",
+        "v1_tickets": "/api/v1/tickets",
+        "v1_customers": "/api/v1/customers",
     }
+
 
 
 @app.get("/health")
