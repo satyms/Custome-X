@@ -13,7 +13,10 @@ from app.schemas.ticket import (
     TicketDetailResponse,
     TicketResponse,
     TicketUpdate,
+    TicketStatusUpdateRequest,
+    TicketAssignRequest,
 )
+from app.schemas.ticket_event import TicketTimelineResponse
 from app.services import ticket_service
 
 router = APIRouter()
@@ -43,7 +46,6 @@ async def list_tickets(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Enforce multi-tenant scoping: strictly bounded to current_user.organization_id
     items, total = await ticket_service.list_tickets(
         session=db,
         organization_id=current_user.organization_id,
@@ -54,19 +56,18 @@ async def list_tickets(
         limit=limit,
         offset=offset,
     )
-    has_more = (offset + len(items)) < total
 
     response.headers["X-Total-Count"] = str(total)
     response.headers["X-Limit"] = str(limit)
     response.headers["X-Offset"] = str(offset)
-    response.headers["X-Has-More"] = str(has_more).lower()
+    response.headers["X-Has-More"] = str(offset + len(items) < total).lower()
 
     return PaginatedResponse(
         items=items,
         total=total,
         limit=limit,
         offset=offset,
-        has_more=has_more,
+        has_more=offset + len(items) < total,
     )
 
 
@@ -88,7 +89,6 @@ async def create_ticket(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Strict tenant binding: always override payload organization_id with current_user's org
     payload.organization_id = current_user.organization_id
     return await ticket_service.create_ticket(session=db, payload=payload)
 
@@ -116,7 +116,7 @@ async def get_ticket(
     "/{ticket_id}",
     response_model=TicketResponse,
     status_code=status.HTTP_200_OK,
-    summary="Update ticket status or assignment",
+    summary="Update ticket",
     description="Partially update ticket fields strictly within the caller's organization.",
 )
 async def update_ticket(
@@ -130,6 +130,71 @@ async def update_ticket(
         ticket_id=ticket_id,
         payload=payload,
         actor_id=current_user.id,
+        actor_role=current_user.role,
+        organization_id=current_user.organization_id,
+    )
+
+
+@router.patch(
+    "/{ticket_id}/status",
+    response_model=TicketResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Update ticket status via FSM",
+    description="Transition ticket status according to the Finite State Machine (FSM) rules.",
+)
+async def update_ticket_status(
+    ticket_id: uuid.UUID,
+    payload: TicketStatusUpdateRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    status_val = payload.status.value if hasattr(payload.status, "value") else str(payload.status)
+    return await ticket_service.update_ticket_status(
+        session=db,
+        ticket_id=ticket_id,
+        new_status=status_val,
+        actor_id=current_user.id,
+        organization_id=current_user.organization_id,
+    )
+
+
+@router.patch(
+    "/{ticket_id}/assign",
+    response_model=TicketResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Assign ticket to agent or pool",
+    description="Assign ticket to an agent in the same organization, or unassign to pool.",
+)
+async def assign_ticket(
+    ticket_id: uuid.UUID,
+    payload: TicketAssignRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await ticket_service.assign_ticket(
+        session=db,
+        ticket_id=ticket_id,
+        assigned_to_user_id=payload.assigned_to,
+        actor_id=current_user.id,
+        organization_id=current_user.organization_id,
+    )
+
+
+@router.get(
+    "/{ticket_id}/timeline",
+    response_model=TicketTimelineResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get ticket unified timeline",
+    description="Retrieves unified chronological event stream of conversation messages and audit events.",
+)
+async def get_ticket_timeline(
+    ticket_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    return await ticket_service.get_ticket_timeline(
+        session=db,
+        ticket_id=ticket_id,
         organization_id=current_user.organization_id,
     )
 
@@ -167,7 +232,7 @@ async def add_message_to_ticket(
     current_user: User = Depends(get_current_user),
 ):
     sender_type = payload.sender_type.value if hasattr(payload.sender_type, "value") else payload.sender_type
-    return await ticket_service.add_message(
+    message, _ = await ticket_service.add_message(
         session=db,
         ticket_id=ticket_id,
         content=payload.content,
@@ -175,3 +240,4 @@ async def add_message_to_ticket(
         sender_id=payload.sender_id or current_user.id,
         organization_id=current_user.organization_id,
     )
+    return message

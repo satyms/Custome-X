@@ -39,6 +39,14 @@ class TicketUpdate(BaseModel):
     assigned_to: Optional[uuid.UUID] = Field(None, description="Reassigned agent UUID")
 
 
+class TicketStatusUpdateRequest(BaseModel):
+    status: TicketStatus = Field(..., description="Target lifecycle status")
+
+
+class TicketAssignRequest(BaseModel):
+    assigned_to: Optional[uuid.UUID] = Field(None, description="Target agent UUID to assign ticket to, or null to unassign back to team pool")
+
+
 class TicketResponse(TicketBase):
     id: uuid.UUID = Field(..., description="Ticket unique UUID")
     ticket_number: Optional[str] = Field(None, description="Human-readable ticket sequence code (e.g. CX-1001)")

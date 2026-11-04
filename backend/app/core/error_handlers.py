@@ -11,6 +11,8 @@ from app.core.exceptions import (
     InvalidStatusTransitionError,
     AuthenticationError,
     ForbiddenError,
+    RateLimitExceededError,
+    WebhookVerificationError,
 )
 
 logger = logging.getLogger("customex.api")
@@ -27,23 +29,30 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(CustomeXException)
     async def customex_exception_handler(request: Request, exc: CustomeXException):
         request_id = get_request_id(request)
+        headers = {}
 
         # Map domain exceptions to appropriate HTTP status codes
         if isinstance(exc, EntityNotFoundError):
             status_code = status.HTTP_404_NOT_FOUND
         elif isinstance(exc, DuplicateResourceError):
             status_code = status.HTTP_409_CONFLICT
-        elif isinstance(exc, AuthenticationError):
+        elif isinstance(exc, (AuthenticationError, WebhookVerificationError)):
             status_code = status.HTTP_401_UNAUTHORIZED
         elif isinstance(exc, ForbiddenError):
             status_code = status.HTTP_403_FORBIDDEN
         elif isinstance(exc, InvalidStatusTransitionError):
             status_code = status.HTTP_400_BAD_REQUEST
+        elif isinstance(exc, RateLimitExceededError):
+            status_code = status.HTTP_429_TOO_MANY_REQUESTS
+            headers["Retry-After"] = str(exc.retry_after)
+            headers["X-RateLimit-Limit"] = "10"
+            headers["X-RateLimit-Remaining"] = "0"
         else:
             status_code = status.HTTP_400_BAD_REQUEST
 
         return JSONResponse(
             status_code=status_code,
+            headers=headers if headers else None,
             content={
                 "error": {
                     "code": exc.code,
@@ -103,7 +112,7 @@ def register_exception_handlers(app: FastAPI) -> None:
             content={
                 "error": {
                     "code": "INTERNAL_SERVER_ERROR",
-                    "message": "An unexpected internal server error occurred. Please contact support.",
+                    "message": "An unexpected server error occurred.",
                     "request_id": request_id,
                 }
             },

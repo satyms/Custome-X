@@ -30,7 +30,7 @@ class Ticket(Base):
     __tablename__ = "tickets"
     __table_args__ = (
         CheckConstraint(
-            "status IN ('open', 'in_progress', 'escalated', 'resolved', 'closed')",
+            "status IN ('open', 'in_progress', 'escalated', 'resolved', 'closed', 'reopened')",
             name="check_valid_ticket_status",
         ),
         CheckConstraint(
