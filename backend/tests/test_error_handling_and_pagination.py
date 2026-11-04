@@ -5,6 +5,23 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.organization import Organization
 from app.models.customer import Customer
+from app.models.user import User
+from app.core.auth import get_current_user
+from main import app
+
+
+@pytest.fixture(autouse=True)
+def override_auth():
+    dummy_user = User(
+        id=uuid.uuid4(),
+        organization_id=uuid.uuid4(),
+        email="err_agent@example.com",
+        full_name="Error Test Agent",
+        role="agent",
+    )
+    app.dependency_overrides[get_current_user] = lambda: dummy_user
+    yield dummy_user
+    app.dependency_overrides.pop(get_current_user, None)
 
 
 @pytest.mark.asyncio
@@ -67,6 +84,15 @@ async def test_invalid_status_transition_error(
     db_session.add(org)
     await db_session.flush()
 
+    # Align current_user tenant with this test organization
+    app.dependency_overrides[get_current_user] = lambda: User(
+        id=uuid.uuid4(),
+        organization_id=org.id,
+        email="trans_agent@example.com",
+        full_name="Transition Agent",
+        role="agent",
+    )
+
     cust = Customer(
         organization_id=org.id,
         email=f"trans_cust_{uuid.uuid4().hex[:6]}@example.com",
@@ -121,6 +147,14 @@ async def test_pagination_headers_metadata(
     org = Organization(name=f"Pagination Org {uuid.uuid4().hex[:6]}")
     db_session.add(org)
     await db_session.commit()
+
+    app.dependency_overrides[get_current_user] = lambda: User(
+        id=uuid.uuid4(),
+        organization_id=org.id,
+        email="pag_agent@example.com",
+        full_name="Pagination Agent",
+        role="agent",
+    )
 
     response = await client.get(
         f"/api/v1/tickets?organization_id={org.id}&limit=5&offset=0"

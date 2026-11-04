@@ -109,6 +109,7 @@ async def create_ticket(
 async def get_ticket_by_id(
     session: AsyncSession,
     ticket_id: uuid.UUID,
+    organization_id: Optional[uuid.UUID] = None,
 ) -> Ticket:
     """Retrieves full ticket context including chronological messages and customer."""
     stmt = (
@@ -119,6 +120,9 @@ async def get_ticket_by_id(
         )
         .where(Ticket.id == ticket_id)
     )
+    if organization_id:
+        stmt = stmt.where(Ticket.organization_id == organization_id)
+
     result = await session.execute(stmt)
     ticket = result.scalar_one_or_none()
     if not ticket:
@@ -173,9 +177,10 @@ async def update_ticket(
     ticket_id: uuid.UUID,
     payload: TicketUpdate,
     actor_id: Optional[uuid.UUID] = None,
+    organization_id: Optional[uuid.UUID] = None,
 ) -> Ticket:
     """Updates ticket fields with transition validation and audit logging."""
-    ticket = await get_ticket_by_id(session, ticket_id)
+    ticket = await get_ticket_by_id(session, ticket_id, organization_id=organization_id)
 
     update_data = payload.model_dump(exclude_unset=True)
 
@@ -230,8 +235,9 @@ async def update_ticket(
 async def delete_ticket(
     session: AsyncSession,
     ticket_id: uuid.UUID,
+    organization_id: Optional[uuid.UUID] = None,
 ) -> None:
     """Deletes a ticket or raises TicketNotFoundError."""
-    ticket = await get_ticket_by_id(session, ticket_id)
+    ticket = await get_ticket_by_id(session, ticket_id, organization_id=organization_id)
     await session.delete(ticket)
     await session.commit()

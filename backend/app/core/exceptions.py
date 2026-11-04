@@ -36,6 +36,29 @@ class TicketNotFoundError(EntityNotFoundError):
         super().__init__("Ticket", ticket_id)
 
 
+class UserNotFoundError(EntityNotFoundError):
+    def __init__(self, user_id: uuid.UUID):
+        super().__init__("User", user_id)
+
+
+class AuthenticationError(CustomeXException):
+    """Raised when authentication credentials or token are missing or invalid."""
+    def __init__(self, message: str = "Authentication failed.", code: str = "UNAUTHORIZED"):
+        super().__init__(message=message, code=code)
+
+
+class InvalidCredentialsError(AuthenticationError):
+    """Raised when login email/password verification fails."""
+    def __init__(self, message: str = "Invalid email or password."):
+        super().__init__(message=message, code="INVALID_CREDENTIALS")
+
+
+class ForbiddenError(CustomeXException):
+    """Raised when an authenticated user lacks permissions for an operation."""
+    def __init__(self, message: str = "Permission denied.", code: str = "FORBIDDEN"):
+        super().__init__(message=message, code=code)
+
+
 class DuplicateResourceError(CustomeXException):
     """Raised when a unique constraint or conflict occurs."""
     def __init__(self, message: str, code: str = "DUPLICATE_RESOURCE"):

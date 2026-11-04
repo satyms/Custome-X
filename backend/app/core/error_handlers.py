@@ -9,6 +9,8 @@ from app.core.exceptions import (
     EntityNotFoundError,
     DuplicateResourceError,
     InvalidStatusTransitionError,
+    AuthenticationError,
+    ForbiddenError,
 )
 
 logger = logging.getLogger("customex.api")
@@ -31,6 +33,10 @@ def register_exception_handlers(app: FastAPI) -> None:
             status_code = status.HTTP_404_NOT_FOUND
         elif isinstance(exc, DuplicateResourceError):
             status_code = status.HTTP_409_CONFLICT
+        elif isinstance(exc, AuthenticationError):
+            status_code = status.HTTP_401_UNAUTHORIZED
+        elif isinstance(exc, ForbiddenError):
+            status_code = status.HTTP_403_FORBIDDEN
         elif isinstance(exc, InvalidStatusTransitionError):
             status_code = status.HTTP_400_BAD_REQUEST
         else:
