@@ -87,3 +87,19 @@ This log records key architectural and technical decisions made for **Custome-X*
 * **Consequences:**
   * **Pros:** Industry-standard identity security and Bcrypt password hashing without managing raw cryptographic salts in application memory; dual-layer defense (API query filtering + database engine RLS).
   * **Cons:** Requires synchronization between `auth.users` and `public.users` during registration transactions.
+
+---
+
+## ADR-008: Non-Recursive PostgreSQL RLS Policies via SECURITY DEFINER Function
+
+* **Status:** Accepted
+* **Context:** In PostgreSQL, RLS policies that evaluate subqueries directly against the same table they protect (e.g. `USING (organization_id IN (SELECT organization_id FROM public.users WHERE id = auth.uid()))` on `public.users`) trigger infinite recursion (`ERROR 42P17: infinite recursion detected in policy for relation "users"`) whenever an `authenticated` user queries `public.users`. This also broke Supabase Auth password grant lookups because GoTrue queries user roles/schemas under the user context.
+* **Decision:**
+  1. Define a dedicated PostgreSQL function `public.get_auth_organization_id() RETURNS uuid` marked as `SECURITY DEFINER` and `SET search_path = public`.
+  2. Because `SECURITY DEFINER` executes with the permissions of the function owner (bypassing RLS during its internal lookup), it safely extracts the calling user's `organization_id` using `auth.uid()` without triggering recursive policy evaluations.
+  3. Formulate the `public.users` RLS policy as:
+     `USING (id = auth.uid() OR organization_id = public.get_auth_organization_id())`
+  4. Ensure all dependent domain table policies (`customers`, `tickets`, `messages`, `ticket_events`, `organizations`) invoke `public.get_auth_organization_id()` rather than nested subqueries against `public.users`.
+* **Consequences:**
+  * **Pros:** Completely eliminates PostgreSQL policy recursion; standardizes tenant resolution to a single pre-compiled database function; ensures both Supabase Auth internal queries and API tenant queries succeed seamlessly.
+  * **Cons:** Requires `SET search_path = public` on the function to prevent search path hijacking.
