@@ -40,13 +40,30 @@
   - [x] Automatic customer resolution and atomic provisioning by email if not exists
   - [x] Unit of work atomic multi-table write (`customers` + `tickets` + `messages` + `ticket_events`)
   - [x] Full ACID rollback verification and Pydantic schema validation tests (`test_ticket_atomic_intake.py`)
-- [ ] **Task 6.2: Ticket Status Machine (FSM)**
-- [ ] **Task 6.3: Agent Assignment & Queue Distribution**
-- [ ] **Task 6.4: Conversation Management & Chronological Message Threading**
-- [ ] **Task 6.5: Ticket History & Timeline Event Sourcing**
-- [ ] **Task 6.6: Business Rules Engine (7-Day Reopen, Follow-Up Tickets)**
-- [ ] **Task 6.7: Immutable Audit Logging**
-- [ ] **Task 6.8: Decoupled Notification Dispatcher**
+- [x] **Task 6.2: Ticket Status Machine (FSM)**
+  - [x] Strict transition matrix (`open` -> `in_progress` -> `resolved` -> `closed` / `reopened`)
+  - [x] `InvalidStatusTransitionError` mapped to HTTP 400 Bad Request
+  - [x] Automatic lifecycle timestamp tracking (`resolved_at`, `closed_at`)
+- [x] **Task 6.3: Agent Assignment & Queue Distribution**
+  - [x] Organization-scoped agent validation (reject cross-tenant assignment)
+  - [x] Auto-transition from `open` to `in_progress` upon claiming
+  - [x] Agent unassignment back to team pool with event logging
+- [x] **Task 6.4: Conversation Management & Chronological Message Threading**
+  - [x] Inbound message appending with sender validation (`customer`, `agent`, `system`, `ai_assistant`)
+  - [x] Content bounds validation (1 to 10,000 characters) and ticket `updated_at` bump
+- [x] **Task 6.5: Ticket History & Timeline Event Sourcing**
+  - [x] Unified timeline endpoint (`GET /api/v1/tickets/{id}/timeline`)
+  - [x] Interleaved chronological merge of conversation messages and lifecycle audit events
+- [x] **Task 6.6: Business Rules Engine (7-Day Reopen, Follow-Up Tickets)**
+  - [x] 7-day auto-reopen window for customer replies on resolved tickets
+  - [x] Auto-spawning linked follow-up ticket on customer replies to closed tickets
+  - [x] Priority escalation guard (non-managers cannot escalate unassigned tickets to urgent)
+- [x] **Task 6.7: Immutable Audit Logging**
+  - [x] Append-only audit trail logging for all status, assignment, and priority changes
+  - [x] Immutable query API (`audit_service.get_audit_trail`)
+- [x] **Task 6.8: Decoupled Notification Dispatcher**
+  - [x] In-process asynchronous pub/sub dispatcher (`NotificationDispatcher`)
+  - [x] Event emitters for `ticket.created`, `ticket.assigned`, and `ticket.escalated`
 
 ---
 

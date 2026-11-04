@@ -33,7 +33,7 @@ async def test_end_to_end_customer_and_ticket_crud(
         organization_id=org.id,
         email=f"e2e_agent_{uuid.uuid4().hex[:6]}@example.com",
         full_name="Eleanor Agent",
-        role="agent",
+        role="admin",
     )
     db_session.add(agent)
     await db_session.commit()
