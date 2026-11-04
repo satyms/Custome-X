@@ -13,8 +13,9 @@
   - [x] Initialize Git repository & core documentation (`AGENTS.md`, `ARCHITECTURE.md`, `DECISIONS.md`, `TASKS.md`)
   - [ ] Set up project structure (`/apps/api`, `/apps/web`, `/packages/core`, `/packages/tools`)
   - [ ] Configure linting, formatting (Prettier, ESLint), and pre-commit hooks
-- [ ] **Task 1.2: Supabase & PostgreSQL Schema Setup**
-  - [ ] Provision database schema: `tenants`, `customers`, `orders`, `tickets`, `messages`
+- [/] **Task 1.2: Supabase & PostgreSQL Schema Setup**
+  - [x] Provision Supabase PostgreSQL 17 project & configure SQLAlchemy connection pooling with asyncpg
+  - [ ] Provision database schema: `organizations`, `users`, `customers`, `tickets`, `messages`, `ticket_events`
   - [ ] Enable `pgvector` extension and configure vector tables for knowledge documents
   - [ ] Write and verify Row Level Security (RLS) policies for tenant isolation
   - [ ] Seed test dataset (sample e-commerce store with orders and mock customers)
