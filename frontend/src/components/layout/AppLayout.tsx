@@ -9,6 +9,11 @@ import {
   Shield,
   Bot,
   UserCheck,
+  ShieldAlert,
+  BookOpen,
+  Package,
+  BarChart3,
+  Sparkles,
 } from 'lucide-react';
 
 export const AppLayout: React.FC = () => {
@@ -23,7 +28,12 @@ export const AppLayout: React.FC = () => {
   const navItems = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { name: 'Tickets', path: '/tickets', icon: TicketIcon },
-    { name: 'Customers', path: '/customers', icon: Users },
+    { name: 'HITL Approvals', path: '/approvals', icon: ShieldAlert, badge: '4' },
+    { name: 'Knowledge Base', path: '/knowledge', icon: BookOpen },
+    { name: 'Orders Registry', path: '/orders', icon: Package },
+    { name: 'Customers 360', path: '/customers', icon: Users },
+    { name: 'Analytics', path: '/analytics', icon: BarChart3 },
+    { name: 'Agent Evals', path: '/evals', icon: Sparkles },
   ];
 
   const getRoleBadge = (role?: string) => {
@@ -74,15 +84,22 @@ export const AppLayout: React.FC = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] ${
+                    `flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors min-h-[44px] ${
                       isActive
                         ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
                     }`
                   }
                 >
-                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  <span>{item.name}</span>
+                  <div className="flex items-center gap-3">
+                    <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>{item.name}</span>
+                  </div>
+                  {item.badge && (
+                    <span className="h-5 px-1.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-bold font-mono flex items-center justify-center">
+                      {item.badge}
+                    </span>
+                  )}
                 </NavLink>
               );
             })}
