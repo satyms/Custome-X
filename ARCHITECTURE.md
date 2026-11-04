@@ -136,8 +136,18 @@ flowchart TD
 ---
 
 ### 3.2 Layer 2 · Backend API Gateway
-* **Architecture:** Dedicated backend service (Python FastAPI or Node.js/TypeScript) enforcing single-responsibility principles without duplicated logic.
-* **Security & Authentication:** Validates Supabase JWTs on every private route, asserts tenant/customer ownership, and implements strict Role-Based Access Control (`customer`, `support_agent`, `supervisor`, `admin`).
+* **Architecture:** Dedicated backend service (Python 3.14 + FastAPI + SQLAlchemy 2.0 asyncpg) enforcing single-responsibility principles without duplicated logic.
+* **Security & Authentication:**
+  * **Identity Provider:** Supabase Auth handles user registration, Bcrypt password hashing, session tokens, and identity management.
+  * **Authentication Pipeline (`app/core/auth.py`):** Stateless bearer token verification via `get_current_user` dependency, extracting claims (`sub`, `email`, `role`, `exp`), checking expiration, and hydrating the active `User` model with loaded tenant `Organization`.
+  * **Role-Based Access Control (RBAC):** Route-level permission guards using `require_role(["agent", "supervisor", "admin"])` returning uniform HTTP 403 Forbidden envelopes when permissions are insufficient.
+  * **Multi-Tenant Isolation (`Feature 4.6`):** All resource endpoints (`/tickets`, `/customers`) are strictly scoped to `current_user.organization_id`. Cross-tenant queries return HTTP 404 (preventing entity existence discovery).
+  * **PostgreSQL Row-Level Security (`Feature 4.7`):** Versioned Alembic migrations apply active RLS policies (`*_tenant_isolation_policy`) to `organizations`, `users`, `customers`, `tickets`, `messages`, and `ticket_events` guaranteeing database engine-level isolation.
+  * **Auth Endpoints:** Mounted at `/api/v1/auth/`:
+    * `POST /register`: Registers user in Supabase Auth and provisions `public.users` profile.
+    * `POST /login`: Authenticates credentials against Supabase Auth password grant and returns access/refresh JWT tokens.
+    * `POST /refresh`: Exchanges valid refresh tokens for updated JWT access tokens.
+    * `GET /me`: Returns active user profile and organization binding.
 * **Cross-Cutting Standards:**
   * Strict typed validation schemas (Pydantic / Zod) for all request/response bodies.
   * Deterministic error envelope (`{ "error": { "code": string, "message": string, "request_id": string } }`).

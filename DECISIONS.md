@@ -71,3 +71,19 @@ This log records key architectural and technical decisions made for **Custome-X*
 * **Consequences:**
   * **Pros:** Consistent, accessible, and fatigue-reducing user interface tailored for enterprise support workflows.
   * **Cons:** Requires adherence to established semantic token scales rather than ad-hoc inline styles.
+
+---
+
+## ADR-007: Supabase Auth & PostgreSQL Row-Level Security (RLS) for Identity & Tenant Isolation
+
+* **Status:** Accepted
+* **Context:** Custome-X is a multi-tenant platform handling confidential ticket conversations, order information, and refunds. User credentials require bulletproof password hashing, session tokens, and strict Role-Based Access Control (RBAC). Cross-tenant data leakage must be impossible at both the API layer and the database engine level.
+* **Decision:**
+  1. Use **Supabase Auth** for identity management, user registration, Bcrypt password hashing, and signed JWT session token issuance (access + refresh tokens).
+  2. Maintain a linked internal profile in `public.users` (`id` matching `auth.users.id`, `organization_id`, `role`, `email`, `full_name`).
+  3. Enforce RBAC in FastAPI via `get_current_user` and `require_role(["agent", "supervisor", "admin"])` dependencies.
+  4. Automatically scope all domain queries (`tickets`, `customers`, `messages`, `ticket_events`) to `current_user.organization_id`.
+  5. Apply versioned PostgreSQL **Row-Level Security (RLS)** policies via Alembic across all domain tables (`organizations`, `users`, `customers`, `tickets`, `messages`, `ticket_events`) verifying `auth.uid()` and tenant boundaries at the database engine level.
+* **Consequences:**
+  * **Pros:** Industry-standard identity security and Bcrypt password hashing without managing raw cryptographic salts in application memory; dual-layer defense (API query filtering + database engine RLS).
+  * **Cons:** Requires synchronization between `auth.users` and `public.users` during registration transactions.
