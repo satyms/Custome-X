@@ -1,12 +1,13 @@
 import uuid
-from datetime import datetime, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
 from app.schemas.common import PaginatedResponse
 from app.schemas.customer import CustomerCreate, CustomerResponse
+from app.services import customer_service
 
 router = APIRouter()
 
@@ -31,12 +32,19 @@ async def list_customers(
     offset: int = Query(0, ge=0, description="Records offset"),
     db: AsyncSession = Depends(get_db),
 ):
-    return PaginatedResponse(
-        items=[],
-        total=0,
+    items, total = await customer_service.list_customers(
+        session=db,
+        organization_id=organization_id,
+        email=email,
         limit=limit,
         offset=offset,
-        has_more=False,
+    )
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        limit=limit,
+        offset=offset,
+        has_more=offset + len(items) < total,
     )
 
 
@@ -57,15 +65,16 @@ async def create_customer(
     payload: CustomerCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    now = datetime.now(timezone.utc)
-    return CustomerResponse(
-        id=uuid.uuid4(),
-        organization_id=payload.organization_id,
-        email=payload.email,
-        full_name=payload.full_name,
-        phone=payload.phone,
-        created_at=now,
-    )
+    try:
+        customer = await customer_service.create_customer(session=db, payload=payload)
+        return customer
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A customer with this email already exists.",
+        )
 
 
 @router.get(
@@ -79,12 +88,10 @@ async def get_customer(
     customer_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    now = datetime.now(timezone.utc)
-    return CustomerResponse(
-        id=customer_id,
-        organization_id=uuid.uuid4(),
-        email="customer@example.com",
-        full_name="John Doe",
-        phone=None,
-        created_at=now,
-    )
+    customer = await customer_service.get_customer_by_id(session=db, customer_id=customer_id)
+    if not customer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Customer {customer_id} not found.",
+        )
+    return customer

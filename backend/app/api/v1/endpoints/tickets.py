@@ -1,7 +1,7 @@
 import uuid
-from datetime import datetime, timezone
 from typing import Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -12,6 +12,7 @@ from app.schemas.ticket import (
     TicketResponse,
     TicketUpdate,
 )
+from app.services import ticket_service
 
 router = APIRouter()
 
@@ -33,16 +34,28 @@ async def list_tickets(
     organization_id: Optional[uuid.UUID] = Query(None, description="Filter by tenant organization"),
     status: Optional[TicketStatus] = Query(None, description="Filter by ticket status"),
     priority: Optional[TicketPriority] = Query(None, description="Filter by urgency priority"),
+    customer_id: Optional[uuid.UUID] = Query(None, description="Filter by customer ID"),
+    assigned_to: Optional[uuid.UUID] = Query(None, description="Filter by assigned agent ID"),
     limit: int = Query(20, ge=1, le=100, description="Max records to return"),
     offset: int = Query(0, ge=0, description="Records offset"),
     db: AsyncSession = Depends(get_db),
 ):
-    return PaginatedResponse(
-        items=[],
-        total=0,
+    items, total = await ticket_service.list_tickets(
+        session=db,
+        organization_id=organization_id,
+        status=status.value if status else None,
+        priority=priority.value if priority else None,
+        customer_id=customer_id,
+        assigned_to=assigned_to,
         limit=limit,
         offset=offset,
-        has_more=False,
+    )
+    return PaginatedResponse(
+        items=items,
+        total=total,
+        limit=limit,
+        offset=offset,
+        has_more=offset + len(items) < total,
     )
 
 
@@ -63,19 +76,16 @@ async def create_ticket(
     payload: TicketCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    now = datetime.now(timezone.utc)
-    # Stub response matching TicketResponse model; wired to DB service in Feature 3.5
-    return TicketResponse(
-        id=uuid.uuid4(),
-        organization_id=payload.organization_id,
-        customer_id=payload.customer_id,
-        assigned_to=payload.assigned_to,
-        title=payload.title,
-        status=TicketStatus.OPEN,
-        priority=payload.priority,
-        created_at=now,
-        updated_at=now,
-    )
+    try:
+        ticket = await ticket_service.create_ticket(session=db, payload=payload)
+        return ticket
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except IntegrityError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Database constraint violation: {str(e)}",
+        )
 
 
 @router.get(
@@ -83,26 +93,19 @@ async def create_ticket(
     response_model=TicketDetailResponse,
     status_code=status.HTTP_200_OK,
     summary="Get ticket details",
-    description="Retrieve a single support ticket by UUID including messages.",
+    description="Retrieve a single support ticket by UUID including messages and history.",
 )
 async def get_ticket(
     ticket_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    now = datetime.now(timezone.utc)
-    return TicketDetailResponse(
-        id=ticket_id,
-        organization_id=uuid.uuid4(),
-        customer_id=uuid.uuid4(),
-        assigned_to=None,
-        title="Sample Ticket",
-        status=TicketStatus.OPEN,
-        priority=TicketPriority.NORMAL,
-        created_at=now,
-        updated_at=now,
-        messages=[],
-        customer=None,
-    )
+    ticket = await ticket_service.get_ticket_by_id(session=db, ticket_id=ticket_id)
+    if not ticket:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket {ticket_id} not found.",
+        )
+    return ticket
 
 
 @router.patch(
@@ -117,18 +120,13 @@ async def update_ticket(
     payload: TicketUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    now = datetime.now(timezone.utc)
-    return TicketResponse(
-        id=ticket_id,
-        organization_id=uuid.uuid4(),
-        customer_id=uuid.uuid4(),
-        assigned_to=payload.assigned_to,
-        title=payload.title or "Updated Ticket",
-        status=payload.status or TicketStatus.IN_PROGRESS,
-        priority=payload.priority or TicketPriority.NORMAL,
-        created_at=now,
-        updated_at=now,
-    )
+    ticket = await ticket_service.update_ticket(session=db, ticket_id=ticket_id, payload=payload)
+    if not ticket:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket {ticket_id} not found.",
+        )
+    return ticket
 
 
 @router.delete(
@@ -141,4 +139,10 @@ async def delete_ticket(
     ticket_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ):
+    deleted = await ticket_service.delete_ticket(session=db, ticket_id=ticket_id)
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Ticket {ticket_id} not found.",
+        )
     return None

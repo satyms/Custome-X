@@ -26,8 +26,8 @@
   - [x] Tickets router (`/api/v1/tickets`) with GET, POST, PATCH, DELETE status code contracts
   - [x] Customers router (`/api/v1/customers`) with GET, POST status code contracts
   - [x] Pydantic v2 validation schemas and response models (Features 3.3 & 3.4)
-  - [ ] Service layer & Repository CRUD integration (Features 3.5 & 3.6)
-  - [ ] Centralized error handling & pagination (Features 3.7 - 3.9)
+  - [x] Service layer & Repository CRUD integration (Features 3.5 & 3.6)
+  - [ ] Centralized error handling & pagination enhancements (Features 3.7 - 3.9)
 
 
 ---
