@@ -38,6 +38,7 @@ class Ticket(Base):
             name="check_valid_ticket_priority",
         ),
         Index("idx_tickets_org_status", "organization_id", "status"),
+        Index("idx_tickets_ticket_number", "organization_id", "ticket_number"),
         Index("idx_tickets_customer_id", "customer_id"),
         Index("idx_tickets_assigned_to", "assigned_to"),
         Index("idx_tickets_created_at", "created_at"),
@@ -48,6 +49,11 @@ class Ticket(Base):
         primary_key=True,
         default=uuid.uuid4,
         server_default=text("gen_random_uuid()"),
+    )
+    ticket_number: Mapped[Optional[str]] = mapped_column(
+        String(50),
+        nullable=True,
+        index=True,
     )
     organization_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -78,6 +84,14 @@ class Ticket(Base):
         default="normal",
         server_default="normal",
     )
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    closed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -104,4 +118,4 @@ class Ticket(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<Ticket id={self.id} status={self.status} priority={self.priority}>"
+        return f"<Ticket id={self.id} number={self.ticket_number} status={self.status} priority={self.priority}>"

@@ -33,6 +33,23 @@
 
 ---
 
+## Phase 6: Core Business Workflows
+
+- [x] **Task 6.1: Ticket Intake & Atomic Multi-Table Provisioning**
+  - [x] Sequential reference number (`CX-1001`) with database migration (`d01d6d6747dc_add_ticket_lifecycle_columns.py`)
+  - [x] Automatic customer resolution and atomic provisioning by email if not exists
+  - [x] Unit of work atomic multi-table write (`customers` + `tickets` + `messages` + `ticket_events`)
+  - [x] Full ACID rollback verification and Pydantic schema validation tests (`test_ticket_atomic_intake.py`)
+- [ ] **Task 6.2: Ticket Status Machine (FSM)**
+- [ ] **Task 6.3: Agent Assignment & Queue Distribution**
+- [ ] **Task 6.4: Conversation Management & Chronological Message Threading**
+- [ ] **Task 6.5: Ticket History & Timeline Event Sourcing**
+- [ ] **Task 6.6: Business Rules Engine (7-Day Reopen, Follow-Up Tickets)**
+- [ ] **Task 6.7: Immutable Audit Logging**
+- [ ] **Task 6.8: Decoupled Notification Dispatcher**
+
+---
+
 ## Milestone 2: RAG Knowledge Retrieval Pipeline
 
 - [ ] **Task 2.1: Knowledge Base Document Ingestion**

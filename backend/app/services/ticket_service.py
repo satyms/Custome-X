@@ -16,57 +16,120 @@ from app.core.exceptions import (
 )
 
 
+async def generate_ticket_number(
+    session: AsyncSession,
+    organization_id: uuid.UUID,
+) -> str:
+    """
+    Generates a deterministic sequential human-readable reference number
+    scoped to the tenant organization (e.g. CX-1001, CX-1002).
+    """
+    count_stmt = select(func.count(Ticket.id)).where(Ticket.organization_id == organization_id)
+    count = (await session.execute(count_stmt)).scalar() or 0
+    return f"CX-{count + 1001}"
+
+
 async def create_ticket_atomic(
     session: AsyncSession,
     organization_id: uuid.UUID,
-    customer_id: uuid.UUID,
-    title: str,
-    initial_message: str,
+    customer_id: Optional[uuid.UUID] = None,
+    title: str = "",
+    initial_message: str = "",
+    customer_email: Optional[str] = None,
+    customer_name: Optional[str] = None,
+    customer_phone: Optional[str] = None,
     priority: str = "normal",
     sender_type: str = "customer",
     sender_id: Optional[uuid.UUID] = None,
     assigned_to: Optional[uuid.UUID] = None,
+    ticket_number: Optional[str] = None,
+    simulate_failure_after_customer: bool = False,
     simulate_failure_after_ticket: bool = False,
 ) -> Tuple[Ticket, Message, TicketEvent]:
     """
     ACID Transaction Unit of Work:
-    Atomically creates a ticket, its initial message, and audit log event.
-    Guarantees that either all 3 entities persist, or all 3 roll back cleanly.
+    Atomically validates/provisions customer, generates human-readable ticket number,
+    creates ticket, initial message, and audit event.
+    Guarantees that either all entities persist, or all roll back cleanly.
     """
     trans_cm = session.begin_nested() if session.in_transaction() else session.begin()
     async with trans_cm:
-        # 1. Create ticket entity
+        customer = None
+
+        # 1. Resolve or create customer record
+        if customer_id:
+            cust_stmt = select(Customer).where(
+                Customer.id == customer_id,
+                Customer.organization_id == organization_id,
+            )
+            customer = (await session.execute(cust_stmt)).scalar_one_or_none()
+            if not customer and not customer_email:
+                raise CustomerNotFoundError(customer_id)
+
+        if not customer and customer_email:
+            # Check existing customer within tenant org by email
+            email_stmt = select(Customer).where(
+                Customer.email == customer_email,
+                Customer.organization_id == organization_id,
+            )
+            customer = (await session.execute(email_stmt)).scalar_one_or_none()
+
+            # Atomically insert new customer if not found
+            if not customer:
+                name_to_use = customer_name or customer_email.split("@")[0]
+                customer = Customer(
+                    organization_id=organization_id,
+                    email=customer_email,
+                    full_name=name_to_use,
+                    phone=customer_phone,
+                )
+                session.add(customer)
+                await session.flush()
+
+        if not customer:
+            raise ValueError("Either customer_id or customer_email must resolve to a valid customer.")
+
+        if simulate_failure_after_customer:
+            raise RuntimeError("ACID Rollback Trigger: Simulated failure after customer provisioning!")
+
+        # 2. Generate sequential reference number
+        if not ticket_number:
+            ticket_number = await generate_ticket_number(session, organization_id)
+
+        # 3. Create ticket entity
         ticket = Ticket(
+            ticket_number=ticket_number,
             organization_id=organization_id,
-            customer_id=customer_id,
+            customer_id=customer.id,
             assigned_to=assigned_to,
             title=title,
             priority=priority,
             status="open",
         )
         session.add(ticket)
-        # Flush to execute INSERT and generate UUID primary key for child foreign keys
+        # Flush to generate UUID primary key for child message and event references
         await session.flush()
 
-        # Simulated failure point to demonstrate ACID rollback
+        # Simulated failure point to verify ACID rollback
         if simulate_failure_after_ticket:
             raise RuntimeError("ACID Rollback Trigger: Simulated failure during atomic ticket creation!")
 
-        # 2. Create initial thread message
+        # 4. Create initial inbound message
         message = Message(
             ticket_id=ticket.id,
             sender_type=sender_type,
-            sender_id=sender_id or customer_id,
+            sender_id=sender_id or customer.id,
             content=initial_message,
         )
         session.add(message)
 
-        # 3. Create immutable audit event
+        # 5. Create immutable audit event
         event = TicketEvent(
             ticket_id=ticket.id,
-            actor_id=sender_id or customer_id,
+            actor_id=sender_id or customer.id,
             event_type="ticket_created",
             event_metadata={
+                "ticket_number": ticket_number,
                 "initial_priority": priority,
                 "initial_status": "open",
                 "channel": "customer_support",
@@ -84,22 +147,18 @@ async def create_ticket(
     session: AsyncSession,
     payload: TicketCreate,
 ) -> Ticket:
-    """Domain service to validate relationships and execute atomic ticket creation."""
-    # Verify customer exists
-    cust_stmt = select(Customer).where(
-        Customer.id == payload.customer_id,
-        Customer.organization_id == payload.organization_id,
-    )
-    customer = (await session.execute(cust_stmt)).scalar_one_or_none()
-    if not customer:
-        raise CustomerNotFoundError(payload.customer_id)
+    """Domain service to execute atomic customer intake and ticket creation."""
+    priority_val = payload.priority.value if hasattr(payload.priority, "value") else str(payload.priority)
 
     ticket, _, _ = await create_ticket_atomic(
         session=session,
         organization_id=payload.organization_id,
         customer_id=payload.customer_id,
+        customer_email=str(payload.customer_email) if payload.customer_email else None,
+        customer_name=payload.customer_name,
+        customer_phone=payload.customer_phone,
         title=payload.title,
-        priority=payload.priority.value,
+        priority=priority_val,
         initial_message=payload.initial_message,
         assigned_to=payload.assigned_to,
     )
@@ -263,4 +322,3 @@ async def add_message(
     await session.commit()
     await session.refresh(message)
     return message
-
