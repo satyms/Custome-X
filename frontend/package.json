@@ -10,10 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1"
-=======
     "@tailwindcss/vite": "^4.3.4",
     "axios": "^1.21.0",
     "clsx": "^2.1.1",
@@ -24,7 +20,6 @@
     "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.3.4",
     "zod": "^4.6.7"
->>>>>>> backend
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
