@@ -1,6 +1,23 @@
 import uuid
 import pytest
 from httpx import AsyncClient
+from app.models.user import User
+from app.core.auth import get_current_user
+from main import app
+
+
+@pytest.fixture(autouse=True)
+def override_auth():
+    dummy_user = User(
+        id=uuid.uuid4(),
+        organization_id=uuid.uuid4(),
+        email="schema_tester@example.com",
+        full_name="Schema Tester",
+        role="agent",
+    )
+    app.dependency_overrides[get_current_user] = lambda: dummy_user
+    yield dummy_user
+    app.dependency_overrides.pop(get_current_user, None)
 
 
 @pytest.mark.asyncio

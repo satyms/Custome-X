@@ -5,6 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.organization import Organization
 from app.models.customer import Customer
+from app.models.user import User
+from app.core.auth import get_current_user
+from main import app
 
 
 @pytest.mark.asyncio
@@ -22,6 +25,15 @@ async def test_router_structure_and_status_codes(
     db_session.add(org)
     await db_session.flush()
 
+    user = User(
+        id=uuid.uuid4(),
+        organization_id=org.id,
+        email=f"router_agent_{uuid.uuid4().hex[:6]}@example.com",
+        full_name="Router Agent",
+        role="agent",
+    )
+    db_session.add(user)
+
     cust = Customer(
         organization_id=org.id,
         email=f"router_cust_{uuid.uuid4().hex[:6]}@example.com",
@@ -29,6 +41,8 @@ async def test_router_structure_and_status_codes(
     )
     db_session.add(cust)
     await db_session.commit()
+
+    app.dependency_overrides[get_current_user] = lambda: user
 
     sample_org_id = str(org.id)
     sample_cust_id = str(cust.id)
@@ -86,6 +100,13 @@ async def test_router_structure_and_status_codes(
     delete_ticket_res = await client.delete(f"/api/v1/tickets/{created_ticket_id}")
     assert delete_ticket_res.status_code == 204
     assert delete_ticket_res.content == b""
+
+    # Clean up DB
+    app.dependency_overrides.pop(get_current_user, None)
+    await db_session.delete(user)
+    await db_session.delete(cust)
+    await db_session.delete(org)
+    await db_session.commit()
 
 
 @pytest.mark.asyncio
