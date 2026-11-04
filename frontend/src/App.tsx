@@ -9,6 +9,11 @@ import { DashboardPage } from './pages/DashboardPage';
 import { TicketsPage } from './pages/TicketsPage';
 import { TicketDetailPage } from './pages/TicketDetailPage';
 import { CustomersPage } from './pages/CustomersPage';
+import { ApprovalsPage } from './pages/ApprovalsPage';
+import { KnowledgePage } from './pages/KnowledgePage';
+import { OrdersPage } from './pages/OrdersPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
+import { EvalsPage } from './pages/EvalsPage';
 
 export const App: React.FC = () => {
   return (
@@ -26,7 +31,12 @@ export const App: React.FC = () => {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/tickets" element={<TicketsPage />} />
               <Route path="/tickets/:id" element={<TicketDetailPage />} />
+              <Route path="/approvals" element={<ApprovalsPage />} />
+              <Route path="/knowledge" element={<KnowledgePage />} />
+              <Route path="/orders" element={<OrdersPage />} />
               <Route path="/customers" element={<CustomersPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/evals" element={<EvalsPage />} />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
             </Route>
           </Route>

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useTransition } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ticketsApi } from '../api';
 import { useAuth } from '../context/AuthContext';
+import { useTicketWebSocket } from '../hooks/useTicketWebSocket';
 import type {
   TicketDetail,
   Ticket,
@@ -62,6 +63,28 @@ export const TicketDetailPage: React.FC = () => {
     text: string;
   } | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  // Real-time WebSocket Stream & Simulation Hook
+  const {
+    connectionStatus,
+    isStreaming,
+    streamingContent,
+    activeTypist,
+    simulateAIStream,
+  } = useTicketWebSocket({
+    ticketId: id,
+    onNewMessage: (msg) => {
+      setTicket((prev) => {
+        if (!prev) return null;
+        if (prev.messages.some((m) => m.id === msg.id)) return prev;
+        return { ...prev, messages: [...prev.messages, msg] };
+      });
+      setTimeout(() => scrollToBottom('smooth'), 50);
+    },
+    onStatusChange: (newStatus) => {
+      setTicket((prev) => (prev ? { ...prev, status: newStatus as TicketStatus } : null));
+    },
+  });
 
   // Auto-scroll ref
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -473,6 +496,28 @@ export const TicketDetailPage: React.FC = () => {
               </p>
             </div>
 
+            {/* Live WebSocket Connection Pill */}
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/90 border border-slate-700/80 text-[11px] font-mono shadow-sm">
+                <span
+                  className={`h-2 w-2 rounded-full ${
+                    connectionStatus === 'connected'
+                      ? 'bg-emerald-400 animate-pulse'
+                      : connectionStatus === 'reconnecting'
+                      ? 'bg-amber-400 animate-ping'
+                      : 'bg-slate-500'
+                  }`}
+                />
+                <span className="text-slate-300">
+                  {connectionStatus === 'connected'
+                    ? 'Live Stream'
+                    : connectionStatus === 'reconnecting'
+                    ? 'Reconnecting'
+                    : 'Real-time Sync'}
+                </span>
+              </div>
+            </div>
+
             {/* Quick Status Transition Dropdown */}
             <div className="flex items-center gap-2">
               <span className="text-xs text-slate-400">Status:</span>
@@ -581,6 +626,28 @@ export const TicketDetailPage: React.FC = () => {
               })
             )}
 
+            {/* Real-time Streaming AI/Agent Token Bubble */}
+            {isStreaming && (
+              <div className="flex items-start gap-3 justify-start animate-fade-in">
+                <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center shadow-md shadow-violet-500/20 shrink-0">
+                  <Bot className="h-4 w-4 text-white" />
+                </div>
+                <div className="max-w-xl rounded-2xl p-4 bg-slate-900 border border-indigo-500/40 text-slate-100 shadow-xl">
+                  <div className="flex items-center justify-between gap-4 mb-1.5">
+                    <span className="text-xs font-semibold text-indigo-400 flex items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-full bg-indigo-400 animate-ping" />
+                      {activeTypist || 'AI Agent Streaming'}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">Real-time Token Stream</span>
+                  </div>
+                  <p className="text-sm text-slate-100 whitespace-pre-wrap leading-relaxed">
+                    {streamingContent}
+                    <span className="inline-block w-2 h-4 ml-1 bg-indigo-400 animate-pulse align-middle" />
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Scroll Anchor */}
             <div ref={messagesEndRef} />
           </div>
@@ -603,6 +670,35 @@ export const TicketDetailPage: React.FC = () => {
               {/* Composer Toolbar & Actions */}
               <div className="flex flex-col sm:flex-row items-center justify-between px-3 py-2 border-t border-slate-700/60 bg-slate-900/50 gap-2">
                 <div className="flex items-center gap-2 text-xs text-slate-400">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      simulateAIStream(undefined, async (finalText) => {
+                        if (!id) return;
+                        try {
+                          const aiMsg = await ticketsApi.addMessage(id, {
+                            sender_type: 'ai_assistant' as SenderType,
+                            content: finalText,
+                          });
+                          setTicket((prev) =>
+                            prev ? { ...prev, messages: [...prev.messages, aiMsg] } : null
+                          );
+                          setToastMessage({
+                            type: 'success',
+                            text: 'AI response stream completed & persisted.',
+                          });
+                        } catch (e) {
+                          console.warn('AI simulated message append:', e);
+                        }
+                      });
+                    }}
+                    disabled={isStreaming}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+                    title="Simulate Real-time AI Assistant stream response"
+                  >
+                    <Bot className="h-3.5 w-3.5" />
+                    <span>{isStreaming ? 'Streaming...' : 'Stream AI Reply'}</span>
+                  </button>
                   <span className="hidden sm:inline font-mono">
                     <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px]">
                       Ctrl
