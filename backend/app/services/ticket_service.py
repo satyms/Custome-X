@@ -241,3 +241,26 @@ async def delete_ticket(
     ticket = await get_ticket_by_id(session, ticket_id, organization_id=organization_id)
     await session.delete(ticket)
     await session.commit()
+
+
+async def add_message(
+    session: AsyncSession,
+    ticket_id: uuid.UUID,
+    content: str,
+    sender_type: str = "agent",
+    sender_id: Optional[uuid.UUID] = None,
+    organization_id: Optional[uuid.UUID] = None,
+) -> Message:
+    """Adds a message to an existing ticket within the user's organization."""
+    ticket = await get_ticket_by_id(session, ticket_id, organization_id=organization_id)
+    message = Message(
+        ticket_id=ticket.id,
+        sender_type=sender_type,
+        sender_id=sender_id,
+        content=content,
+    )
+    session.add(message)
+    await session.commit()
+    await session.refresh(message)
+    return message
+
