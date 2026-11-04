@@ -1,7 +1,6 @@
 import uuid
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.exc import IntegrityError
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -17,7 +16,7 @@ router = APIRouter()
     response_model=PaginatedResponse[CustomerResponse],
     status_code=status.HTTP_200_OK,
     summary="List all customers",
-    description="Retrieve a paginated list of customers for an organization.",
+    description="Retrieve a paginated list of customers for an organization with metadata headers.",
 )
 @router.get(
     "/",
@@ -26,6 +25,7 @@ router = APIRouter()
     include_in_schema=False,
 )
 async def list_customers(
+    response: Response,
     organization_id: Optional[uuid.UUID] = Query(None, description="Filter by tenant organization"),
     email: Optional[str] = Query(None, description="Filter by customer email"),
     limit: int = Query(20, ge=1, le=100, description="Max records to return"),
@@ -39,12 +39,20 @@ async def list_customers(
         limit=limit,
         offset=offset,
     )
+    has_more = (offset + len(items)) < total
+
+    # Feature 3.9: Standard Pagination Metadata Headers
+    response.headers["X-Total-Count"] = str(total)
+    response.headers["X-Limit"] = str(limit)
+    response.headers["X-Offset"] = str(offset)
+    response.headers["X-Has-More"] = str(has_more).lower()
+
     return PaginatedResponse(
         items=items,
         total=total,
         limit=limit,
         offset=offset,
-        has_more=offset + len(items) < total,
+        has_more=has_more,
     )
 
 
@@ -65,16 +73,8 @@ async def create_customer(
     payload: CustomerCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    try:
-        customer = await customer_service.create_customer(session=db, payload=payload)
-        return customer
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except IntegrityError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A customer with this email already exists.",
-        )
+    # Domain exceptions (OrganizationNotFoundError, DuplicateResourceError) handled globally
+    return await customer_service.create_customer(session=db, payload=payload)
 
 
 @router.get(
@@ -88,10 +88,5 @@ async def get_customer(
     customer_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    customer = await customer_service.get_customer_by_id(session=db, customer_id=customer_id)
-    if not customer:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Customer {customer_id} not found.",
-        )
-    return customer
+    # CustomerNotFoundError handled globally -> HTTP 404
+    return await customer_service.get_customer_by_id(session=db, customer_id=customer_id)

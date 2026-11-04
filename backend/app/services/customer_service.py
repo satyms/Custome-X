@@ -1,11 +1,17 @@
 import uuid
 from typing import List, Optional, Tuple
 from sqlalchemy import select, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import Customer
 from app.models.organization import Organization
 from app.schemas.customer import CustomerCreate, CustomerUpdate
+from app.core.exceptions import (
+    CustomerNotFoundError,
+    OrganizationNotFoundError,
+    DuplicateResourceError,
+)
 
 
 async def create_customer(
@@ -17,7 +23,7 @@ async def create_customer(
     org_stmt = select(Organization.id).where(Organization.id == payload.organization_id)
     org_exists = (await session.execute(org_stmt)).scalar_one_or_none()
     if not org_exists:
-        raise ValueError(f"Organization with id {payload.organization_id} does not exist.")
+        raise OrganizationNotFoundError(payload.organization_id)
 
     customer = Customer(
         organization_id=payload.organization_id,
@@ -26,7 +32,12 @@ async def create_customer(
         phone=payload.phone,
     )
     session.add(customer)
-    await session.commit()
+    try:
+        await session.commit()
+    except IntegrityError:
+        await session.rollback()
+        raise DuplicateResourceError(f"Customer with email '{payload.email}' already exists in this organization.")
+
     await session.refresh(customer)
     return customer
 
@@ -34,11 +45,14 @@ async def create_customer(
 async def get_customer_by_id(
     session: AsyncSession,
     customer_id: uuid.UUID,
-) -> Optional[Customer]:
-    """Fetches a single customer by UUID."""
+) -> Customer:
+    """Fetches a single customer by UUID or raises CustomerNotFoundError."""
     stmt = select(Customer).where(Customer.id == customer_id)
     result = await session.execute(stmt)
-    return result.scalar_one_or_none()
+    customer = result.scalar_one_or_none()
+    if not customer:
+        raise CustomerNotFoundError(customer_id)
+    return customer
 
 
 async def list_customers(
@@ -60,10 +74,8 @@ async def list_customers(
         query = query.where(Customer.email.ilike(f"%{email}%"))
         count_query = count_query.where(Customer.email.ilike(f"%{email}%"))
 
-    # Fetch total count matching filters
     total_count = (await session.execute(count_query)).scalar_one()
 
-    # Fetch paginated items ordered by created_at DESC
     query = query.order_by(Customer.created_at.desc()).limit(limit).offset(offset)
     items = (await session.execute(query)).scalars().all()
 
@@ -74,11 +86,9 @@ async def update_customer(
     session: AsyncSession,
     customer_id: uuid.UUID,
     payload: CustomerUpdate,
-) -> Optional[Customer]:
+) -> Customer:
     """Updates customer profile fields."""
     customer = await get_customer_by_id(session, customer_id)
-    if not customer:
-        return None
 
     update_data = payload.model_dump(exclude_unset=True)
     for field, value in update_data.items():

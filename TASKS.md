@@ -21,13 +21,13 @@
   - [ ] Enable `pgvector` extension and configure vector tables for knowledge documents
   - [ ] Write and verify Row Level Security (RLS) policies for tenant isolation
   - [ ] Seed test dataset (sample e-commerce store with orders and mock customers)
-- [/] **Task 1.3: Core REST API Gateway & Routing (FastAPI v1)**
+- [x] **Task 1.3: Core REST API Gateway & Routing (FastAPI v1)**
   - [x] Configure modular APIRouter hierarchy with `/api/v1` prefix
   - [x] Tickets router (`/api/v1/tickets`) with GET, POST, PATCH, DELETE status code contracts
   - [x] Customers router (`/api/v1/customers`) with GET, POST status code contracts
   - [x] Pydantic v2 validation schemas and response models (Features 3.3 & 3.4)
   - [x] Service layer & Repository CRUD integration (Features 3.5 & 3.6)
-  - [ ] Centralized error handling & pagination enhancements (Features 3.7 - 3.9)
+  - [x] Centralized error handling & pagination metadata headers (Features 3.7 - 3.9)
 
 
 ---

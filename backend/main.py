@@ -6,6 +6,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.middleware import RequestIdMiddleware
+from app.core.error_handlers import register_exception_handlers
 from app.db.session import get_db, close_db_connection
 from app.api.v1.api import api_router
 
@@ -25,7 +27,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Configure CORS for local development with Vite frontend
+# 1. Register Request ID Middleware (distributed tracing & correlation)
+app.add_middleware(RequestIdMiddleware)
+
+# 2. Configure CORS for local development with Vite frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -34,8 +39,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 3. Register Centralized Error Handlers
+register_exception_handlers(app)
 
-# Mount API v1 Master Router
+# 4. Mount API v1 Master Router
 app.include_router(api_router)
 
 
@@ -49,7 +56,6 @@ def root():
         "v1_tickets": "/api/v1/tickets",
         "v1_customers": "/api/v1/customers",
     }
-
 
 
 @app.get("/health")

@@ -1,7 +1,6 @@
 import uuid
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.exc import IntegrityError
+from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -22,7 +21,7 @@ router = APIRouter()
     response_model=PaginatedResponse[TicketResponse],
     status_code=status.HTTP_200_OK,
     summary="List all tickets",
-    description="Retrieve a paginated list of customer support tickets with filters.",
+    description="Retrieve a paginated list of customer support tickets with filters and pagination headers.",
 )
 @router.get(
     "/",
@@ -31,6 +30,7 @@ router = APIRouter()
     include_in_schema=False,
 )
 async def list_tickets(
+    response: Response,
     organization_id: Optional[uuid.UUID] = Query(None, description="Filter by tenant organization"),
     status: Optional[TicketStatus] = Query(None, description="Filter by ticket status"),
     priority: Optional[TicketPriority] = Query(None, description="Filter by urgency priority"),
@@ -50,12 +50,20 @@ async def list_tickets(
         limit=limit,
         offset=offset,
     )
+    has_more = (offset + len(items)) < total
+
+    # Feature 3.9: Pagination Metadata Headers
+    response.headers["X-Total-Count"] = str(total)
+    response.headers["X-Limit"] = str(limit)
+    response.headers["X-Offset"] = str(offset)
+    response.headers["X-Has-More"] = str(has_more).lower()
+
     return PaginatedResponse(
         items=items,
         total=total,
         limit=limit,
         offset=offset,
-        has_more=offset + len(items) < total,
+        has_more=has_more,
     )
 
 
@@ -76,16 +84,8 @@ async def create_ticket(
     payload: TicketCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    try:
-        ticket = await ticket_service.create_ticket(session=db, payload=payload)
-        return ticket
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except IntegrityError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Database constraint violation: {str(e)}",
-        )
+    # CustomerNotFoundError handled globally -> HTTP 404
+    return await ticket_service.create_ticket(session=db, payload=payload)
 
 
 @router.get(
@@ -99,13 +99,8 @@ async def get_ticket(
     ticket_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    ticket = await ticket_service.get_ticket_by_id(session=db, ticket_id=ticket_id)
-    if not ticket:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Ticket {ticket_id} not found.",
-        )
-    return ticket
+    # TicketNotFoundError handled globally -> HTTP 404
+    return await ticket_service.get_ticket_by_id(session=db, ticket_id=ticket_id)
 
 
 @router.patch(
@@ -120,13 +115,8 @@ async def update_ticket(
     payload: TicketUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    ticket = await ticket_service.update_ticket(session=db, ticket_id=ticket_id, payload=payload)
-    if not ticket:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Ticket {ticket_id} not found.",
-        )
-    return ticket
+    # TicketNotFoundError -> 404, InvalidStatusTransitionError -> 400
+    return await ticket_service.update_ticket(session=db, ticket_id=ticket_id, payload=payload)
 
 
 @router.delete(
@@ -139,10 +129,5 @@ async def delete_ticket(
     ticket_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    deleted = await ticket_service.delete_ticket(session=db, ticket_id=ticket_id)
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Ticket {ticket_id} not found.",
-        )
+    await ticket_service.delete_ticket(session=db, ticket_id=ticket_id)
     return None

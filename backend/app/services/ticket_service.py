@@ -9,6 +9,11 @@ from app.models.ticket import Ticket
 from app.models.message import Message
 from app.models.ticket_event import TicketEvent
 from app.schemas.ticket import TicketCreate, TicketUpdate
+from app.core.exceptions import (
+    CustomerNotFoundError,
+    TicketNotFoundError,
+    InvalidStatusTransitionError,
+)
 
 
 async def create_ticket_atomic(
@@ -28,7 +33,6 @@ async def create_ticket_atomic(
     Atomically creates a ticket, its initial message, and audit log event.
     Guarantees that either all 3 entities persist, or all 3 roll back cleanly.
     """
-    # If the session already started a transaction from earlier queries, use begin_nested()
     trans_cm = session.begin_nested() if session.in_transaction() else session.begin()
     async with trans_cm:
         # 1. Create ticket entity
@@ -88,9 +92,7 @@ async def create_ticket(
     )
     customer = (await session.execute(cust_stmt)).scalar_one_or_none()
     if not customer:
-        raise ValueError(
-            f"Customer {payload.customer_id} does not exist under organization {payload.organization_id}."
-        )
+        raise CustomerNotFoundError(payload.customer_id)
 
     ticket, _, _ = await create_ticket_atomic(
         session=session,
@@ -107,7 +109,7 @@ async def create_ticket(
 async def get_ticket_by_id(
     session: AsyncSession,
     ticket_id: uuid.UUID,
-) -> Optional[Ticket]:
+) -> Ticket:
     """Retrieves full ticket context including chronological messages and customer."""
     stmt = (
         select(Ticket)
@@ -118,7 +120,10 @@ async def get_ticket_by_id(
         .where(Ticket.id == ticket_id)
     )
     result = await session.execute(stmt)
-    return result.scalar_one_or_none()
+    ticket = result.scalar_one_or_none()
+    if not ticket:
+        raise TicketNotFoundError(ticket_id)
+    return ticket
 
 
 async def list_tickets(
@@ -168,17 +173,20 @@ async def update_ticket(
     ticket_id: uuid.UUID,
     payload: TicketUpdate,
     actor_id: Optional[uuid.UUID] = None,
-) -> Optional[Ticket]:
-    """Updates ticket fields and records audit events for state changes."""
+) -> Ticket:
+    """Updates ticket fields with transition validation and audit logging."""
     ticket = await get_ticket_by_id(session, ticket_id)
-    if not ticket:
-        return None
 
     update_data = payload.model_dump(exclude_unset=True)
 
-    # Track status transition event if changed
+    # Validate state transition rules
     if "status" in update_data and update_data["status"] is not None:
         new_status = update_data["status"].value if hasattr(update_data["status"], "value") else update_data["status"]
+        
+        # Rule: A closed ticket cannot transition directly to in_progress or escalated (must be reopened to 'open' first)
+        if ticket.status == "closed" and new_status in ["in_progress", "escalated"]:
+            raise InvalidStatusTransitionError(current_status=ticket.status, attempted_status=new_status)
+
         if new_status != ticket.status:
             status_event = TicketEvent(
                 ticket_id=ticket.id,
@@ -222,13 +230,8 @@ async def update_ticket(
 async def delete_ticket(
     session: AsyncSession,
     ticket_id: uuid.UUID,
-) -> bool:
-    """Deletes a ticket; cascades to messages and events."""
-    stmt = select(Ticket).where(Ticket.id == ticket_id)
-    ticket = (await session.execute(stmt)).scalar_one_or_none()
-    if not ticket:
-        return False
-
+) -> None:
+    """Deletes a ticket or raises TicketNotFoundError."""
+    ticket = await get_ticket_by_id(session, ticket_id)
     await session.delete(ticket)
     await session.commit()
-    return True

@@ -25,8 +25,9 @@ async def test_ticket_validation_and_response_serialization(client: AsyncClient)
         },
     )
     assert res_short_title.status_code == 422
-    errors = res_short_title.json()["detail"]
-    assert any(e["loc"] == ["body", "title"] for e in errors)
+    error_data = res_short_title.json()["error"]
+    assert error_data["code"] == "VALIDATION_ERROR"
+    assert any("title" in e["field"] for e in error_data["details"])
 
     # 2. TEST 422: Invalid Priority Enum
     res_bad_priority = await client.post(
@@ -40,7 +41,7 @@ async def test_ticket_validation_and_response_serialization(client: AsyncClient)
         },
     )
     assert res_bad_priority.status_code == 422
-    assert any(e["loc"] == ["body", "priority"] for e in res_bad_priority.json()["detail"])
+    assert any("priority" in e["field"] for e in res_bad_priority.json()["error"]["details"])
 
     # 3. TEST 422: Missing required initial_message
     res_missing_msg = await client.post(
@@ -74,7 +75,7 @@ async def test_customer_validation_and_pagination_bounds(client: AsyncClient):
         },
     )
     assert bad_email_res.status_code == 422
-    assert any(e["loc"] == ["body", "email"] for e in bad_email_res.json()["detail"])
+    assert any("email" in e["field"] for e in bad_email_res.json()["error"]["details"])
 
     # 2. TEST 422: Invalid Pagination Limits (limit > 100 or limit < 1)
     bad_limit_res = await client.get("/api/v1/tickets?limit=500")
