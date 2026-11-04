@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     # Supabase / Database
     SUPABASE_URL: str = ""
     SUPABASE_ANON_KEY: str = ""
+    SUPABASE_JWT_SECRET: str = ""
     DATABASE_URL: str
 
     # Connection pool configuration
