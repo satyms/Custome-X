@@ -7,6 +7,7 @@ from app.core.auth import get_current_user
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.common import PaginatedResponse, TicketPriority, TicketStatus
+from app.schemas.message import MessageCreate, MessageResponse
 from app.schemas.ticket import (
     TicketCreate,
     TicketDetailResponse,
@@ -150,3 +151,27 @@ async def delete_ticket(
         organization_id=current_user.organization_id,
     )
     return None
+
+
+@router.post(
+    "/{ticket_id}/messages",
+    response_model=MessageResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Add message to ticket",
+    description="Appends a new message to the ticket conversation.",
+)
+async def add_message_to_ticket(
+    ticket_id: uuid.UUID,
+    payload: MessageCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    sender_type = payload.sender_type.value if hasattr(payload.sender_type, "value") else payload.sender_type
+    return await ticket_service.add_message(
+        session=db,
+        ticket_id=ticket_id,
+        content=payload.content,
+        sender_type=sender_type,
+        sender_id=payload.sender_id or current_user.id,
+        organization_id=current_user.organization_id,
+    )
