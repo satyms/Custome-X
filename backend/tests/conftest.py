@@ -2,6 +2,7 @@ import os
 import sys
 import pytest_asyncio
 from typing import AsyncGenerator
+from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.pool import NullPool
 
@@ -9,6 +10,8 @@ from sqlalchemy.pool import NullPool
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.config import settings
+from app.db.session import get_db
+from main import app
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -29,3 +32,19 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
         await session.close()
 
     await test_engine.dispose()
+
+
+@pytest_asyncio.fixture(scope="function")
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+    """
+    HTTP test client that overrides get_db dependency with test session.
+    Guarantees that route queries run inside the test's event loop and transaction.
+    """
+    async def _override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = _override_get_db
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
+        yield ac
+
+    app.dependency_overrides.clear()
