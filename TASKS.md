@@ -16,7 +16,8 @@
 - [/] **Task 1.2: Supabase & PostgreSQL Schema Setup**
   - [x] Provision Supabase PostgreSQL 17 project & configure SQLAlchemy connection pooling with asyncpg
   - [x] Define core declarative models: `organizations`, `users`, `customers`, `tickets`, `messages`, `ticket_events`
-  - [ ] Generate and apply versioned Alembic migration to Supabase
+  - [x] Generate and apply versioned Alembic migration to Supabase
+  - [x] Verify ACID transactions, referential integrity (RESTRICT, CASCADE, SET NULL), and constraints via automated test suite
   - [ ] Enable `pgvector` extension and configure vector tables for knowledge documents
   - [ ] Write and verify Row Level Security (RLS) policies for tenant isolation
   - [ ] Seed test dataset (sample e-commerce store with orders and mock customers)
