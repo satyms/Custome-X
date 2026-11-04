@@ -11,7 +11,7 @@ class CustomerBase(BaseModel):
 
 
 class CustomerCreate(CustomerBase):
-    organization_id: uuid.UUID = Field(..., description="Tenant organization ID")
+    organization_id: Optional[uuid.UUID] = Field(None, description="Tenant organization ID (inferred from auth session)")
 
 
 class CustomerUpdate(BaseModel):

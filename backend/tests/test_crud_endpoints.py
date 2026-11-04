@@ -4,6 +4,9 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.organization import Organization
+from app.models.user import User
+from app.core.auth import get_current_user
+from main import app
 
 
 @pytest.mark.asyncio
@@ -18,11 +21,25 @@ async def test_end_to_end_customer_and_ticket_crud(
     - 404 handling on missing resources
     - Relationship expansion (ticket messages)
     """
-    # 1. Setup tenant organization directly in DB
+    # 1. Setup tenant organization and agent user directly in DB
     org = Organization(name=f"E2E Store {uuid.uuid4().hex[:6]}")
     db_session.add(org)
     await db_session.commit()
+    await db_session.refresh(org)
     org_id = str(org.id)
+
+    agent = User(
+        id=uuid.uuid4(),
+        organization_id=org.id,
+        email=f"e2e_agent_{uuid.uuid4().hex[:6]}@example.com",
+        full_name="Eleanor Agent",
+        role="agent",
+    )
+    db_session.add(agent)
+    await db_session.commit()
+    await db_session.refresh(agent)
+
+    app.dependency_overrides[get_current_user] = lambda: agent
 
     # --- 2. CREATE CUSTOMER (POST /api/v1/customers) ---
     cust_payload = {
@@ -97,3 +114,9 @@ async def test_end_to_end_customer_and_ticket_crud(
     # --- 10. VERIFY 404 ON NON-EXISTENT CUSTOMER ---
     ghost_res = await client.get(f"/api/v1/customers/{uuid.uuid4()}")
     assert ghost_res.status_code == 404
+
+    # Clean up DB
+    app.dependency_overrides.pop(get_current_user, None)
+    await db_session.delete(agent)
+    await db_session.delete(org)
+    await db_session.commit()

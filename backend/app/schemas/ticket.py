@@ -13,7 +13,7 @@ class TicketBase(BaseModel):
 
 
 class TicketCreate(TicketBase):
-    organization_id: uuid.UUID = Field(..., description="Tenant organization UUID")
+    organization_id: Optional[uuid.UUID] = Field(None, description="Tenant organization UUID (inferred from auth session)")
     customer_id: uuid.UUID = Field(..., description="Customer UUID creating ticket")
     assigned_to: Optional[uuid.UUID] = Field(None, description="Optional agent UUID to assign ticket to")
     initial_message: str = Field(..., min_length=1, max_length=10000, description="Customer initial problem statement")

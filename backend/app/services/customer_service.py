@@ -45,9 +45,13 @@ async def create_customer(
 async def get_customer_by_id(
     session: AsyncSession,
     customer_id: uuid.UUID,
+    organization_id: Optional[uuid.UUID] = None,
 ) -> Customer:
     """Fetches a single customer by UUID or raises CustomerNotFoundError."""
     stmt = select(Customer).where(Customer.id == customer_id)
+    if organization_id:
+        stmt = stmt.where(Customer.organization_id == organization_id)
+
     result = await session.execute(stmt)
     customer = result.scalar_one_or_none()
     if not customer:
@@ -86,9 +90,10 @@ async def update_customer(
     session: AsyncSession,
     customer_id: uuid.UUID,
     payload: CustomerUpdate,
+    organization_id: Optional[uuid.UUID] = None,
 ) -> Customer:
     """Updates customer profile fields."""
-    customer = await get_customer_by_id(session, customer_id)
+    customer = await get_customer_by_id(session, customer_id, organization_id=organization_id)
 
     update_data = payload.model_dump(exclude_unset=True)
     for field, value in update_data.items():
