@@ -22,6 +22,32 @@ class WebhookDispatcher:
     and logs every attempt to the workflow_events table (Dead-Letter Queue).
     """
 
+    EVENT_PATH_MAP = {
+        "ticket.created": "customex-new-ticket",
+        "ticket.escalated": "customex-escalation",
+        "approval.requested": "customex-approvals",
+        "approval.approved": "customex-approvals",
+        "approval.rejected": "customex-approvals",
+    }
+
+    @classmethod
+    def resolve_url(cls, event_type: str, target_url: Optional[str] = None) -> Optional[str]:
+        """Resolves target n8n webhook URL dynamically by event type."""
+        if target_url:
+            return target_url
+        base = settings.WEBHOOK_OUTBOUND_URL
+        if not base:
+            return None
+        base = base.rstrip("/")
+        subpath = cls.EVENT_PATH_MAP.get(event_type, "customex")
+        if base.endswith(f"/{subpath}"):
+            return base
+        if base.endswith("/customex"):
+            base = base[:-len("/customex")]
+        if "/webhook" not in base:
+            return f"{base}/webhook/{subpath}"
+        return f"{base}/{subpath}"
+
     @classmethod
     def compute_hmac_signature(cls, payload_bytes: bytes, secret: str) -> str:
         """Computes RFC 2104 compliant HMAC-SHA256 signature."""
@@ -66,7 +92,7 @@ class WebhookDispatcher:
         await session.flush()
 
         # 3. Attempt delivery
-        url = target_url or settings.WEBHOOK_OUTBOUND_URL
+        url = cls.resolve_url(event_type=event_type, target_url=target_url)
         success, error_msg = await cls._send_http(event_type=event_type, payload=payload, idempotency_key=idempotency_key, url=url)
 
         if success:
@@ -96,7 +122,7 @@ class WebhookDispatcher:
         if not event:
             raise ValueError(f"Workflow event {event_id} not found")
 
-        url = target_url or settings.WEBHOOK_OUTBOUND_URL
+        url = cls.resolve_url(event_type=event.event_type, target_url=target_url)
         success, error_msg = await cls._send_http(
             event_type=event.event_type,
             payload=event.payload,
