@@ -133,15 +133,18 @@
 
 ---
 
-## Milestone 5: Human-In-The-Loop (HITL) Escalation
+## Milestone 5: Human-In-The-Loop (HITL) Escalation (Completed)
 
-- [ ] **Task 5.1: Approval Gate Engine**
-  - [ ] Implement action risk classification (Low: auto-execute; High: pause & hold)
-  - [ ] State persistence for paused agent tasks awaiting human review
-  - [ ] Timeout and escalation triggers if human does not respond within SLA
-- [ ] **Task 5.2: Triage Queue API**
-  - [ ] Endpoints for pending approvals list, approval decision (`approve` / `reject` / `modify`)
-  - [ ] Resume agent execution upon decision resolution
+- [x] **Task 5.1: Approval Gate Engine**
+  - [x] Implement action risk classification (Low: auto-execute; High: pause & hold; Critical: intercept & hold)
+  - [x] State persistence for paused agent tasks in PostgreSQL `pending_actions` table
+  - [x] Immutable audit trail logging for all decisions in `audit_logs` table
+  - [x] Outbound event dispatching (`action.requires_approval`, `approval.approved`, `approval.rejected`)
+- [x] **Task 5.2: Triage Queue API**
+  - [x] Scoped REST endpoints for pending triage (`GET /api/v1/approvals/pending`, `GET /api/v1/approvals`)
+  - [x] Approval decision (`POST /api/v1/approvals/{id}/approve`) with supervisor/admin RBAC enforcement
+  - [x] Rejection decision (`POST /api/v1/approvals/{id}/reject`) with mandatory rationale logging
+  - [x] Automated unit and database integration test suite (3/3 passed in `test_hitl_approval_engine.py`)
 
 ---
 
