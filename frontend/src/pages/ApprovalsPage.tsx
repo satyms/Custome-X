@@ -251,26 +251,20 @@ export const ApprovalsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Tab Selection */}
-        <div className="flex items-center gap-1 p-1 rounded-xl border" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        {/* Tab Selection: Clean Twenty CRM Segmented Control */}
+        <div className="flex items-center gap-1 p-0.5 rounded-lg border border-slate-200 bg-slate-50">
           <button
             type="button"
             onClick={() => setSelectedTab('pending')}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5"
-            style={{
-              background: selectedTab === 'pending' ? 'var(--accent)' : 'transparent',
-              color: selectedTab === 'pending' ? '#ffffff' : 'var(--text-muted)',
-            }}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+              selectedTab === 'pending'
+                ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
           >
             <span>Pending</span>
             {pendingCount > 0 && (
-              <span
-                className="h-4 px-1.5 rounded-full text-[10px] font-bold flex items-center justify-center"
-                style={{
-                  background: selectedTab === 'pending' ? '#ffffff' : 'var(--danger)',
-                  color: selectedTab === 'pending' ? 'var(--accent)' : '#ffffff',
-                }}
-              >
+              <span className="h-4 px-1.5 rounded-full text-[10px] font-bold flex items-center justify-center bg-amber-50 text-amber-700 border border-amber-200">
                 {pendingCount}
               </span>
             )}
@@ -278,24 +272,30 @@ export const ApprovalsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedTab('approved')}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
-            style={{
-              background: selectedTab === 'approved' ? 'var(--accent)' : 'transparent',
-              color: selectedTab === 'approved' ? '#ffffff' : 'var(--text-muted)',
-            }}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+              selectedTab === 'approved'
+                ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
           >
-            Approved History
+            <span>Approved</span>
+            <span className="h-4 px-1 rounded-full text-[10px] font-mono bg-slate-100 text-slate-600">
+              {approvedCount}
+            </span>
           </button>
           <button
             type="button"
             onClick={() => setSelectedTab('rejected')}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
-            style={{
-              background: selectedTab === 'rejected' ? 'var(--accent)' : 'transparent',
-              color: selectedTab === 'rejected' ? '#ffffff' : 'var(--text-muted)',
-            }}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+              selectedTab === 'rejected'
+                ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
           >
-            Rejected
+            <span>Rejected</span>
+            <span className="h-4 px-1 rounded-full text-[10px] font-mono bg-slate-100 text-slate-600">
+              {rejectedCount}
+            </span>
           </button>
         </div>
       </div>

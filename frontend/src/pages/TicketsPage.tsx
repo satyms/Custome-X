@@ -602,6 +602,21 @@ export const TicketsPage: React.FC = () => {
               return (
                 <div
                   key={col.key}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const draggedId = e.dataTransfer.getData('text/plain');
+                    if (draggedId) {
+                      setCustomItems((prev) =>
+                        prev.map((it) =>
+                          it.id === draggedId ? { ...it, stage: col.key as any } : it
+                        )
+                      );
+                    }
+                  }}
                   className="flex-1 min-w-[270px] max-w-[340px] flex flex-col px-4 pt-3 pb-2 h-full bg-white select-none"
                 >
                   {/* Column Header: Status Indicator + Title + Count Pill + '+' */}
@@ -646,10 +661,17 @@ export const TicketsPage: React.FC = () => {
                       </div>
                     ) : (
                       colItems.map((item) => (
-                        <Link
+                        <div
                           key={item.id}
-                          to={item.rawTicket ? `/tickets/${item.rawTicket.id}` : `/tickets`}
-                          className="block p-3.5 rounded-xl border border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-sm transition-all duration-150 group cursor-pointer"
+                          draggable
+                          onDragStart={(e) => {
+                            e.dataTransfer.setData('text/plain', item.id);
+                            e.dataTransfer.effectAllowed = 'move';
+                          }}
+                        >
+                          <Link
+                            to={item.rawTicket ? `/tickets/${item.rawTicket.id}` : `/tickets`}
+                            className="block p-3.5 rounded-xl border border-slate-200/80 bg-white hover:border-slate-300 hover:shadow-sm transition-all duration-150 group cursor-grab active:cursor-grabbing"
                         >
                           {/* Row 1: Title + Hover action icons */}
                           <div className="flex items-start justify-between gap-1 mb-1">
@@ -691,7 +713,8 @@ export const TicketsPage: React.FC = () => {
                             </div>
                             <span className="truncate">{item.assignee.name}</span>
                           </div>
-                        </Link>
+                          </Link>
+                        </div>
                       ))
                     )}
 
