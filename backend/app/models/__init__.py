@@ -4,6 +4,7 @@ from app.models.customer import Customer
 from app.models.ticket import Ticket
 from app.models.message import Message
 from app.models.ticket_event import TicketEvent
+from app.models.knowledge import KnowledgeDocument, KnowledgeChunk
 
 __all__ = [
     "Organization",
@@ -12,4 +13,6 @@ __all__ = [
     "Ticket",
     "Message",
     "TicketEvent",
+    "KnowledgeDocument",
+    "KnowledgeChunk",
 ]

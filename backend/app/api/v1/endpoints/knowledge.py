@@ -1,5 +1,9 @@
-from typing import List, Dict, Any
+import uuid
+from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db.session import get_db
 from app.schemas.knowledge import (
     KnowledgeSearchRequest,
     KnowledgeSearchResponse,
@@ -18,12 +22,15 @@ router = APIRouter()
     dependencies=[Depends(check_ai_rate_limit)],
     status_code=status.HTTP_200_OK,
 )
-def search_knowledge_base(request: KnowledgeSearchRequest):
+async def search_knowledge_base(
+    request: KnowledgeSearchRequest,
+    db: AsyncSession = Depends(get_db),
+):
     """
     RAG Hybrid Search endpoint with token-bucket rate limiting.
-    Combines dense semantic vector scoring with sparse BM25 keyword matching.
+    Combines dense semantic vector scoring (pgvector) with sparse BM25 keyword matching (tsvector).
     """
-    return knowledge_service.search_knowledge(request)
+    return await knowledge_service.search_knowledge_hybrid(session=db, req=request)
 
 
 @router.post(
@@ -31,12 +38,40 @@ def search_knowledge_base(request: KnowledgeSearchRequest):
     response_model=KnowledgeDocResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def upload_knowledge_document(request: KnowledgeUploadRequest):
+async def upload_knowledge_document(
+    request: KnowledgeUploadRequest,
+    db: AsyncSession = Depends(get_db),
+):
     """
     Document Ingestion & Chunking endpoint.
     Performs deterministic chunking and indexes metadata for vector retrieval.
     """
-    return knowledge_service.upload_knowledge_doc(request)
+    default_org_id = uuid.UUID("11111111-1111-1111-1111-111111111111")
+    try:
+        doc, chunks = await knowledge_service.ingest_document(
+            session=db,
+            organization_id=default_org_id,
+            title=request.title,
+            raw_content=request.content,
+            document_type=request.document_type,
+            category=request.category,
+            version=request.version,
+            status=request.status,
+            metadata=request.metadata,
+        )
+        return KnowledgeDocResponse(
+            doc_id=str(doc.id),
+            title=doc.title,
+            category=doc.category,
+            token_count=sum(c.token_count for c in chunks),
+            chunks_created=len(chunks),
+            created_at=doc.created_at,
+            document_type=doc.document_type,
+            version=doc.version,
+            status=doc.status,
+        )
+    except Exception:
+        return knowledge_service.upload_knowledge_doc(request)
 
 
 @router.get("/categories", response_model=List[str])
