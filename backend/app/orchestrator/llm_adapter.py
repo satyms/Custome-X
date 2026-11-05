@@ -67,10 +67,7 @@ class LLMProviderAdapter:
             return None
 
         # Build candidate models with graceful degradation
-        candidate_models = [settings.GEMINI_MODEL]
-        for fallback in ["gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-flash-latest", "gemini-flash-lite-latest"]:
-            if fallback not in candidate_models:
-                candidate_models.append(fallback)
+        candidate_models = [settings.GEMINI_MODEL, "gemini-2.0-flash"]
 
         # Construct fenced context prompt
         system_instruction = (
@@ -112,7 +109,7 @@ class LLMProviderAdapter:
             },
         }
 
-        async with httpx.AsyncClient(timeout=20.0) as client:
+        async with httpx.AsyncClient(timeout=3.0) as client:
             for model_name in candidate_models:
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
                 try:

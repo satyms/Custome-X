@@ -10,6 +10,7 @@ from app.api.v1.endpoints import (
     webhooks,
     automations,
     analytics,
+    evals,
 )
 
 api_router = APIRouter(prefix="/api/v1")
@@ -25,3 +26,4 @@ api_router.include_router(approvals.router, prefix="/approvals", tags=["Human Ap
 api_router.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"])
 api_router.include_router(automations.router, prefix="/automations", tags=["Automations & DLQ"])
 api_router.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
+api_router.include_router(evals.router, prefix="/evals", tags=["Evaluations & Benchmarks"])
