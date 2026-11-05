@@ -40,7 +40,7 @@
     },
     {
       "parameters": {
-        "chatId": "2119067564",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
         "text": "=🎟️ <b>New Ticket Created: #{{ $json.body.ticket_number }}</b>\n<b>Subject:</b> {{ $json.body.subject }}\n<b>Priority:</b> {{ $json.body.priority }}\n<b>Customer:</b> {{ $json.body.customer_email }}\n<b>Ticket ID:</b> {{ $json.body.ticket_id }}",
         "additionalFields": {
           "appendAttribution": false,
