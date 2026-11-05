@@ -1,0 +1,131 @@
+{
+  "name": "WF1: New Ticket Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "customex-new-ticket",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "d4992494-9f00-44ca-a7e9-d1e5292026dc",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        64
+      ],
+      "webhookId": "ddbfd28d-9715-4aa5-93b6-9eb0251017b7"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $headers['x-event-type'] }}",
+              "value2": "ticket.created"
+            }
+          ]
+        }
+      },
+      "id": "ec9736fb-0b4a-43ea-be41-ec551d00324b",
+      "name": "Verify Event Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        224,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "2119067564",
+        "text": "=🎟️ <b>New Ticket Created: #{{ $json.body.ticket_number }}</b>\n<b>Subject:</b> {{ $json.body.subject }}\n<b>Priority:</b> {{ $json.body.priority }}\n<b>Customer:</b> {{ $json.body.customer_email }}\n<b>Ticket ID:</b> {{ $json.body.ticket_id }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "dcaca020-0f63-4666-819b-5a17dce9db3b",
+      "name": "Telegram Dispatch Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        64
+      ],
+      "webhookId": "b20a22fa-c5e6-4ced-a4a2-12bdbca97e3f",
+      "credentials": {
+        "telegramApi": {
+          "id": "DrkuYHcnSYBwABlz",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"acknowledged\",\n  \"event_id\": \"{{ $headers['x-idempotency-key'] }}\",\n  \"processed_at\": \"{{ $now.toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "2fc36149-05b2-42f0-bd86-81a43607129d",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        704,
+        64
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Verify Event Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Event Type": {
+      "main": [
+        [
+          {
+            "node": "Telegram Dispatch Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Dispatch Notification": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "629b8679-f9a4-40f2-ba37-b7065080ab8c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "43f2593eaad09319ce55141d33690ae3ffd9429ca7a317b6c1ab5306ac702e23"
+  },
+  "nodeGroups": [],
+  "id": "IBx1RjOOTXpIl2GF",
+  "tags": []
+}

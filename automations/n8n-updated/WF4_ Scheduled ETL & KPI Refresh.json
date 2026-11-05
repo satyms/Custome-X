@@ -1,0 +1,101 @@
+{
+  "name": "WF4: Scheduled ETL & KPI Refresh",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "51243bc6-2ea8-4e9a-b39a-c9e2cbcb4d61",
+      "name": "Hourly Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8000/api/v1/automations/stats",
+        "options": {}
+      },
+      "id": "65a57d9c-2a51-45c9-9a0a-8dc3cd8c634f",
+      "name": "Fetch Live Backend KPIs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        280,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "2119067564",
+        "text": "=📊 <b>Custome-X Hourly KPI Report</b>\n━━━━━━━━━━━━━━━━━━━━\n<b>Total Executions:</b> {{ $json.total_executions }}\n<b>Success Rate:</b> {{ $json.success_rate_percent }}%\n<b>Successful Dispatches:</b> {{ $json.successful_executions }}\n<b>Failed (DLQ) Events:</b> {{ $json.failed_dlq_events }}\n<b>Queued / Retrying:</b> {{ $json.queued_or_retrying }}\n<b>Active Workflows:</b> {{ $json.active_workflows }}\n━━━━━━━━━━━━━━━━━━━━\n<i>Generated at {{ $now.toFormat('yyyy-MM-dd HH:mm:ss') }} UTC</i>",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "telegram-kpi-dispatch",
+      "name": "Telegram Dispatch KPI Report",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        0
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "DrkuYHcnSYBwABlz",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Hourly Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Live Backend KPIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Live Backend KPIs": {
+      "main": [
+        [
+          {
+            "node": "Telegram Dispatch KPI Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "94eb9dae-b10b-441b-99b0-062bb011c761",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "43f2593eaad09319ce55141d33690ae3ffd9429ca7a317b6c1ab5306ac702e23"
+  },
+  "nodeGroups": [],
+  "id": "yyHjeeu8IORPVBMr",
+  "tags": []
+}

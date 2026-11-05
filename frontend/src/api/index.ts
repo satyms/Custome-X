@@ -6,6 +6,8 @@ export * from './agentApi';
 export * from './automationsApi';
 export * from './knowledgeApi';
 export * from './approvalsApi';
+export * from './analyticsApi';
+export * from './evalsApi';
 
 export { default as apiClient } from './client';
 export { default as authApi } from './authApi';
@@ -15,3 +17,5 @@ export { default as agentApi } from './agentApi';
 export { default as automationsApi } from './automationsApi';
 export { default as knowledgeApi } from './knowledgeApi';
 export { default as approvalsApi } from './approvalsApi';
+export { default as analyticsApi } from './analyticsApi';
+export { default as evalsApi } from './evalsApi';

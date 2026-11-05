@@ -1,0 +1,99 @@
+{
+  "name": "WF3: Approval Notification for Gated Actions",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "customex-approvals",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "232b1b80-8a38-4dbd-9eb5-92c70ea20265",
+      "name": "Approval Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "2c071772-9f4d-4e31-9a0c-ad60ce6739ff"
+    },
+    {
+      "parameters": {
+        "chatId": "2119067564",
+        "text": "=🛡️ <b>Supervisor Approval Required: {{ $json.body.action_type }}</b>\n<b>Order:</b> {{ $json.body.order_id }}\n<b>Proposed Amount:</b> ${{ ($json.body.refund_amount_cents / 100).toFixed(2) }}\n<b>AI Reason:</b> {{ $json.body.reason }}\n<b>Review Queue:</b> http://localhost:5173/approvals",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "36b2e084-8a5a-4dc9-bfe5-ec5cb483f2a8",
+      "name": "Alert Supervisor Queue",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        0
+      ],
+      "webhookId": "36398881-6347-4e65-8c7c-a5aa03d5b576",
+      "credentials": {
+        "telegramApi": {
+          "id": "opNS7751kTp2m0a1",
+          "name": "Telegram account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"approval_notified\",\n  \"event_id\": \"{{ $headers['x-idempotency-key'] }}\"\n}",
+        "options": {}
+      },
+      "id": "6069ca85-25b5-48d5-90ab-0b99eb382de6",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        608,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Approval Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Alert Supervisor Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Supervisor Queue": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "e5423c6c-2ef6-44d8-9f1f-34d8cb17a5cb",
+  "meta": {
+    "instanceId": "43f2593eaad09319ce55141d33690ae3ffd9429ca7a317b6c1ab5306ac702e23"
+  },
+  "nodeGroups": [],
+  "id": "4Wt18UEUBrWVGTSR",
+  "tags": []
+}

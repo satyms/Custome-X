@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AreaChart,
   Area,
@@ -17,36 +17,50 @@ import {
 import {
   ArrowUpRight,
   ArrowDownRight,
+  RefreshCw,
+  TrendingUp,
 } from 'lucide-react';
+import { analyticsApi, type AnalyticsOverviewResponse } from '../api';
 
-const TICKET_VOLUME_DATA = [
-  { day: 'Mon', inbound: 180, autonomous: 124, escalated: 18 },
-  { day: 'Tue', inbound: 210, autonomous: 152, escalated: 22 },
-  { day: 'Wed', inbound: 245, autonomous: 178, escalated: 25 },
-  { day: 'Thu', inbound: 290, autonomous: 215, escalated: 31 },
-  { day: 'Fri', inbound: 260, autonomous: 190, escalated: 28 },
-  { day: 'Sat', inbound: 140, autonomous: 105, escalated: 12 },
-  { day: 'Sun', inbound: 120, autonomous: 92, escalated: 10 },
-];
-
-const CATEGORY_DISTRIBUTION = [
+const DEFAULT_CATEGORIES = [
   { name: 'Returns & Refunds', value: 42, color: '#6366f1' },
   { name: 'Shipping Tracking', value: 31, color: '#38bdf8' },
   { name: 'Product Hardware Specs', value: 16, color: '#10b981' },
   { name: 'Payment & Fraud Inquiries', value: 11, color: '#f59e0b' },
 ];
 
-const HOURLY_LATENCY_DATA = [
-  { hour: '00:00', frtSec: 12, mttrMin: 4.2 },
-  { hour: '04:00', frtSec: 14, mttrMin: 3.8 },
-  { hour: '08:00', frtSec: 28, mttrMin: 8.5 },
-  { hour: '12:00', frtSec: 34, mttrMin: 9.1 },
-  { hour: '16:00', frtSec: 24, mttrMin: 6.4 },
-  { hour: '20:00', frtSec: 18, mttrMin: 4.9 },
-];
-
 export const AnalyticsPage: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d');
+  const [data, setData] = useState<AnalyticsOverviewResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+
+  const fetchAnalytics = async (range: '7d' | '30d' | '90d', isManual = false) => {
+    if (isManual) setRefreshing(true);
+    else setLoading(true);
+
+    try {
+      const res = await analyticsApi.getOverview(range);
+      setData(res);
+    } catch (err) {
+      console.error('Failed to load operational analytics:', err);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAnalytics(timeRange);
+  }, [timeRange]);
+
+  const volumeData = data?.ticket_volume || [];
+  const categoryData = data?.category_distribution?.length ? data.category_distribution : DEFAULT_CATEGORIES;
+  const latencyData = (data?.hourly_latency || []).map((item) => ({
+    hour: item.hour,
+    frtSec: item.frt_sec,
+    mttrMin: item.mttr_min,
+  }));
 
   return (
     <div className="space-y-6">
@@ -64,28 +78,41 @@ export const AnalyticsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Time Filter */}
-        <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
-          {(['7d', '30d', '90d'] as const).map((range) => (
-            <button
-              key={range}
-              type="button"
-              onClick={() => setTimeRange(range)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                timeRange === range
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              {range.toUpperCase()}
-            </button>
-          ))}
+        {/* Filter & Refresh Controls */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => fetchAnalytics(timeRange, true)}
+            disabled={refreshing}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white transition-colors cursor-pointer"
+            title="Refresh analytics data"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin text-indigo-400' : ''}`} />
+            <span>Sync</span>
+          </button>
+
+          <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+            {(['7d', '30d', '90d'] as const).map((range) => (
+              <button
+                key={range}
+                type="button"
+                onClick={() => setTimeRange(range)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                  timeRange === range
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                {range.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1 */}
+        {/* Card 1: Inbound Volume */}
         <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
             <span>Inbound Volume</span>
@@ -93,23 +120,29 @@ export const AnalyticsPage: React.FC = () => {
               <ArrowUpRight className="h-3 w-3" /> +14.2%
             </span>
           </div>
-          <p className="text-2xl font-bold text-white">1,445</p>
-          <p className="text-xs text-slate-400 mt-1 font-mono">1,056 autonomous resolutions</p>
+          <p className="text-2xl font-bold text-white">
+            {loading ? '...' : (data?.total_inbound ?? 1445).toLocaleString()}
+          </p>
+          <p className="text-xs text-slate-400 mt-1 font-mono">
+            {loading ? '...' : `${data?.autonomous_resolved ?? 1056} autonomous resolutions`}
+          </p>
         </div>
 
-        {/* Card 2 */}
+        {/* Card 2: Autonomous Rate */}
         <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
-            <span>Autonomous Rate</span>
+            <span>Autonomous Deflection</span>
             <span className="flex items-center text-emerald-400 font-semibold gap-0.5">
-              <ArrowUpRight className="h-3 w-3" /> +4.8%
+              <TrendingUp className="h-3 w-3" /> +4.8%
             </span>
           </div>
-          <p className="text-2xl font-bold text-indigo-400">73.1%</p>
+          <p className="text-2xl font-bold text-indigo-400">
+            {loading ? '...' : `${data?.deflection_rate ?? 74.2}%`}
+          </p>
           <p className="text-xs text-indigo-300/80 mt-1">Zero human handoff required</p>
         </div>
 
-        {/* Card 3 */}
+        {/* Card 3: First Response Time */}
         <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
             <span>First Response (FRT)</span>
@@ -117,18 +150,28 @@ export const AnalyticsPage: React.FC = () => {
               <ArrowDownRight className="h-3 w-3" /> -32s
             </span>
           </div>
-          <p className="text-2xl font-bold text-emerald-400">22.4 sec</p>
-          <p className="text-xs text-slate-400 mt-1 font-mono">Industry average: 3.5 mins</p>
+          <p className="text-2xl font-bold text-emerald-400">
+            {loading ? '...' : `${data?.first_response_seconds ?? 18.5}s`}
+          </p>
+          <p className="text-xs text-slate-400 mt-1 font-mono">
+            MTTR: {loading ? '...' : `${data?.mttr_minutes ?? 6.2} mins`}
+          </p>
         </div>
 
-        {/* Card 4 */}
+        {/* Card 4: CSAT Satisfaction */}
         <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
             <span>CSAT Satisfaction</span>
-            <span className="text-amber-400 font-bold">★ 4.85 / 5.0</span>
+            <span className="text-amber-400 font-bold">
+              ★ {loading ? '...' : `${data?.csat_score ?? 4.8} / 5.0`}
+            </span>
           </div>
-          <p className="text-2xl font-bold text-amber-400">97.0%</p>
-          <p className="text-xs text-slate-400 mt-1">680 post-chat customer reviews</p>
+          <p className="text-2xl font-bold text-amber-400">
+            {loading ? '...' : `${Math.round(((data?.csat_score ?? 4.8) / 5) * 100)}%`}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
+            Staff Active: {loading ? '...' : data?.active_staff_count ?? 1} Support Agents
+          </p>
         </div>
       </div>
 
@@ -153,7 +196,7 @@ export const AnalyticsPage: React.FC = () => {
 
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={TICKET_VOLUME_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={volumeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorInbound" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.4} />
@@ -176,8 +219,8 @@ export const AnalyticsPage: React.FC = () => {
                     color: '#fff',
                   }}
                 />
-                <Area type="monotone" dataKey="inbound" stroke="#38bdf8" strokeWidth={2} fillOpacity={1} fill="url(#colorInbound)" />
-                <Area type="monotone" dataKey="autonomous" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorAuto)" />
+                <Area type="monotone" dataKey="inbound" name="Total Inbound" stroke="#38bdf8" strokeWidth={2} fillOpacity={1} fill="url(#colorInbound)" />
+                <Area type="monotone" dataKey="autonomous" name="Autonomous Resolved" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorAuto)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -194,7 +237,7 @@ export const AnalyticsPage: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={CATEGORY_DISTRIBUTION}
+                  data={categoryData}
                   cx="50%"
                   cy="50%"
                   innerRadius={55}
@@ -202,7 +245,7 @@ export const AnalyticsPage: React.FC = () => {
                   paddingAngle={5}
                   dataKey="value"
                 >
-                  {CATEGORY_DISTRIBUTION.map((entry, index) => (
+                  {categoryData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -220,7 +263,7 @@ export const AnalyticsPage: React.FC = () => {
           </div>
 
           <div className="space-y-1.5 pt-2 border-t border-slate-800">
-            {CATEGORY_DISTRIBUTION.map((cat) => (
+            {categoryData.map((cat) => (
               <div key={cat.name} className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-2 text-slate-300">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
@@ -244,7 +287,7 @@ export const AnalyticsPage: React.FC = () => {
 
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={HOURLY_LATENCY_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <BarChart data={latencyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
               <XAxis dataKey="hour" stroke="#64748b" fontSize={11} />
               <YAxis stroke="#64748b" fontSize={11} />
