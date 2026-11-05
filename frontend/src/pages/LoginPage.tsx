@@ -22,7 +22,7 @@ const loginSchema = z.object({
   email: z
     .string()
     .min(1, 'Email address is required')
-    .email('Please enter a valid email address (e.g. agent@company.com)'),
+    .email('Please enter a valid email address (e.g. agent@custome-x.internal)'),
   password: z
     .string()
     .min(1, 'Password is required')
@@ -132,10 +132,10 @@ export const LoginPage: React.FC = () => {
           role: 'agent',
           organization_id: defaultOrgId,
         });
-        setApiSuccess('Registration successful! Redirecting to dashboard...');
+        setApiSuccess('Registration successful! Redirecting to command center...');
         setTimeout(() => {
           navigate(from, { replace: true });
-        }, 1000);
+        }, 800);
       }
     } catch (err: unknown) {
       console.error('Authentication error:', err);
@@ -155,6 +155,8 @@ export const LoginPage: React.FC = () => {
 
         if (statusCode === 401 || errorData?.error?.code === 'INVALID_CREDENTIALS') {
           setApiError('Invalid credentials. Please verify your email and password.');
+        } else if (statusCode === 409 || errorData?.error?.code === 'DUPLICATE_RESOURCE') {
+          setApiError('An account with this email already exists. Please sign in instead.');
         } else if (typeof errorData?.error?.message === 'string') {
           setApiError(errorData.error.message);
         } else if (typeof errorData?.detail === 'string') {
@@ -173,8 +175,11 @@ export const LoginPage: React.FC = () => {
   };
 
   const fillDemoCredentials = () => {
-    setEmail('agent1@example.com');
+    setEmail('agent@custome-x.internal');
     setPassword('SecurePassword123!');
+    if (!isLoginView) {
+      setFullName('Alex Johnson');
+    }
     setFieldErrors({});
     setApiError(null);
   };
@@ -348,10 +353,14 @@ export const LoginPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-200 cursor-pointer min-h-[42px] min-w-[36px] justify-center"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
               </button>
             </div>
             {fieldErrors.password && (
@@ -362,16 +371,16 @@ export const LoginPage: React.FC = () => {
             )}
           </div>
 
-          {/* Submit Action Button with Spinner */}
+          {/* Submit Action Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-2 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[44px] cursor-pointer"
+            className="w-full mt-2 flex items-center justify-center gap-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 py-2.5 px-4 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer min-h-[44px]"
           >
             {isLoading ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>{isLoginView ? 'Authenticating...' : 'Registering Agent...'}</span>
+                <Loader2 className="h-4 w-4 animate-spin text-white" />
+                <span>{isLoginView ? 'Verifying Credentials...' : 'Registering Support Agent...'}</span>
               </>
             ) : (
               <>
@@ -383,18 +392,16 @@ export const LoginPage: React.FC = () => {
         </form>
 
         {/* Demo Credentials Quick-Fill Pill */}
-        {isLoginView && (
-          <div className="mt-6 pt-4 border-t border-slate-800 text-center">
-            <button
-              type="button"
-              onClick={fillDemoCredentials}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 text-xs font-mono transition-colors cursor-pointer"
-            >
-              <Sparkles className="h-3 w-3 text-indigo-400" />
-              <span>Fill Demo Agent Credentials</span>
-            </button>
-          </div>
-        )}
+        <div className="mt-6 pt-4 border-t border-slate-800 text-center">
+          <button
+            type="button"
+            onClick={fillDemoCredentials}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 text-xs font-mono transition-colors cursor-pointer"
+          >
+            <Sparkles className="h-3 w-3 text-indigo-400" />
+            <span>Fill Demo Agent Credentials</span>
+          </button>
+        </div>
 
         {/* Security & Organization Notice */}
         <p className="mt-5 text-center text-xs text-slate-500">

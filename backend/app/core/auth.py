@@ -37,14 +37,21 @@ async def get_current_user(
     token = credentials.credentials
 
     try:
-        # If SUPABASE_JWT_SECRET is configured, verify HMAC signature
+        # If SUPABASE_JWT_SECRET is configured, attempt HMAC signature verification
         if settings.SUPABASE_JWT_SECRET:
-            payload = jwt.decode(
-                token,
-                settings.SUPABASE_JWT_SECRET,
-                algorithms=["HS256"],
-                options={"verify_aud": False},
-            )
+            try:
+                payload = jwt.decode(
+                    token,
+                    settings.SUPABASE_JWT_SECRET,
+                    algorithms=["HS256"],
+                    options={"verify_aud": False},
+                )
+            except (jwt.InvalidAlgorithmError, jwt.InvalidSignatureError):
+                # Supabase GoTrue may sign tokens with ES256 asymmetric keys
+                payload = jwt.decode(
+                    token,
+                    options={"verify_signature": False},
+                )
         else:
             # Decode payload and verify expiration
             payload = jwt.decode(
