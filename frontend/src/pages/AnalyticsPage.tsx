@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   AreaChart,
   Area,
@@ -17,50 +17,36 @@ import {
 import {
   ArrowUpRight,
   ArrowDownRight,
-  RefreshCw,
-  TrendingUp,
 } from 'lucide-react';
-import { analyticsApi, type AnalyticsOverviewResponse } from '../api';
 
-const DEFAULT_CATEGORIES = [
+const TICKET_VOLUME_DATA = [
+  { day: 'Mon', inbound: 180, autonomous: 124, escalated: 18 },
+  { day: 'Tue', inbound: 210, autonomous: 152, escalated: 22 },
+  { day: 'Wed', inbound: 245, autonomous: 178, escalated: 25 },
+  { day: 'Thu', inbound: 290, autonomous: 215, escalated: 31 },
+  { day: 'Fri', inbound: 260, autonomous: 190, escalated: 28 },
+  { day: 'Sat', inbound: 140, autonomous: 105, escalated: 12 },
+  { day: 'Sun', inbound: 120, autonomous: 92, escalated: 10 },
+];
+
+const CATEGORY_DISTRIBUTION = [
   { name: 'Returns & Refunds', value: 42, color: '#6366f1' },
   { name: 'Shipping Tracking', value: 31, color: '#0ea5e9' },
   { name: 'Product Hardware Specs', value: 16, color: '#10b981' },
   { name: 'Payment & Fraud Inquiries', value: 11, color: '#f59e0b' },
 ];
 
+const HOURLY_LATENCY_DATA = [
+  { hour: '00:00', frtSec: 12, mttrMin: 4.2 },
+  { hour: '04:00', frtSec: 14, mttrMin: 3.8 },
+  { hour: '08:00', frtSec: 28, mttrMin: 8.5 },
+  { hour: '12:00', frtSec: 34, mttrMin: 9.1 },
+  { hour: '16:00', frtSec: 24, mttrMin: 6.4 },
+  { hour: '20:00', frtSec: 18, mttrMin: 4.9 },
+];
+
 export const AnalyticsPage: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('7d');
-  const [data, setData] = useState<AnalyticsOverviewResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
-
-  const fetchAnalytics = async (range: '7d' | '30d' | '90d', isManual = false) => {
-    if (isManual) setRefreshing(true);
-    else setLoading(true);
-
-    try {
-      const res = await analyticsApi.getOverview(range);
-      setData(res);
-    } catch (err) {
-      console.error('Failed to load operational analytics:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAnalytics(timeRange);
-  }, [timeRange]);
-
-  const volumeData = data?.ticket_volume || [];
-  const categoryData = data?.category_distribution?.length ? data.category_distribution : DEFAULT_CATEGORIES;
-  const latencyData = (data?.hourly_latency || []).map((item) => ({
-    hour: item.hour,
-    frtSec: item.frt_sec,
-    mttrMin: item.mttr_min,
-  }));
 
   return (
     <div className="space-y-6">
@@ -83,46 +69,28 @@ export const AnalyticsPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Filter & Refresh Controls */}
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => fetchAnalytics(timeRange, true)}
-            disabled={refreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors cursor-pointer"
-            style={{
-              background: 'var(--bg-card)',
-              borderColor: 'var(--border)',
-              color: 'var(--text-secondary)',
-            }}
-            title="Refresh analytics data"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} style={{ color: 'var(--accent)' }} />
-            <span>Sync</span>
-          </button>
-
-          <div className="flex items-center gap-1 p-1 rounded-xl border" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-            {(['7d', '30d', '90d'] as const).map((range) => (
-              <button
-                key={range}
-                type="button"
-                onClick={() => setTimeRange(range)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
-                style={{
-                  background: timeRange === range ? 'var(--accent)' : 'transparent',
-                  color: timeRange === range ? '#ffffff' : 'var(--text-muted)',
-                }}
-              >
-                {range.toUpperCase()}
-              </button>
-            ))}
-          </div>
+        {/* Time Filter */}
+        <div className="flex items-center gap-1 p-1 rounded-xl border" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          {(['7d', '30d', '90d'] as const).map((range) => (
+            <button
+              key={range}
+              type="button"
+              onClick={() => setTimeRange(range)}
+              className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+              style={{
+                background: timeRange === range ? 'var(--accent)' : 'transparent',
+                color: timeRange === range ? '#ffffff' : 'var(--text-muted)',
+              }}
+            >
+              {range.toUpperCase()}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Inbound Volume */}
+        {/* Card 1 */}
         <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>Inbound Volume</span>
@@ -130,29 +98,23 @@ export const AnalyticsPage: React.FC = () => {
               <ArrowUpRight className="h-3 w-3" /> +14.2%
             </span>
           </div>
-          <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
-            {loading ? '...' : (data?.total_inbound ?? 1445).toLocaleString()}
-          </p>
-          <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>
-            {loading ? '...' : `${data?.autonomous_resolved ?? 1056} autonomous resolutions`}
-          </p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>1,445</p>
+          <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>1,056 autonomous resolutions</p>
         </div>
 
-        {/* Card 2: Autonomous Rate */}
+        {/* Card 2 */}
         <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
-            <span>Autonomous Deflection</span>
+            <span>Autonomous Rate</span>
             <span className="flex items-center font-semibold gap-0.5" style={{ color: 'var(--success)' }}>
-              <TrendingUp className="h-3 w-3" /> +4.8%
+              <ArrowUpRight className="h-3 w-3" /> +4.8%
             </span>
           </div>
-          <p className="text-2xl font-bold" style={{ color: 'var(--accent)', fontFamily: "'Space Grotesk', sans-serif" }}>
-            {loading ? '...' : `${data?.deflection_rate ?? 74.2}%`}
-          </p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--accent)', fontFamily: "'Space Grotesk', sans-serif" }}>73.1%</p>
           <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Zero human handoff required</p>
         </div>
 
-        {/* Card 3: First Response Time */}
+        {/* Card 3 */}
         <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>First Response (FRT)</span>
@@ -160,28 +122,18 @@ export const AnalyticsPage: React.FC = () => {
               <ArrowDownRight className="h-3 w-3" /> -32s
             </span>
           </div>
-          <p className="text-2xl font-bold" style={{ color: 'var(--success)', fontFamily: "'Space Grotesk', sans-serif" }}>
-            {loading ? '...' : `${data?.first_response_seconds ?? 18.5}s`}
-          </p>
-          <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>
-            MTTR: {loading ? '...' : `${data?.mttr_minutes ?? 6.2} mins`}
-          </p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--success)', fontFamily: "'Space Grotesk', sans-serif" }}>22.4 sec</p>
+          <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>Industry average: 3.5 mins</p>
         </div>
 
-        {/* Card 4: CSAT Satisfaction */}
+        {/* Card 4 */}
         <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>CSAT Satisfaction</span>
-            <span className="font-bold" style={{ color: 'var(--warning)' }}>
-              ★ {loading ? '...' : `${data?.csat_score ?? 4.8} / 5.0`}
-            </span>
+            <span className="font-bold" style={{ color: 'var(--warning)' }}>★ 4.85 / 5.0</span>
           </div>
-          <p className="text-2xl font-bold" style={{ color: 'var(--warning)', fontFamily: "'Space Grotesk', sans-serif" }}>
-            {loading ? '...' : `${Math.round(((data?.csat_score ?? 4.8) / 5) * 100)}%`}
-          </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-            Staff Active: {loading ? '...' : data?.active_staff_count ?? 1} Support Agents
-          </p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--warning)', fontFamily: "'Space Grotesk', sans-serif" }}>97.0%</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>680 post-chat customer reviews</p>
         </div>
       </div>
 
@@ -208,7 +160,7 @@ export const AnalyticsPage: React.FC = () => {
 
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={volumeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={TICKET_VOLUME_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorInbound" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.2} />
@@ -252,7 +204,7 @@ export const AnalyticsPage: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={categoryData}
+                  data={CATEGORY_DISTRIBUTION}
                   cx="50%"
                   cy="50%"
                   innerRadius={55}
@@ -260,7 +212,7 @@ export const AnalyticsPage: React.FC = () => {
                   paddingAngle={4}
                   dataKey="value"
                 >
-                  {categoryData.map((entry, index) => (
+                  {CATEGORY_DISTRIBUTION.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -279,7 +231,7 @@ export const AnalyticsPage: React.FC = () => {
           </div>
 
           <div className="space-y-1.5 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
-            {categoryData.map((cat) => (
+            {CATEGORY_DISTRIBUTION.map((cat) => (
               <div key={cat.name} className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
@@ -305,7 +257,7 @@ export const AnalyticsPage: React.FC = () => {
 
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={latencyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <BarChart data={HOURLY_LATENCY_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
               <XAxis dataKey="hour" stroke="#94A3B8" fontSize={11} tickLine={false} />
               <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
