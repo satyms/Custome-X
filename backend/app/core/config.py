@@ -1,5 +1,9 @@
+from pathlib import Path
 from typing import List, Union, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_BACKEND_DIR = Path(__file__).resolve().parent.parent.parent
+_ENV_PATH = _BACKEND_DIR / ".env"
 
 
 class Settings(BaseSettings):
@@ -57,7 +61,7 @@ class Settings(BaseSettings):
         return ["customex.io", "shop.customex.io", "track.customex.io", "fedex.com", "ups.com", "usps.com"]
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(_ENV_PATH, ".env"),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore"
