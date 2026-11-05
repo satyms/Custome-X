@@ -1,17 +1,14 @@
 import React from 'react';
 
-interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
+interface SkeletonProps {
   className?: string;
 }
 
-export const Skeleton: React.FC<SkeletonProps> = ({ className = '', ...props }) => {
-  return (
-    <div
-      aria-hidden="true"
-      className={`animate-pulse rounded-md bg-slate-800/80 ${className}`}
-      {...props}
-    />
-  );
-};
+export const Skeleton: React.FC<SkeletonProps> = ({ className = '' }) => (
+  <div
+    className={`animate-pulse rounded ${className}`}
+    style={{ background: '#E2E8F0' }}
+  />
+);
 
 export default Skeleton;

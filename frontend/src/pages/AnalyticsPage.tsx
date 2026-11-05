@@ -24,7 +24,7 @@ import { analyticsApi, type AnalyticsOverviewResponse } from '../api';
 
 const DEFAULT_CATEGORIES = [
   { name: 'Returns & Refunds', value: 42, color: '#6366f1' },
-  { name: 'Shipping Tracking', value: 31, color: '#38bdf8' },
+  { name: 'Shipping Tracking', value: 31, color: '#0ea5e9' },
   { name: 'Product Hardware Specs', value: 16, color: '#10b981' },
   { name: 'Payment & Fraud Inquiries', value: 11, color: '#f59e0b' },
 ];
@@ -65,15 +65,20 @@ export const AnalyticsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: 'var(--border)' }}>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-white">Operational Analytics</h1>
-            <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-mono font-medium">
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Operational Analytics
+            </h1>
+            <span
+              className="px-2 py-0.5 rounded-full border text-xs font-mono font-medium"
+              style={{ background: 'var(--accent-light)', color: 'var(--accent)', borderColor: 'var(--border)' }}
+            >
               Live BI Engine
             </span>
           </div>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
             Real-time support operations, autonomous resolution performance, and response latency.
           </p>
         </div>
@@ -84,24 +89,29 @@ export const AnalyticsPage: React.FC = () => {
             type="button"
             onClick={() => fetchAnalytics(timeRange, true)}
             disabled={refreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-medium text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors cursor-pointer"
+            style={{
+              background: 'var(--bg-card)',
+              borderColor: 'var(--border)',
+              color: 'var(--text-secondary)',
+            }}
             title="Refresh analytics data"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin text-indigo-400' : ''}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} style={{ color: 'var(--accent)' }} />
             <span>Sync</span>
           </button>
 
-          <div className="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-1 p-1 rounded-xl border" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
             {(['7d', '30d', '90d'] as const).map((range) => (
               <button
                 key={range}
                 type="button"
                 onClick={() => setTimeRange(range)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                  timeRange === range
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                style={{
+                  background: timeRange === range ? 'var(--accent)' : 'transparent',
+                  color: timeRange === range ? '#ffffff' : 'var(--text-muted)',
+                }}
               >
                 {range.toUpperCase()}
               </button>
@@ -113,63 +123,63 @@ export const AnalyticsPage: React.FC = () => {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Inbound Volume */}
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>Inbound Volume</span>
-            <span className="flex items-center text-emerald-400 font-semibold gap-0.5">
+            <span className="flex items-center font-semibold gap-0.5" style={{ color: 'var(--success)' }}>
               <ArrowUpRight className="h-3 w-3" /> +14.2%
             </span>
           </div>
-          <p className="text-2xl font-bold text-white">
+          <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
             {loading ? '...' : (data?.total_inbound ?? 1445).toLocaleString()}
           </p>
-          <p className="text-xs text-slate-400 mt-1 font-mono">
+          <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>
             {loading ? '...' : `${data?.autonomous_resolved ?? 1056} autonomous resolutions`}
           </p>
         </div>
 
         {/* Card 2: Autonomous Rate */}
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>Autonomous Deflection</span>
-            <span className="flex items-center text-emerald-400 font-semibold gap-0.5">
+            <span className="flex items-center font-semibold gap-0.5" style={{ color: 'var(--success)' }}>
               <TrendingUp className="h-3 w-3" /> +4.8%
             </span>
           </div>
-          <p className="text-2xl font-bold text-indigo-400">
+          <p className="text-2xl font-bold" style={{ color: 'var(--accent)', fontFamily: "'Space Grotesk', sans-serif" }}>
             {loading ? '...' : `${data?.deflection_rate ?? 74.2}%`}
           </p>
-          <p className="text-xs text-indigo-300/80 mt-1">Zero human handoff required</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Zero human handoff required</p>
         </div>
 
         {/* Card 3: First Response Time */}
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>First Response (FRT)</span>
-            <span className="flex items-center text-emerald-400 font-semibold gap-0.5">
+            <span className="flex items-center font-semibold gap-0.5" style={{ color: 'var(--success)' }}>
               <ArrowDownRight className="h-3 w-3" /> -32s
             </span>
           </div>
-          <p className="text-2xl font-bold text-emerald-400">
+          <p className="text-2xl font-bold" style={{ color: 'var(--success)', fontFamily: "'Space Grotesk', sans-serif" }}>
             {loading ? '...' : `${data?.first_response_seconds ?? 18.5}s`}
           </p>
-          <p className="text-xs text-slate-400 mt-1 font-mono">
+          <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>
             MTTR: {loading ? '...' : `${data?.mttr_minutes ?? 6.2} mins`}
           </p>
         </div>
 
         {/* Card 4: CSAT Satisfaction */}
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>CSAT Satisfaction</span>
-            <span className="text-amber-400 font-bold">
+            <span className="font-bold" style={{ color: 'var(--warning)' }}>
               ★ {loading ? '...' : `${data?.csat_score ?? 4.8} / 5.0`}
             </span>
           </div>
-          <p className="text-2xl font-bold text-amber-400">
+          <p className="text-2xl font-bold" style={{ color: 'var(--warning)', fontFamily: "'Space Grotesk', sans-serif" }}>
             {loading ? '...' : `${Math.round(((data?.csat_score ?? 4.8) / 5) * 100)}%`}
           </p>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
             Staff Active: {loading ? '...' : data?.active_staff_count ?? 1} Support Agents
           </p>
         </div>
@@ -178,18 +188,20 @@ export const AnalyticsPage: React.FC = () => {
       {/* Main Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* AreaChart: Volume & Autonomous Trend */}
-        <div className="lg:col-span-8 p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-4">
+        <div className="lg:col-span-8 p-5 rounded-xl border shadow-sm space-y-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-base font-bold text-white">Inbound Volume vs. Autonomous Resolution</h2>
-              <p className="text-xs text-slate-400">Daily tickets handled by AI core vs. human escalations</p>
+              <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+                Inbound Volume vs. Autonomous Resolution
+              </h2>
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Daily tickets handled by AI core vs. human escalations</p>
             </div>
             <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5 text-indigo-400">
-                <span className="h-2.5 w-2.5 rounded-full bg-indigo-500" /> AI Autonomous
+              <span className="flex items-center gap-1.5" style={{ color: 'var(--accent)' }}>
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'var(--accent)' }} /> AI Autonomous
               </span>
-              <span className="flex items-center gap-1.5 text-sky-400">
-                <span className="h-2.5 w-2.5 rounded-full bg-sky-400" /> Inbound Total
+              <span className="flex items-center gap-1.5" style={{ color: 'var(--sky)' }}>
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: 'var(--sky)' }} /> Inbound Total
               </span>
             </div>
           </div>
@@ -199,27 +211,28 @@ export const AnalyticsPage: React.FC = () => {
               <AreaChart data={volumeData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorInbound" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#38bdf8" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorAuto" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.6} />
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
                     <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-                <XAxis dataKey="day" stroke="#64748b" fontSize={11} />
-                <YAxis stroke="#64748b" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis dataKey="day" stroke="#94A3B8" fontSize={11} tickLine={false} />
+                <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderColor: '#334155',
-                    borderRadius: '0.75rem',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#E2E8F0',
+                    borderRadius: '0.5rem',
                     fontSize: '12px',
-                    color: '#fff',
+                    color: '#0F172A',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                   }}
                 />
-                <Area type="monotone" dataKey="inbound" name="Total Inbound" stroke="#38bdf8" strokeWidth={2} fillOpacity={1} fill="url(#colorInbound)" />
+                <Area type="monotone" dataKey="inbound" name="Total Inbound" stroke="#0ea5e9" strokeWidth={2} fillOpacity={1} fill="url(#colorInbound)" />
                 <Area type="monotone" dataKey="autonomous" name="Autonomous Resolved" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorAuto)" />
               </AreaChart>
             </ResponsiveContainer>
@@ -227,10 +240,12 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* PieChart: Ticket Categories */}
-        <div className="lg:col-span-4 p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-4">
+        <div className="lg:col-span-4 p-5 rounded-xl border shadow-sm space-y-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
           <div>
-            <h2 className="text-base font-bold text-white">Topic Categorization</h2>
-            <p className="text-xs text-slate-400">Distribution of inbound user intents</p>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Topic Categorization
+            </h2>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Distribution of inbound user intents</p>
           </div>
 
           <div className="h-56 w-full flex items-center justify-center">
@@ -242,7 +257,7 @@ export const AnalyticsPage: React.FC = () => {
                   cy="50%"
                   innerRadius={55}
                   outerRadius={80}
-                  paddingAngle={5}
+                  paddingAngle={4}
                   dataKey="value"
                 >
                   {categoryData.map((entry, index) => (
@@ -251,25 +266,26 @@ export const AnalyticsPage: React.FC = () => {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderColor: '#334155',
-                    borderRadius: '0.75rem',
+                    backgroundColor: '#ffffff',
+                    borderColor: '#E2E8F0',
+                    borderRadius: '0.5rem',
                     fontSize: '12px',
-                    color: '#fff',
+                    color: '#0F172A',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                   }}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="space-y-1.5 pt-2 border-t border-slate-800">
+          <div className="space-y-1.5 pt-2 border-t" style={{ borderColor: 'var(--border)' }}>
             {categoryData.map((cat) => (
               <div key={cat.name} className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-2 text-slate-300">
+                <span className="flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
                   <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
                   {cat.name}
                 </span>
-                <span className="font-mono font-bold text-white">{cat.value}%</span>
+                <span className="font-mono font-semibold" style={{ color: 'var(--text-primary)' }}>{cat.value}%</span>
               </div>
             ))}
           </div>
@@ -277,32 +293,35 @@ export const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* Hourly Response Latency BarChart */}
-      <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 space-y-4">
+      <div className="p-5 rounded-xl border shadow-sm space-y-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-white">24-Hour Response Latency &amp; Mean Time to Resolution</h2>
-            <p className="text-xs text-slate-400">First response time in seconds vs MTTR in minutes</p>
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              24-Hour Response Latency &amp; Mean Time to Resolution
+            </h2>
+            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>First response time in seconds vs MTTR in minutes</p>
           </div>
         </div>
 
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={latencyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis dataKey="hour" stroke="#64748b" fontSize={11} />
-              <YAxis stroke="#64748b" fontSize={11} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+              <XAxis dataKey="hour" stroke="#94A3B8" fontSize={11} tickLine={false} />
+              <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0f172a',
-                  borderColor: '#334155',
-                  borderRadius: '0.75rem',
+                  backgroundColor: '#ffffff',
+                  borderColor: '#E2E8F0',
+                  borderRadius: '0.5rem',
                   fontSize: '12px',
-                  color: '#fff',
+                  color: '#0F172A',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
                 }}
               />
               <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-              <Bar dataKey="frtSec" name="First Response Time (seconds)" fill="#6366f1" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="mttrMin" name="Mean Time to Resolution (minutes)" fill="#10b981" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="frtSec" name="First Response Time (seconds)" fill="#6366f1" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="mttrMin" name="Mean Time to Resolution (minutes)" fill="#10b981" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

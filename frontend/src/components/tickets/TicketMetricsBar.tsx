@@ -27,40 +27,32 @@ export const TicketMetricsBar: React.FC<TicketMetricsBarProps> = ({
       title: 'Total Tickets',
       value: total,
       icon: Layers,
-      color: 'text-indigo-400',
-      bg: 'bg-indigo-500/10',
-      border: 'border-indigo-500/20',
-      activeBorder: 'border-indigo-500 ring-1 ring-indigo-500',
+      iconColor: 'var(--accent)',
+      iconBg: 'var(--accent-light)',
     },
     {
       id: 'open',
       title: 'Open Tickets',
       value: open,
       icon: Inbox,
-      color: 'text-sky-400',
-      bg: 'bg-sky-500/10',
-      border: 'border-sky-500/20',
-      activeBorder: 'border-sky-500 ring-1 ring-sky-500',
+      iconColor: 'var(--sky)',
+      iconBg: 'var(--sky-light)',
     },
     {
       id: 'in_progress',
       title: 'In Progress',
       value: inProgress,
       icon: Clock,
-      color: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-      border: 'border-amber-500/20',
-      activeBorder: 'border-amber-500 ring-1 ring-amber-500',
+      iconColor: 'var(--warning)',
+      iconBg: 'var(--warning-light)',
     },
     {
       id: 'escalated',
       title: 'Escalated / Urgent',
       value: escalated,
       icon: AlertTriangle,
-      color: 'text-rose-400',
-      bg: 'bg-rose-500/10',
-      border: 'border-rose-500/20',
-      activeBorder: 'border-rose-500 ring-1 ring-rose-500',
+      iconColor: 'var(--danger)',
+      iconBg: 'var(--danger-light)',
     },
   ];
 
@@ -75,16 +67,20 @@ export const TicketMetricsBar: React.FC<TicketMetricsBarProps> = ({
             key={card.id}
             type="button"
             onClick={() => onFilterStatus && onFilterStatus(card.id)}
-            className={`text-left p-5 rounded-xl border bg-slate-900/60 backdrop-blur-sm transition-all duration-150 cursor-pointer hover:bg-slate-850 hover:translate-y-[-1px] ${
-              isSelected ? card.activeBorder : card.border
-            }`}
+            className="text-left p-5 rounded-xl border transition-all duration-150 cursor-pointer hover:shadow-sm"
+            style={{
+              background: 'var(--bg-card)',
+              borderColor: isSelected ? 'var(--accent)' : 'var(--border)',
+              outline: isSelected ? '2px solid var(--accent-light)' : 'none',
+              outlineOffset: '1px',
+            }}
           >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                 {card.title}
               </span>
-              <div className={`p-2 rounded-lg ${card.bg} ${card.color}`}>
-                <Icon className="h-4 w-4" />
+              <div className="p-2 rounded-lg" style={{ background: card.iconBg }}>
+                <Icon className="h-4 w-4" style={{ color: card.iconColor }} />
               </div>
             </div>
 
@@ -92,13 +88,13 @@ export const TicketMetricsBar: React.FC<TicketMetricsBarProps> = ({
               {isLoading ? (
                 <Skeleton className="h-8 w-16" />
               ) : (
-                <span className="text-2xl md:text-3xl font-bold font-mono text-white">
+                <span className="text-2xl md:text-3xl font-bold font-mono" style={{ color: 'var(--text-primary)' }}>
                   {card.value}
                 </span>
               )}
 
               {total > 0 && !isLoading && card.id !== 'all' && (
-                <span className="text-xs text-slate-400 font-mono">
+                <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
                   {Math.round((card.value / total) * 100)}%
                 </span>
               )}

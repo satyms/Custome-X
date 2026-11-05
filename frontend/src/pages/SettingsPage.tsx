@@ -8,7 +8,6 @@ import {
   Shield,
   Bot,
   Zap,
-  Sliders,
   Save,
   CheckCircle2,
 } from 'lucide-react';
@@ -27,6 +26,8 @@ export const SettingsPage: React.FC = () => {
   const [refundThreshold, setRefundThreshold] = useState<number>(50);
   const [returnDays, setReturnDays] = useState<number>(30);
   const [primaryModel, setPrimaryModel] = useState<string>('gemini-3.5-flash-lite');
+  const [autoEscalateUrgent, setAutoEscalateUrgent] = useState<boolean>(true);
+  const [hybridSearchAlpha, setHybridSearchAlpha] = useState<number>(0.7);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(hmacSecret);
@@ -34,9 +35,10 @@ export const SettingsPage: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSave = () => {
+  const handleSave = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setToast({
-      message: 'Organization settings and AI safeguard thresholds saved successfully',
+      message: 'Organization settings, webhook keys, and AI safeguard thresholds saved successfully.',
       type: 'success',
     });
   };
@@ -46,225 +48,296 @@ export const SettingsPage: React.FC = () => {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-800 text-slate-300 border border-slate-700">
-            <Sliders className="h-5 w-5" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: 'var(--border)' }}>
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              System &amp; Tenant Settings
+            </h1>
+            <span
+              className="px-2 py-0.5 rounded-full border text-xs font-mono font-medium"
+              style={{ background: 'var(--accent-light)', color: 'var(--accent)', borderColor: 'var(--border)' }}
+            >
+              Multi-Tenant Scope
+            </span>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-white tracking-tight">System & Tenant Settings</h1>
-            <p className="text-sm text-slate-400">
-              Manage organization profile, n8n webhook keys, and AI orchestrator safeguards.
-            </p>
-          </div>
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
+            Configure LLM inference model, human-in-the-loop thresholds, n8n webhook keys, and PostgreSQL RLS policies.
+          </p>
         </div>
 
         <button
+          type="button"
           onClick={handleSave}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 transition-colors"
+          className="px-4 py-2 rounded-lg text-white text-xs font-semibold shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
+          style={{ background: 'var(--accent)' }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--accent-hover)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--accent)')}
         >
           <Save className="h-4 w-4" />
-          Save Changes
+          <span>Save Changes</span>
         </button>
       </div>
 
-      {/* 1. Organization Profile Card */}
-      <div className="rounded-xl border border-slate-800 bg-[#111827]/70 p-6 shadow-sm">
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-          <Building className="h-5 w-5 text-indigo-400" />
-          <h2 className="text-base font-semibold text-white">Organization Profile & Multi-Tenant Isolation</h2>
-        </div>
-
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label className="text-xs font-semibold uppercase text-slate-400">Organization Name</label>
-            <input
-              type="text"
-              readOnly
-              value={(user as any)?.organization_name || 'Acme E-Commerce Org'}
-              className="mt-1 w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-sm text-slate-200 cursor-not-allowed"
-            />
+      <form onSubmit={handleSave} className="space-y-6">
+        {/* 1. Organization Profile Card */}
+        <div className="p-6 rounded-xl border space-y-4 shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center gap-2 border-b pb-3" style={{ borderColor: 'var(--border)' }}>
+            <Building className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Organization Profile &amp; Multi-Tenant Isolation
+            </h2>
           </div>
 
-          <div>
-            <label className="text-xs font-semibold uppercase text-slate-400">Tenant UUID (RLS Boundary)</label>
-            <input
-              type="text"
-              readOnly
-              value={user?.organization_id || '11111111-1111-1111-1111-111111111111'}
-              className="mt-1 w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 font-mono text-xs text-indigo-300 cursor-not-allowed"
-            />
-          </div>
-
-          <div className="sm:col-span-2 flex items-center justify-between rounded-lg bg-emerald-500/10 border border-emerald-500/20 p-3 text-xs text-emerald-300">
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-              <span>PostgreSQL Row-Level Security (RLS) is active across all 18 database tables.</span>
-            </div>
-            <span className="font-semibold uppercase tracking-wider text-[11px] bg-emerald-500/20 px-2 py-0.5 rounded">
-              Enforced
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. n8n Outbound Automation & Webhooks */}
-      <div className="rounded-xl border border-slate-800 bg-[#111827]/70 p-6 shadow-sm">
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-          <Zap className="h-5 w-5 text-amber-400" />
-          <h2 className="text-base font-semibold text-white">Layer 5 · Outbound n8n Webhook Gateway</h2>
-        </div>
-
-        <p className="mt-3 text-xs text-slate-400 leading-relaxed">
-          Outbound events (new tickets, urgent SLA escalations, supervisor approval triggers) are signed with HMAC-SHA256
-          and dispatched to your n8n workflow cluster.
-        </p>
-
-        <div className="mt-4 space-y-4">
-          <div>
-            <label className="text-xs font-semibold uppercase text-slate-400">n8n Webhook Destination URL</label>
-            <input
-              type="text"
-              value={webhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
-              className="mt-1 w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm font-mono text-slate-200 focus:outline-none focus:border-indigo-500"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold uppercase text-slate-400">
-              Webhook HMAC Secret Key (RFC 2104 SHA-256)
-            </label>
-            <div className="relative mt-1 flex items-center">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 text-xs">
+            <div>
+              <label className="font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Organization Name</label>
               <input
-                type={showSecret ? 'text' : 'password'}
-                value={hmacSecret}
-                onChange={(e) => setHmacSecret(e.target.value)}
-                className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 pr-20 font-mono text-xs text-amber-300 focus:outline-none focus:border-indigo-500"
+                type="text"
+                readOnly
+                value={(user as any)?.organization_name || 'Acme E-Commerce Org'}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-xs cursor-not-allowed font-medium"
+                style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
               />
-              <div className="absolute right-2 flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => setShowSecret(!showSecret)}
-                  className="rounded p-1 text-slate-400 hover:text-slate-200 transition-colors"
-                  title={showSecret ? 'Hide secret' : 'Show secret'}
-                >
-                  {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCopy}
-                  className="rounded p-1 text-slate-400 hover:text-slate-200 transition-colors"
-                  title="Copy secret"
-                >
-                  {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
-                </button>
-              </div>
             </div>
-            <p className="mt-1 text-[11px] text-slate-500">
-              Set this key in your n8n Webhook node header verification: <code className="text-slate-400">X-Hub-Signature-256</code>
-            </p>
+
+            <div>
+              <label className="font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Tenant UUID (RLS Boundary)</label>
+              <input
+                type="text"
+                readOnly
+                value={user?.organization_id || '11111111-1111-1111-1111-111111111111'}
+                className="mt-1 w-full rounded-lg border px-3 py-2 font-mono text-xs cursor-not-allowed font-medium"
+                style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--accent)' }}
+              />
+            </div>
+
+            <div
+              className="sm:col-span-2 flex items-center justify-between rounded-lg border p-3 text-xs"
+              style={{ background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success)' }}
+            >
+              <div className="flex items-center gap-2 font-medium">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>PostgreSQL Row-Level Security (RLS) is active across all 18 database tables.</span>
+              </div>
+              <span className="font-semibold uppercase tracking-wider text-[11px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                Enforced
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* 3. AI Orchestrator Safeguards (Layer 3) */}
-      <div className="rounded-xl border border-slate-800 bg-[#111827]/70 p-6 shadow-sm">
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-          <Bot className="h-5 w-5 text-sky-400" />
-          <h2 className="text-base font-semibold text-white">Layer 3 · AI Orchestrator Business Safeguards</h2>
+        {/* 2. n8n Outbound Automation & Webhooks */}
+        <div className="p-6 rounded-xl border space-y-4 shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center gap-2 border-b pb-3" style={{ borderColor: 'var(--border)' }}>
+            <Zap className="h-4 w-4" style={{ color: 'var(--warning)' }} />
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Layer 5 · Outbound n8n Webhook Gateway
+            </h2>
+          </div>
+
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            Outbound events (new tickets, urgent SLA escalations, supervisor approval triggers) are signed with HMAC-SHA256
+            and dispatched to your n8n workflow cluster.
+          </p>
+
+          <div className="space-y-4 text-xs">
+            <div>
+              <label className="font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>n8n Webhook Destination URL</label>
+              <input
+                type="text"
+                value={webhookUrl}
+                onChange={(e) => setWebhookUrl(e.target.value)}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-xs font-mono focus:outline-none"
+                style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>
+                Webhook HMAC Secret Key (RFC 2104 SHA-256)
+              </label>
+              <div className="relative mt-1 flex items-center">
+                <input
+                  type={showSecret ? 'text' : 'password'}
+                  value={hmacSecret}
+                  onChange={(e) => setHmacSecret(e.target.value)}
+                  className="w-full rounded-lg border px-3 py-2 pr-20 font-mono text-xs focus:outline-none"
+                  style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                />
+                <div className="absolute right-2 flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowSecret(!showSecret)}
+                    className="rounded p-1 hover:opacity-75 cursor-pointer transition-colors"
+                    style={{ color: 'var(--text-muted)' }}
+                    title={showSecret ? 'Hide secret' : 'Show secret'}
+                  >
+                    {showSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    className="rounded p-1 hover:opacity-75 cursor-pointer transition-colors"
+                    style={{ color: 'var(--text-muted)' }}
+                    title="Copy secret"
+                  >
+                    {copied ? <Check className="h-4 w-4" style={{ color: 'var(--success)' }} /> : <Copy className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+              <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                Set this key in your n8n Webhook node header verification: <code className="font-mono" style={{ color: 'var(--text-secondary)' }}>X-Hub-Signature-256</code>
+              </p>
+            </div>
+          </div>
         </div>
 
-        <p className="mt-3 text-xs text-slate-400 leading-relaxed">
-          Deterministic business rules enforce strict monetary thresholds and eligibility limits. "The LLM proposes; deterministic code decides."
-        </p>
+        {/* 3. AI Orchestrator Safeguards (Layer 3) */}
+        <div className="p-6 rounded-xl border space-y-4 shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center gap-2 border-b pb-3" style={{ borderColor: 'var(--border)' }}>
+            <Bot className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Layer 3 · AI Orchestrator Business Safeguards &amp; RAG
+            </h2>
+          </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div>
-            <label className="text-xs font-semibold uppercase text-slate-400">Autonomous Refund Threshold ($)</label>
-            <div className="mt-1 relative">
-              <span className="absolute left-3 top-2 text-slate-500">$</span>
+          <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            Deterministic business rules enforce strict monetary thresholds and eligibility limits. "The LLM proposes; deterministic code decides."
+          </p>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 text-xs">
+            <div>
+              <label className="font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Autonomous Refund Threshold ($)</label>
+              <div className="mt-1 relative">
+                <span className="absolute left-3 top-2" style={{ color: 'var(--text-muted)' }}>$</span>
+                <input
+                  type="number"
+                  value={refundThreshold}
+                  onChange={(e) => setRefundThreshold(Number(e.target.value))}
+                  className="w-full rounded-lg border pl-7 pr-3 py-2 text-xs focus:outline-none"
+                  style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                />
+              </div>
+              <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>Refunds &gt; ${refundThreshold} strictly require human approval (HITL).</p>
+            </div>
+
+            <div>
+              <label className="font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Return Eligibility Window (Days)</label>
               <input
                 type="number"
-                value={refundThreshold}
-                onChange={(e) => setRefundThreshold(Number(e.target.value))}
-                className="w-full rounded-lg bg-slate-900 border border-slate-700 pl-7 pr-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
+                value={returnDays}
+                onChange={(e) => setReturnDays(Number(e.target.value))}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-xs focus:outline-none"
+                style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+              />
+              <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>Items past {returnDays} days are declined autonomously.</p>
+            </div>
+
+            <div>
+              <label className="font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>Primary Reasoning Model</label>
+              <select
+                value={primaryModel}
+                onChange={(e) => setPrimaryModel(e.target.value)}
+                className="mt-1 w-full rounded-lg border px-3 py-2 text-xs focus:outline-none cursor-pointer"
+                style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+              >
+                <option value="gemini-3.5-flash-lite">Google Gemini 3.5 Flash Lite</option>
+                <option value="gemini-3.5-flash">Google Gemini 3.5 Flash</option>
+                <option value="gemini-2.5-flash">Google Gemini 2.5 Flash</option>
+                <option value="gemini-2.5-pro">Google Gemini 2.5 Pro</option>
+                <option value="claude-3-7-sonnet">Claude 3.7 Sonnet</option>
+              </select>
+              <p className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>Cascades to deterministic offline engine on timeout.</p>
+            </div>
+          </div>
+
+          <div className="pt-3 border-t grid grid-cols-1 md:grid-cols-2 gap-4 text-xs" style={{ borderColor: 'var(--border)' }}>
+            <div>
+              <div className="flex items-center justify-between">
+                <label className="font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>
+                  Hybrid Search Alpha (Dense Vector vs. BM25)
+                </label>
+                <span className="font-mono font-bold" style={{ color: 'var(--accent)' }}>{hybridSearchAlpha}</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.05"
+                value={hybridSearchAlpha}
+                onChange={(e) => setHybridSearchAlpha(parseFloat(e.target.value))}
+                className="w-full mt-2 accent-indigo-600 cursor-pointer"
+              />
+              <div className="flex justify-between text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                <span>0.0 (Pure BM25 Keyword)</span>
+                <span>0.5 (Balanced)</span>
+                <span>1.0 (Pure Dense Vector)</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg border" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}>
+              <div>
+                <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>Auto-escalate Urgent Tickets</span>
+                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Escalates critical tickets to supervisor queue upon sentiment distress.</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={autoEscalateUrgent}
+                onChange={(e) => setAutoEscalateUrgent(e.target.checked)}
+                className="h-4 w-4 rounded accent-indigo-600 cursor-pointer"
               />
             </div>
-            <p className="mt-1 text-[11px] text-slate-500">Refunds &gt; ${refundThreshold} strictly require human approval (HITL).</p>
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold uppercase text-slate-400">Return Eligibility Window (Days)</label>
-            <input
-              type="number"
-              value={returnDays}
-              onChange={(e) => setReturnDays(Number(e.target.value))}
-              className="mt-1 w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
-            />
-            <p className="mt-1 text-[11px] text-slate-500">Items past {returnDays} days are declined autonomously.</p>
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold uppercase text-slate-400">Primary Reasoning Model</label>
-            <select
-              value={primaryModel}
-              onChange={(e) => setPrimaryModel(e.target.value)}
-              className="mt-1 w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500"
-            >
-              <option value="gemini-3.5-flash-lite">Google Gemini 3.5 Flash Lite</option>
-              <option value="gemini-3.5-flash">Google Gemini 3.5 Flash</option>
-              <option value="gemini-flash-latest">Google Gemini Flash Latest</option>
-            </select>
-            <p className="mt-1 text-[11px] text-slate-500">Cascades to deterministic offline engine on timeout.</p>
           </div>
         </div>
-      </div>
 
-      {/* 4. Staff Roles & Permissions Matrix */}
-      <div className="rounded-xl border border-slate-800 bg-[#111827]/70 p-6 shadow-sm">
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-          <Shield className="h-5 w-5 text-indigo-400" />
-          <h2 className="text-base font-semibold text-white">Staff Roles & Permissions (RBAC)</h2>
-        </div>
+        {/* 4. Staff Roles & Permissions Matrix */}
+        <div className="p-6 rounded-xl border space-y-4 shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center gap-2 border-b pb-3" style={{ borderColor: 'var(--border)' }}>
+            <Shield className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+            <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Staff Roles &amp; Permissions (RBAC)
+            </h2>
+          </div>
 
-        <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-900/60 text-slate-400 border-b border-slate-800">
-              <tr>
-                <th className="py-2.5 px-3 font-semibold">Role</th>
-                <th className="py-2.5 px-3 font-semibold">Ticket Management</th>
-                <th className="py-2.5 px-3 font-semibold">HITL Approvals</th>
-                <th className="py-2.5 px-3 font-semibold">Knowledge Base</th>
-                <th className="py-2.5 px-3 font-semibold">Settings & Webhooks</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 text-slate-300">
-              <tr>
-                <td className="py-2.5 px-3 font-bold text-rose-400">Admin</td>
-                <td className="py-2.5 px-3">Full Access</td>
-                <td className="py-2.5 px-3">Authorize All ($50+)</td>
-                <td className="py-2.5 px-3">Upload / Archive / Re-index</td>
-                <td className="py-2.5 px-3 text-emerald-400 font-semibold">Read & Write</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-3 font-bold text-amber-400">Supervisor</td>
-                <td className="py-2.5 px-3">Full Access & Reassignment</td>
-                <td className="py-2.5 px-3 text-emerald-400 font-semibold">Authorize All ($50+)</td>
-                <td className="py-2.5 px-3">Read & Search</td>
-                <td className="py-2.5 px-3 text-slate-500">Read Only</td>
-              </tr>
-              <tr>
-                <td className="py-2.5 px-3 font-bold text-indigo-400">Agent</td>
-                <td className="py-2.5 px-3">Respond & Close</td>
-                <td className="py-2.5 px-3 text-slate-500">Propose Only</td>
-                <td className="py-2.5 px-3">Read & Search</td>
-                <td className="py-2.5 px-3 text-slate-500">No Access</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+                <tr>
+                  <th className="py-2.5 px-3 font-semibold">Role</th>
+                  <th className="py-2.5 px-3 font-semibold">Ticket Management</th>
+                  <th className="py-2.5 px-3 font-semibold">HITL Approvals</th>
+                  <th className="py-2.5 px-3 font-semibold">Knowledge Base</th>
+                  <th className="py-2.5 px-3 font-semibold">Settings &amp; Webhooks</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y" style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
+                <tr className="hover:bg-slate-50 transition-colors">
+                  <td className="py-2.5 px-3 font-bold" style={{ color: 'var(--danger)' }}>Admin</td>
+                  <td className="py-2.5 px-3">Full Access</td>
+                  <td className="py-2.5 px-3">Authorize All ($50+)</td>
+                  <td className="py-2.5 px-3">Upload / Archive / Re-index</td>
+                  <td className="py-2.5 px-3 font-semibold" style={{ color: 'var(--success)' }}>Read &amp; Write</td>
+                </tr>
+                <tr className="hover:bg-slate-50 transition-colors">
+                  <td className="py-2.5 px-3 font-bold" style={{ color: 'var(--warning)' }}>Supervisor</td>
+                  <td className="py-2.5 px-3">Full Access &amp; Reassignment</td>
+                  <td className="py-2.5 px-3 font-semibold" style={{ color: 'var(--success)' }}>Authorize All ($50+)</td>
+                  <td className="py-2.5 px-3">Read &amp; Search</td>
+                  <td className="py-2.5 px-3" style={{ color: 'var(--text-muted)' }}>Read Only</td>
+                </tr>
+                <tr className="hover:bg-slate-50 transition-colors">
+                  <td className="py-2.5 px-3 font-bold" style={{ color: 'var(--accent)' }}>Agent</td>
+                  <td className="py-2.5 px-3">Respond &amp; Close</td>
+                  <td className="py-2.5 px-3" style={{ color: 'var(--text-muted)' }}>Propose Only</td>
+                  <td className="py-2.5 px-3">Read &amp; Search</td>
+                  <td className="py-2.5 px-3" style={{ color: 'var(--text-muted)' }}>No Access</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 };
