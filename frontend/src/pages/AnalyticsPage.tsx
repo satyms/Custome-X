@@ -64,66 +64,56 @@ export const AnalyticsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: 'var(--border)' }}>
-        <div>
+      {/* 1. Twenty CRM Header & Range Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2.5">
+          <TrendingUp className="h-5 w-5 text-slate-700" />
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+            <h1 className="text-[16px] font-semibold tracking-tight text-slate-900">
               Operational Analytics
             </h1>
-            <span
-              className="px-2 py-0.5 rounded-full border text-xs font-mono font-medium"
-              style={{ background: 'var(--accent-light)', color: 'var(--accent)', borderColor: 'var(--border)' }}
-            >
-              Live BI Engine
+            <span className="px-1.5 py-0.2 rounded text-[11px] font-mono text-slate-400 bg-slate-100">
+              Live Engine
             </span>
           </div>
-          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-            Real-time support operations, autonomous resolution performance, and response latency.
-          </p>
         </div>
 
         {/* Filter & Refresh Controls */}
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => fetchAnalytics(timeRange, true)}
-            disabled={refreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-colors cursor-pointer"
-            style={{
-              background: 'var(--bg-card)',
-              borderColor: 'var(--border)',
-              color: 'var(--text-secondary)',
-            }}
-            title="Refresh analytics data"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} style={{ color: 'var(--accent)' }} />
-            <span>Sync</span>
-          </button>
-
-          <div className="flex items-center gap-1 p-1 rounded-xl border" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center gap-0.5 p-0.5 rounded-lg border border-slate-200 bg-slate-50">
             {(['7d', '30d', '90d'] as const).map((range) => (
               <button
                 key={range}
                 type="button"
                 onClick={() => setTimeRange(range)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
-                style={{
-                  background: timeRange === range ? 'var(--accent)' : 'transparent',
-                  color: timeRange === range ? '#ffffff' : 'var(--text-muted)',
-                }}
+                className={`px-2.5 py-1 rounded text-xs font-medium transition-colors cursor-pointer ${
+                  timeRange === range
+                    ? 'bg-white text-slate-900 shadow-2xs font-semibold'
+                    : 'text-slate-500 hover:text-slate-900'
+                }`}
               >
                 {range.toUpperCase()}
               </button>
             ))}
           </div>
+
+          <button
+            type="button"
+            onClick={() => fetchAnalytics(timeRange, true)}
+            disabled={refreshing}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-[13px] font-medium shadow-2xs transition-colors cursor-pointer"
+            title="Refresh analytics data"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 text-slate-600 ${refreshing ? 'animate-spin' : ''}`} />
+            <span>Sync</span>
+          </button>
         </div>
       </div>
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Inbound Volume */}
-        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        <div className="p-4 rounded-xl border border-slate-200/80 bg-white shadow-2xs">
           <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>Inbound Volume</span>
             <span className="flex items-center font-semibold gap-0.5" style={{ color: 'var(--success)' }}>
@@ -139,7 +129,7 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Card 2: Autonomous Rate */}
-        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        <div className="p-4 rounded-xl border border-slate-200/80 bg-white shadow-2xs">
           <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>Autonomous Deflection</span>
             <span className="flex items-center font-semibold gap-0.5" style={{ color: 'var(--success)' }}>
@@ -153,7 +143,7 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Card 3: First Response Time */}
-        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        <div className="p-4 rounded-xl border border-slate-200/80 bg-white shadow-2xs">
           <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>First Response (FRT)</span>
             <span className="flex items-center font-semibold gap-0.5" style={{ color: 'var(--success)' }}>
@@ -169,7 +159,7 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Card 4: CSAT Satisfaction */}
-        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        <div className="p-4 rounded-xl border border-slate-200/80 bg-white shadow-2xs">
           <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>CSAT Satisfaction</span>
             <span className="font-bold" style={{ color: 'var(--warning)' }}>
@@ -188,7 +178,7 @@ export const AnalyticsPage: React.FC = () => {
       {/* Main Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* AreaChart: Volume & Autonomous Trend */}
-        <div className="lg:col-span-8 p-5 rounded-xl border shadow-sm space-y-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        <div className="lg:col-span-8 p-5 rounded-xl border border-slate-200/80 bg-white shadow-2xs space-y-4">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
@@ -240,7 +230,7 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* PieChart: Ticket Categories */}
-        <div className="lg:col-span-4 p-5 rounded-xl border shadow-sm space-y-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+        <div className="lg:col-span-4 p-5 rounded-xl border border-slate-200/80 bg-white shadow-2xs space-y-4">
           <div>
             <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
               Topic Categorization
@@ -293,7 +283,7 @@ export const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* Hourly Response Latency BarChart */}
-      <div className="p-5 rounded-xl border shadow-sm space-y-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+      <div className="p-5 rounded-xl border border-slate-200/80 bg-white shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm font-semibold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
