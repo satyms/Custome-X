@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ticketsApi } from '../api';
 import type { Ticket, TicketStatus, TicketPriority } from '../types';
-import { TicketMetricsBar } from '../components/tickets/TicketMetricsBar';
 import { Skeleton } from '../components/ui/Skeleton';
 import {
   Inbox,
