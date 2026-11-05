@@ -122,3 +122,21 @@ This log records key architectural and technical decisions made for **Custome-X*
 * **Consequences:**
   * **Pros:** "The LLM proposes; deterministic code decides." Guarantees zero unauthorized financial actions, stops cross-customer data leakage, and provides complete observable execution traces in the support dashboard.
   * **Cons:** Requires rigorous synchronization between LLM outputs and deterministic validator schemas.
+
+
+---
+
+## ADR-010: Hybrid RAG Architecture with pgvector (HNSW) and Full-Text Search (GIN) via Reciprocal Rank Fusion
+
+* **Status:** Accepted
+* **Context:** Support agents and AI orchestrators require authoritative knowledge retrieval over return policies, shipping SLAs, warranty terms, and FAQs. Dense vector embeddings alone can suffer from vocabulary mismatch or hallucinate non-existent policy clauses, while keyword-only search fails on semantic paraphrasing. Furthermore, multi-tenant isolation and active document versioning must be strictly guaranteed at the database level.
+* **Decision:** Implement a dual-index hybrid retrieval pipeline using PostgreSQL:
+  1. **Schema & Extension:** Enable `pgvector` v0.8.2 and provision `knowledge_documents` and `knowledge_chunks` tables in PostgreSQL.
+  2. **Dense Vector Indexing:** 768-dimensional normalized embeddings (`vector(768)`) aligned with Gemini `text-embedding-004`, indexed with HNSW (`vector_cosine_ops`) for sub-millisecond approximate nearest neighbor search.
+  3. **Sparse Full-Text Indexing:** A stored generated column `tsv_content tsvector` automatically constructed from section headers and content, indexed with PostgreSQL GIN (`idx_kchunks_tsv_gin`).
+  4. **Hybrid Stored Procedure with RRF:** A PostgreSQL stored procedure `public.match_knowledge_chunks` executes Reciprocal Rank Fusion ($1 / (k + \text{rank})$) combining top dense vector candidates and sparse full-text candidates into an integrated similarity score.
+  5. **Multi-Tenant RLS & Version Scoping:** Strict Row-Level Security policies (`knowledge_chunks_tenant_isolation_policy`) and procedure parameters enforce `organization_id` scoping and `status = 'active'` filtering, preventing cross-tenant leakage and obsolete policy citations.
+  6. **Resilient Embedding Generation:** Async Gemini API client with an in-memory SHA-256 embedding cache and deterministic n-gram hash fallback ensuring 100% offline test reliability.
+* **Consequences:**
+  * **Pros:** Scale-invariant rank fusion, zero external vector database dependencies (single source of truth in PostgreSQL), deterministic testability, strict tenant isolation, and automated database-level full-text indexing.
+  * **Cons:** Requires running versioned database migrations (`6d41c0cbdd36`) and maintains 768 float dimensions per chunk.

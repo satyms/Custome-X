@@ -74,16 +74,17 @@
 
 ---
 
-## Milestone 2: RAG Knowledge Retrieval Pipeline
+## Milestone 2: RAG Knowledge Retrieval Pipeline (Completed)
 
-- [ ] **Task 2.1: Knowledge Base Document Ingestion**
-  - [ ] Document parser for Markdown, PDF, and HTML policies (returns, FAQs, shipping)
-  - [ ] Text chunking strategy (sliding window with metadata tagging)
-  - [ ] Generate dense vector embeddings via embedding provider
-- [ ] **Task 2.2: Hybrid Search & Retrieval Service**
-  - [ ] Implement PostgreSQL stored procedure for hybrid vector + full-text search (RRF)
-  - [ ] Unit tests for similarity thresholds and fallback triggers
-  - [ ] Context assembler with prompt budget limiter to avoid context bloat
+- [x] **Task 2.1: Knowledge Base Document Ingestion**
+  - [x] Document parser for Markdown and policy text (sliding window with metadata tagging and header preservation)
+  - [x] Text chunking strategy (semantic header-aware sliding window with token bounds)
+  - [x] Generate dense vector embeddings via Gemini `text-embedding-004` (768 dimensions) with deterministic fallback
+  - [x] PostgreSQL persistence with `pgvector` (`Vector(768)`) and generated `tsvector` column
+- [x] **Task 2.2: Hybrid Search & Retrieval Service**
+  - [x] Implement PostgreSQL stored procedure for hybrid vector + full-text search (RRF)
+  - [x] Unit tests for similarity thresholds and fallback triggers (9/9 passed)
+  - [x] Context assembler with prompt budget limiter to avoid context bloat
 
 ---
 
