@@ -36,6 +36,7 @@ class LLMProviderAdapter:
                     retrieved_chunks=retrieved_chunks,
                     tool_results=tool_results,
                     business_rules_hitl=business_rules_hitl,
+                    hitl_reason=hitl_reason,
                 )
                 if gemini_reply:
                     sanitized, _ = strip_unknown_urls(gemini_reply)
@@ -59,10 +60,17 @@ class LLMProviderAdapter:
         retrieved_chunks: List[Dict[str, Any]],
         tool_results: Dict[str, Any],
         business_rules_hitl: bool,
+        hitl_reason: Optional[str] = None,
     ) -> Optional[str]:
         api_key = settings.GEMINI_API_KEY
-        model = settings.GEMINI_MODEL
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+        if not api_key:
+            return None
+
+        # Build candidate models with graceful degradation
+        candidate_models = [settings.GEMINI_MODEL]
+        for fallback in ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"]:
+            if fallback not in candidate_models:
+                candidate_models.append(fallback)
 
         # Construct fenced context prompt
         system_instruction = (
@@ -70,6 +78,11 @@ class LLMProviderAdapter:
             "Formulate a helpful, precise customer reply grounded strictly in the provided order and policy facts. "
             "Never invent facts or promise actions outside our business rules."
         )
+        if business_rules_hitl:
+            system_instruction += (
+                f" Note: This action requires human review ({hitl_reason or 'business policy limit exceeded'}). "
+                "Inform the customer politely that their request has been escalated to a support specialist for manual review."
+            )
 
         context_blocks = []
         if retrieved_chunks:
@@ -99,15 +112,24 @@ class LLMProviderAdapter:
             },
         }
 
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.post(url, json=payload)
-            if resp.status_code == 200:
-                data = resp.json()
-                candidates = data.get("candidates", [])
-                if candidates:
-                    parts = candidates[0].get("content", {}).get("parts", [])
-                    if parts:
-                        return parts[0].get("text", "").strip()
+        async with httpx.AsyncClient(timeout=20.0) as client:
+            for model_name in candidate_models:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+                try:
+                    resp = await client.post(url, json=payload)
+                    if resp.status_code == 200:
+                        data = resp.json()
+                        candidates = data.get("candidates", [])
+                        if candidates:
+                            parts = candidates[0].get("content", {}).get("parts", [])
+                            if parts:
+                                return parts[0].get("text", "").strip()
+                    elif resp.status_code in (404, 429, 503):
+                        logger.warning(f"Gemini model {model_name} returned status {resp.status_code}, trying next candidate...")
+                        continue
+                except (httpx.TimeoutException, httpx.RequestError) as err:
+                    logger.warning(f"Gemini model {model_name} request failed: {err}")
+                    continue
 
         return None
 
