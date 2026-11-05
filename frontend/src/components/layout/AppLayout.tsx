@@ -184,11 +184,7 @@ export const AppLayout: React.FC = () => {
                 <CheckSquare className="h-3.5 w-3.5 shrink-0 text-slate-500" />
                 {!collapsed && <span>Tasks</span>}
               </div>
-              {!collapsed && (
-                <span className="h-4 min-w-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center bg-amber-50 text-amber-700 border border-amber-200">
-                  4
-                </span>
-              )}
+
             </NavLink>
           </div>
 

@@ -184,7 +184,6 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
 
 export const TicketsPage: React.FC = () => {
   const [customItems, setCustomItems] = useState<ExtendedTicketItem[]>(REFERENCE_CARDS);
-  const [totalCount, setTotalCount] = useState<number>(REFERENCE_CARDS.length);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // View Mode: Board vs Table
@@ -247,7 +246,6 @@ export const TicketsPage: React.FC = () => {
 
         // Combine reference benchmark items with backend items
         setCustomItems([...REFERENCE_CARDS, ...mappedItems]);
-        setTotalCount(REFERENCE_CARDS.length + res.total);
       }
     } catch (err) {
       console.warn('Backend ticket fetch fallback to reference model:', err);
@@ -283,7 +281,7 @@ export const TicketsPage: React.FC = () => {
     {
       key: 'qualification',
       title: 'Qualification',
-      iconStyle: 'border border-slate-400 bg-transparent', // ◌ open circle
+      iconStyle: 'border border-dashed border-slate-400 bg-transparent', // ◌ open dashed circle
       count: filteredItems.filter((i) => i.stage === 'qualification').length,
       total: filteredItems
         .filter((i) => i.stage === 'qualification')
@@ -292,7 +290,7 @@ export const TicketsPage: React.FC = () => {
     {
       key: 'discovery',
       title: 'Discovery',
-      iconStyle: 'bg-sky-500 border border-sky-500', // 🔵 discovery
+      iconStyle: 'border-2 border-sky-500 bg-transparent', // 🔵 discovery circle ring
       count: filteredItems.filter((i) => i.stage === 'discovery').length,
       total: filteredItems
         .filter((i) => i.stage === 'discovery')
@@ -301,7 +299,7 @@ export const TicketsPage: React.FC = () => {
     {
       key: 'proposal',
       title: 'Proposal',
-      iconStyle: 'bg-amber-500 border border-amber-500', // 🟡 proposal
+      iconStyle: 'border-2 border-amber-500 bg-transparent', // 🟡 proposal circle ring
       count: filteredItems.filter((i) => i.stage === 'proposal').length,
       total: filteredItems
         .filter((i) => i.stage === 'proposal')
@@ -310,7 +308,7 @@ export const TicketsPage: React.FC = () => {
     {
       key: 'negotiation',
       title: 'Negotiation',
-      iconStyle: 'bg-purple-500 border border-purple-500', // 🟣 negotiation
+      iconStyle: 'border-2 border-purple-500 bg-transparent', // 🟣 negotiation circle ring
       count: filteredItems.filter((i) => i.stage === 'negotiation').length,
       total: filteredItems
         .filter((i) => i.stage === 'negotiation')
@@ -347,7 +345,6 @@ export const TicketsPage: React.FC = () => {
     };
 
     setCustomItems([newItem, ...customItems]);
-    setTotalCount((prev) => prev + 1);
 
     // Reset modal
     setNewTitle('');
@@ -375,9 +372,6 @@ export const TicketsPage: React.FC = () => {
           <h1 className="text-[15px] font-semibold tracking-tight text-slate-900">
             Opportunities
           </h1>
-          <span className="px-1.5 py-0.2 rounded text-[11px] font-mono text-slate-400 bg-slate-100">
-            {totalCount}
-          </span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -387,7 +381,7 @@ export const TicketsPage: React.FC = () => {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-[13px] font-medium shadow-2xs transition-colors cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5 text-slate-600" />
-            <span>+ Create opportunity</span>
+            <span>Create opportunity</span>
           </button>
         </div>
       </div>
@@ -632,14 +626,18 @@ export const TicketsPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => openCreateForStage(col.key as any)}
-                      className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer transition-colors"
-                      title={`Add opportunity to ${col.title}`}
-                    >
-                      <Plus className="h-3.5 w-3.5" />
-                    </button>
+                    {col.key !== 'negotiation' ? (
+                      <button
+                        type="button"
+                        onClick={() => openCreateForStage(col.key as any)}
+                        className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer transition-colors"
+                        title={`Add opportunity to ${col.title}`}
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </button>
+                    ) : (
+                      <div className="w-5.5 h-5.5" />
+                    )}
                   </div>
 
                   {/* Cards Scrollable Area */}
@@ -726,7 +724,7 @@ export const TicketsPage: React.FC = () => {
                         className="w-full py-2 px-3 text-[12px] text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
                       >
                         <Plus className="h-3.5 w-3.5" />
-                        <span>+ Create opportunity</span>
+                        <span>Create opportunity</span>
                       </button>
                     )}
                   </div>
