@@ -84,21 +84,23 @@ def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
         request_id = get_request_id(request)
-        # Format Pydantic field validation errors cleanly
-        formatted_errors = []
+        formatted_details = []
         for err in exc.errors():
-            loc = " -> ".join([str(x) for x in err.get("loc", []) if x != "body"])
-            msg = err.get("msg", "Validation error")
-            formatted_errors.append(f"{loc}: {msg}" if loc else msg)
+            loc = " -> ".join([str(p) for p in err.get("loc", []) if p != "body"])
+            formatted_details.append({
+                "field": loc or "body",
+                "message": err.get("msg", "Invalid value"),
+                "type": err.get("type", "value_error"),
+            })
 
         return JSONResponse(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             content={
                 "error": {
                     "code": "VALIDATION_ERROR",
-                    "message": "; ".join(formatted_errors),
-                    "details": exc.errors(),
+                    "message": "The request payload failed schema validation.",
                     "request_id": request_id,
+                    "details": formatted_details,
                 }
             },
         )
