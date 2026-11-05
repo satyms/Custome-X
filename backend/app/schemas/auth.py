@@ -25,8 +25,8 @@ class UserRegisterRequest(BaseModel):
         default="agent",
         description="Role assigned to user: agent, supervisor, or admin",
     )
-    organization_id: uuid.UUID = Field(
-        ...,
+    organization_id: Optional[uuid.UUID] = Field(
+        default=uuid.UUID("11111111-1111-1111-1111-111111111111"),
         description="Organization UUID to which the user belongs",
     )
 

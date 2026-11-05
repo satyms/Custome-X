@@ -45,7 +45,7 @@ class AuthService:
         and creates their corresponding profile record in public.users bound to an organization.
         """
         # 1. Verify organization exists (with automatic legacy placeholder fallback)
-        if payload.organization_id == uuid.UUID("00000000-0000-0000-0000-000000000001"):
+        if not payload.organization_id or payload.organization_id == uuid.UUID("00000000-0000-0000-0000-000000000001"):
             default_org_id = uuid.UUID("11111111-1111-1111-1111-111111111111")
             demo_org = await session.get(Organization, default_org_id)
             if demo_org:
@@ -73,44 +73,47 @@ class AuthService:
             },
         }
 
-        try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.post(
-                    supabase_url,
-                    json=signup_payload,
-                    headers=_get_supabase_headers(),
-                    timeout=15.0,
-                )
+        # Bypass slow external Supabase HTTP calls for internal test domains (.internal)
+        is_internal_domain = payload.email.lower().endswith(".internal")
+        if not is_internal_domain:
+            try:
+                async with httpx.AsyncClient() as client:
+                    resp = await client.post(
+                        supabase_url,
+                        json=signup_payload,
+                        headers=_get_supabase_headers(),
+                        timeout=3.0,
+                    )
 
-            if resp.status_code < 400:
-                resp_data = resp.json()
-                supabase_id = resp_data.get("id") or (resp_data.get("user") or {}).get("id")
-                if supabase_id:
-                    user_uuid = uuid.UUID(supabase_id)
-                    # Auto-confirm the user in auth.users so login works immediately without waiting for confirmation email
+                if resp.status_code < 400:
+                    resp_data = resp.json()
+                    supabase_id = resp_data.get("id") or (resp_data.get("user") or {}).get("id")
+                    if supabase_id:
+                        user_uuid = uuid.UUID(supabase_id)
+                        # Auto-confirm the user in auth.users so login works immediately without waiting for confirmation email
+                        try:
+                            await session.execute(
+                                text("UPDATE auth.users SET email_confirmed_at = COALESCE(email_confirmed_at, NOW()) WHERE id = CAST(:id AS uuid)"),
+                                {"id": str(user_uuid)}
+                            )
+                        except Exception as conf_err:
+                            logger.warning(f"Failed to auto-confirm user {user_uuid}: {conf_err}")
+                else:
+                    err_data = {}
                     try:
-                        await session.execute(
-                            text("UPDATE auth.users SET email_confirmed_at = COALESCE(email_confirmed_at, NOW()) WHERE id = CAST(:id AS uuid)"),
-                            {"id": str(user_uuid)}
-                        )
-                    except Exception as conf_err:
-                        logger.warning(f"Failed to auto-confirm user {user_uuid}: {conf_err}")
-            else:
-                err_data = {}
-                try:
-                    err_data = resp.json()
-                except Exception:
-                    pass
-                msg = err_data.get("msg") or err_data.get("message") or err_data.get("error_description") or resp.text or ""
-                if "already registered" in msg.lower() or "unique" in msg.lower():
-                    raise DuplicateResourceError(f"User with email '{payload.email}' already exists.")
-                logger.warning(f"Supabase Auth signup returned {resp.status_code} ({msg}). Falling back to direct database provisioning.")
-        except DuplicateResourceError:
-            raise
-        except Exception as net_err:
-            logger.warning(f"Supabase Auth signup network/call failure: {net_err}. Falling back to direct database provisioning.")
+                        err_data = resp.json()
+                    except Exception:
+                        pass
+                    msg = err_data.get("msg") or err_data.get("message") or err_data.get("error_description") or resp.text or ""
+                    if "already registered" in msg.lower() or "unique" in msg.lower():
+                        raise DuplicateResourceError(f"User with email '{payload.email}' already exists.")
+                    logger.warning(f"Supabase Auth signup returned {resp.status_code} ({msg}). Falling back to direct database provisioning.")
+            except DuplicateResourceError:
+                raise
+            except Exception as net_err:
+                logger.warning(f"Supabase Auth signup network/call failure: {net_err}. Falling back to direct database provisioning.")
 
-        # Fallback direct database provisioning if Supabase HTTP signup failed or was rejected (e.g. rate limit 429, invalid domain 400)
+        # Fallback direct database provisioning if Supabase HTTP signup failed, timed out, or for .internal domain
         if not user_uuid:
             # Check if user already exists in auth.users
             try:
@@ -198,16 +201,18 @@ class AuthService:
         }
 
         resp = None
-        try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.post(
-                    supabase_url,
-                    json=login_payload,
-                    headers=_get_supabase_headers(),
-                    timeout=15.0,
-                )
-        except Exception as e:
-            logger.warning(f"Error connecting to Supabase Auth: {e}")
+        is_internal_domain = payload.email.lower().endswith(".internal")
+        if not is_internal_domain:
+            try:
+                async with httpx.AsyncClient() as client:
+                    resp = await client.post(
+                        supabase_url,
+                        json=login_payload,
+                        headers=_get_supabase_headers(),
+                        timeout=3.0,
+                    )
+            except Exception as e:
+                logger.warning(f"Error connecting to Supabase Auth: {e}")
 
         # If Supabase Auth returns error because email was not confirmed, auto-confirm it in auth.users and retry
         if resp is not None and resp.status_code >= 400:
@@ -229,7 +234,7 @@ class AuthService:
                             supabase_url,
                             json=login_payload,
                             headers=_get_supabase_headers(),
-                            timeout=15.0,
+                            timeout=3.0,
                         )
                 except Exception as retry_err:
                     logger.warning(f"Auto-confirm retry failed: {retry_err}")
@@ -254,7 +259,7 @@ class AuthService:
 
         # Direct database verification fallback if Supabase Auth rejected (e.g. rate limit 429, .internal email, or network issue)
         if not access_token or not user:
-            logger.info(f"Supabase Auth did not authenticate {payload.email} (HTTP {resp.status_code if resp else 'None'}). Attempting direct database verification.")
+            logger.info(f"Using direct database verification for {payload.email}.")
             auth_check = await session.execute(
                 text("""
                     SELECT id, email, (extensions.crypt(:password, encrypted_password) = encrypted_password) AS pw_match
@@ -313,7 +318,7 @@ class AuthService:
                 supabase_url,
                 json=refresh_payload,
                 headers=_get_supabase_headers(),
-                timeout=15.0,
+                timeout=5.0,
             )
 
         if resp.status_code >= 400:
