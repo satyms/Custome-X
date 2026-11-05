@@ -87,21 +87,26 @@
 
 ---
 
-## Milestone 3: Agent Core & Tool Calling Framework
+## Milestone 3: Agent Core & Tool Calling Framework (Layer 3 · Completed)
 
-- [ ] **Task 3.1: Tool Registry & Execution Engine**
-  - [ ] Define JSON schemas and implementations for:
-    - `lookup_order(order_id, customer_email)`
-    - `track_package(tracking_number)`
-    - `create_ticket(customer_id, subject, priority, body)`
-    - `calculate_return_eligibility(order_id, items)`
-  - [ ] Unit tests with mocking for external store APIs
-  - [ ] Idempotency key handling for mutating actions
-- [ ] **Task 3.2: Supervisor & Orchestrator Agent**
-  - [ ] Implement system prompt with Karpathy-style clear guardrails and role instructions
-  - [ ] Intent classification (informational FAQ vs. transactional vs. complaint)
-  - [ ] Tool selection and multi-step execution loop
-  - [ ] Guardrail middleware (PII masking and prompt injection defense)
+- [x] **Task 3.1: Tool Registry & Execution Engine**
+  - [x] Typed server-side tools (`get_order_details`, `get_customer_orders`, `get_shipment_status`, `get_return_policy`, `request_refund_approval`)
+  - [x] Cross-customer ownership verification and tenant isolation guards (`OwnershipViolationError` HTTP 403)
+  - [x] Deterministic fallback and mock adapters for offline / test environments
+  - [x] Idempotency key generation for mutating and approval proposals
+- [x] **Task 3.2: 7-Step Deterministic AI Orchestration Pipeline**
+  - [x] Step 1: Input sanitization, PII masking (`[CARD]`, `[PHONE]`, `[SECRET]`), delimiter neutralization, and prompt injection defense
+  - [x] Step 2: Intent classification & canonical entity extraction (`order_id`, `sku`, `reason`, `amount`)
+  - [x] Step 3: RAG hybrid retrieval via `pgvector` + FTS with active version status filtering (`status = 'active'`)
+  - [x] Step 4: Least-privilege data needs planning (ensures `get_order_details` is scheduled to enforce customer ownership)
+  - [x] Step 5: Typed server-side tool execution with step execution tracing
+  - [x] Step 6: Business rule validation (30-day return window, $50 refund threshold, in-transit cancellation blocks, URL allow-listing)
+  - [x] Step 7: Structured JSON action proposal output matching `OrchestrationResponse` contract
+  - [x] Full test suite verification (18/18 tests in `test_orchestrator.py` passing)
+- [x] **Task 3.3: Frontend Orchestrator Integration & Inspection Console**
+  - [x] Typed frontend API client (`agentApi.orchestrate`) and TypeScript contract models
+  - [x] Three-column ticket detail workspace integration with interactive `OrchestratorInspector`
+  - [x] Step-by-step verification traces accordion, confidence indicator, human escalation alert, and one-click draft composer insertion
 
 ---
 

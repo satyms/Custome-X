@@ -103,3 +103,22 @@ This log records key architectural and technical decisions made for **Custome-X*
 * **Consequences:**
   * **Pros:** Completely eliminates PostgreSQL policy recursion; standardizes tenant resolution to a single pre-compiled database function; ensures both Supabase Auth internal queries and API tenant queries succeed seamlessly.
   * **Cons:** Requires `SET search_path = public` on the function to prevent search path hijacking.
+
+
+---
+
+## ADR-009: 7-Step Deterministic AI Orchestration Pipeline with Strict Verification Gates
+
+* **Status:** Accepted
+* **Context:** Pure LLM agents that execute actions without deterministic validation can hallucinate unauthorized refunds, access order records across customer boundaries, trigger destructive cancellations on items already dispatched, or fall victim to prompt injection and PII leakage.
+* **Decision:** Implement a strictly ordered 7-step deterministic pipeline for all agent actions:
+  1. **Input Sanitization & Fencing:** Strip prompt injection tokens, mask customer PII (credit cards, SSNs, secrets), neutralize pseudo-XML delimiters (`<untrusted source="...">`), and assert that the requesting `customer_id` matches the session.
+  2. **Deterministic Entity Extraction & Intent Classification:** Canonical regex extractors parse order identifiers (`ORD-XXXXX`), SKUs, and amounts to ensure deterministic parameter binding.
+  3. **RAG Policy Retrieval with Active Version Filtering:** Knowledge base chunks are retrieved with explicit `status = 'active'` filtering and source attribution.
+  4. **Least-Privilege Data Needs Planning:** Schedule necessary server-side tools ahead of time; if an order ID is present in the customer query, always schedule `get_order_details` to verify ownership prior to revealing status.
+  5. **Typed Server-Side Tool Execution:** Execute typed Python tools with strict schema validation; raise `OwnershipViolationError` (HTTP 403) if an order belongs to a different customer.
+  6. **Business Rule Engine & Financial Threshold Guards:** Apply hard business constraints in Python code: 30-day return window limit, $50.00 autonomous refund threshold (mandating human supervisor approval if exceeded), in-transit cancellation blocks, and URL host allow-listing filter (`[link removed]`).
+  7. **Structured Action Proposal Contract:** Generate immutable JSON conforming to the `OrchestrationResponse` schema with confidence score, source citations, proposed action payload, and complete step-by-step audit traces.
+* **Consequences:**
+  * **Pros:** "The LLM proposes; deterministic code decides." Guarantees zero unauthorized financial actions, stops cross-customer data leakage, and provides complete observable execution traces in the support dashboard.
+  * **Cons:** Requires rigorous synchronization between LLM outputs and deterministic validator schemas.
