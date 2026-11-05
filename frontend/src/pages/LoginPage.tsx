@@ -124,7 +124,7 @@ export const LoginPage: React.FC = () => {
         navigate(from, { replace: true });
       } else {
         // Register agent under default demo organization
-        const defaultOrgId = '00000000-0000-0000-0000-000000000001';
+        const defaultOrgId = '11111111-1111-1111-1111-111111111111';
         await register({
           email,
           password,
