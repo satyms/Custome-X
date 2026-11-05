@@ -147,6 +147,8 @@ export const ApprovalsPage: React.FC = () => {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const pendingCount = approvals.filter((a) => a.status === 'pending').length;
+  const approvedCount = approvals.filter((a) => a.status === 'approved').length;
+  const rejectedCount = approvals.filter((a) => a.status === 'rejected').length;
   const filteredApprovals = approvals.filter((a) => a.status === selectedTab);
 
   const handleApprove = (approval: ApprovalAction) => {
