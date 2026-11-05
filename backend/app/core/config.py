@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # AI Orchestrator & LLM settings
     GEMINI_API_KEY: Optional[str] = None
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-3.5-flash-lite"
     ANTHROPIC_API_KEY: Optional[str] = None
     ANTHROPIC_MODEL: str = "claude-3-7-sonnet-20250219"
     AI_FALLBACK_PROVIDER: str = "gemini"
