@@ -1,0 +1,92 @@
+{
+  "name": "WF1: New Ticket Notification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "customex-new-ticket",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $headers['x-event-type'] }}",
+              "value2": "ticket.created"
+            }
+          ]
+        }
+      },
+      "id": "node-verify-event",
+      "name": "Verify Event Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "channel": "#support-triage",
+        "text": "=🎟️ *New Ticket Created: #{{ $json.body.ticket_number }}*\n*Subject:* {{ $json.body.subject }}\n*Priority:* {{ $json.body.priority }}\n*Customer:* {{ $json.body.customer_email }}\n*Ticket ID:* {{ $json.body.ticket_id }}"
+      },
+      "id": "node-slack-alert",
+      "name": "Slack Dispatch Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [680, 240]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"acknowledged\",\n  \"event_id\": \"{{ $headers['x-idempotency-key'] }}\",\n  \"processed_at\": \"{{ $now.toISO() }}\"\n}"
+      },
+      "id": "node-webhook-response",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [920, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Verify Event Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Event Type": {
+      "main": [
+        [
+          {
+            "node": "Slack Dispatch Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Dispatch Notification": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

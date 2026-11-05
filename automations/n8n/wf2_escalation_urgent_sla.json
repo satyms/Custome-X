@@ -1,0 +1,92 @@
+{
+  "name": "WF2: Escalation to Human Queue",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "customex-escalation",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-escalate-trigger",
+      "name": "Escalation Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $headers['x-event-type'] }}",
+              "value2": "ticket.escalated"
+            }
+          ]
+        }
+      },
+      "id": "node-verify-escalate-type",
+      "name": "Verify Escalation Event",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "channel": "#urgent-escalations",
+        "text": "=🚨 *URGENT SLA ESCALATION: Ticket #{{ $json.body.ticket_number }}*\n*Reason:* {{ $json.body.reason }}\n*Customer:* {{ $json.body.customer_email }}\n*SLA Deadline:* 30 minutes\n*Dashboard Link:* http://localhost:5173/tickets/{{ $json.body.ticket_id }}"
+      },
+      "id": "node-urgent-slack",
+      "name": "Alert Urgent On-Call Channel",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [680, 240]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"escalated_queued\",\n  \"event_id\": \"{{ $headers['x-idempotency-key'] }}\",\n  \"routing\": \"tier_2_human_specialist\"\n}"
+      },
+      "id": "node-escalate-response",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [920, 300]
+    }
+  ],
+  "connections": {
+    "Escalation Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Verify Escalation Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Escalation Event": {
+      "main": [
+        [
+          {
+            "node": "Alert Urgent On-Call Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Urgent On-Call Channel": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

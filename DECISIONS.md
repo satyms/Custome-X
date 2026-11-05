@@ -140,3 +140,26 @@ This log records key architectural and technical decisions made for **Custome-X*
 * **Consequences:**
   * **Pros:** Scale-invariant rank fusion, zero external vector database dependencies (single source of truth in PostgreSQL), deterministic testability, strict tenant isolation, and automated database-level full-text indexing.
   * **Cons:** Requires running versioned database migrations (`6d41c0cbdd36`) and maintains 768 float dimensions per chunk.
+
+
+---
+
+## ADR-011: Layer 4 Complete Relational Schema (Commerce & Agent Audit) and Layer 5 n8n Automation Engine with DLQ
+
+* **Status:** Accepted
+* **Context:** Sections 2 and 3.4 of `ARCHITECTURE.md` require completing the full relational persistence layer: Commerce domain tables (`products`, `orders`, `order_items`, `shipments`, `shipment_events`) and Agent & HITL audit tables (`pending_actions`, `workflow_events`, `agent_runs`, `tool_calls`, `audit_logs`), completing all 18 tables specified in the enterprise architecture with PostgreSQL Row-Level Security. Furthermore, Layer 5 requires an outbound automation bus for n8n workflows with cryptographic HMAC verification, delivery retries, dead-letter queue (DLQ) state persistence, and full frontend observability.
+* **Decision:**
+  1. **Schema Migration & RLS:** Applied versioned migration `a892f3b14cd5_create_commerce_and_agent_audit_tables.py` on Supabase PostgreSQL, creating all 10 tables with check constraints, cascade deletes, composite indexes, and Row-Level Security tenant isolation policies (`organization_id = auth.jwt() ->> 'organization_id'`).
+  2. **Automations Engine & Webhook Dispatcher:** Implemented `WebhookDispatcher` with RFC 2104 compliant HMAC-SHA256 signature generation (`X-Customex-Signature: sha256=...`), idempotency checking (`idempotency_key`), automatic retry tracking up to `max_retries = 3`, and fallback to dead-letter queue (`failed` status) upon retry exhaustion.
+  3. **Event Trigger Integration:** Wired asynchronous webhook triggers into core API endpoints: `ticket.created` (WF1) on ticket submission, `ticket.escalated` (WF2) on status escalation, `approval.approved` and `approval.rejected` (WF3) on HITL triage.
+  4. **Production n8n Workflows:** Packaged 4 exportable n8n workflow definitions in `automations/n8n/`:
+     - `wf1_new_ticket_notification.json`: Inbound ticket routing and multi-channel agent alert.
+     - `wf2_escalation_urgent_sla.json`: Urgent ticket escalation and manager SLA paging.
+     - `wf3_approval_gated_action.json`: HITL authorization webhook and refund/intercept dispatch.
+     - `wf4_scheduled_etl_kpi.json`: Nightly batch ETL aggregation and analytics cache refresh.
+  5. **Frontend Management Consoles:** Created dedicated frontend pages:
+     - `AutomationsPage.tsx`: Live webhook delivery metrics, filterable event queue, one-click DLQ retry actions, and JSON payload inspector.
+     - `SettingsPage.tsx`: Tenant RLS status indicator, webhook endpoint & HMAC signing secret copy modal, AI safeguard thresholds editor, and interactive RBAC matrix.
+* **Consequences:**
+  - **Pros:** Full relational model compliance across all 18 tables; zero silent webhook drops due to DLQ persistence and manual retry; verifiable multi-tenant security from database to dashboard.
+  - **Cons:** Outbound webhooks require network egress or valid n8n endpoint target URL in production configuration.
