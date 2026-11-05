@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Toast } from '../components/ui/Toast';
+import { knowledgeApi, type KnowledgeChunkResult } from '../api';
 import {
   Search,
   Upload,
@@ -8,6 +9,12 @@ import {
   Sliders,
   Hash,
   X,
+  FileText,
+  CheckCircle2,
+  Database,
+  ArrowRight,
+  Loader2,
+  RefreshCw,
 } from 'lucide-react';
 
 export interface KnowledgeDocument {
@@ -46,7 +53,7 @@ const SAMPLE_DOCS: KnowledgeDocument[] = [
     format: 'markdown',
     tokenCount: 1420,
     chunkCount: 3,
-    embeddingModel: 'text-embedding-3-small (1536d)',
+    embeddingModel: 'text-embedding-004 (768d)',
     updatedAt: '2026-02-14',
     content: `# Return and Refund Policy
 Section 1: 30-Day Window. Customers may return unused products within 30 days of confirmed delivery for a full refund back to original payment method.
@@ -59,95 +66,95 @@ Section 3: Instant Exchange. Agents may issue instant replacement units for high
         tokenCount: 480,
         similarityScore: 0.94,
         metadata: {
-          section: 'Section 1: 30-Day Window',
+          section: 'Standard 30-Day Return Window',
           category: 'returns',
           policyVersion: 'v2.4',
           effectiveDate: '2026-01-01',
         },
-        content: 'Customers may initiate returns within 30 calendar days from parcel delivery confirmation. Items must include original packaging and barcode tags intact.',
-        embeddingSnippet: [0.0381, -0.0912, 0.1425, -0.0124, 0.0819],
+        content: 'Customers may return unopened or gently used merchandise within 30 calendar days of confirmed delivery for a 100% refund to original payment method.',
+        embeddingSnippet: [0.0412, -0.0189, 0.0823, -0.0541, 0.0211],
       },
       {
         id: 'CHK-001-B',
         chunkIndex: 1,
-        tokenCount: 512,
+        tokenCount: 510,
         similarityScore: 0.88,
         metadata: {
-          section: 'Section 2: Return Shipping & Fees',
+          section: 'Return Shipping Fees & Label Generation',
           category: 'returns',
           policyVersion: 'v2.4',
           effectiveDate: '2026-01-01',
         },
-        content: 'Prepaid shipping labels are provided free for defective units, transit damage, or store fulfillment errors. A flat $5.99 fee is deducted for customer remorse returns.',
-        embeddingSnippet: [0.0142, -0.0418, 0.0991, 0.0315, -0.0612],
+        content: 'Prepaid return shipping labels are complimentary for transit damage, defective units, or fulfillment errors. A flat $5.99 postage deduction applies to buyer remorse returns.',
+        embeddingSnippet: [-0.0123, 0.0762, -0.0345, 0.0912, 0.0045],
       },
       {
         id: 'CHK-001-C',
         chunkIndex: 2,
-        tokenCount: 428,
+        tokenCount: 430,
         similarityScore: 0.79,
         metadata: {
-          section: 'Section 3: VIP Instant Exchange',
+          section: 'Instant VIP Replacement Protocol',
           category: 'returns',
           policyVersion: 'v2.4',
           effectiveDate: '2026-01-01',
         },
-        content: 'VIP customer tier qualifies for instant replacement dispatch before courier pickup scan, guarded by maximum $500 escrow limit.',
-        embeddingSnippet: [0.0521, 0.0118, -0.0341, 0.1192, 0.0421],
+        content: 'Supervisors may authorize an immediate advance replacement dispatch for Tier-1 VIP accounts without awaiting return consignment receipt at fulfillment center.',
+        embeddingSnippet: [0.0331, -0.0418, 0.0621, -0.0098, 0.0514],
       },
     ],
   },
   {
     id: 'DOC-002',
-    title: 'International Shipping & Customs Clearance Guidelines',
+    title: 'Express Shipping & Carrier Tracking Policy',
     category: 'shipping',
-    format: 'pdf',
-    tokenCount: 2890,
-    chunkCount: 5,
-    embeddingModel: 'text-embedding-3-small (1536d)',
-    updatedAt: '2026-03-01',
-    content: `# International Shipping Policy
-Global delivery transit estimates: European Union (3-5 days), Asia-Pacific (5-7 days), Americas (2-4 days).
-Customs duty and VAT are calculated at checkout with DDP (Delivered Duty Paid) terms.`,
+    format: 'markdown',
+    tokenCount: 980,
+    chunkCount: 2,
+    embeddingModel: 'text-embedding-004 (768d)',
+    updatedAt: '2026-02-01',
+    content: `# Express Shipping SLAs
+Orders placed before 2 PM EST ship the same business day via FedEx Ground or Priority Air.
+Transit delay protocols: Inquiries on parcels idle for >7 days trigger carrier trace tickets automatically. Parcels idle for >14 days are classified lost-in-transit.`,
     chunks: [
       {
         id: 'CHK-002-A',
         chunkIndex: 0,
-        tokenCount: 512,
-        similarityScore: 0.82,
+        tokenCount: 420,
+        similarityScore: 0.89,
         metadata: {
-          section: 'Transit Estimates & Carriers',
+          section: 'Fulfillment Cutoff & Carrier Selection',
           category: 'shipping',
           policyVersion: 'v3.1',
-          effectiveDate: '2026-02-01',
+          effectiveDate: '2026-01-15',
         },
-        content: 'Cross-border express consignments are routed via DHL Express and FedEx International Priority with real-time milestone scan webhooks.',
-        embeddingSnippet: [-0.0128, 0.0841, 0.0519, -0.0914, 0.0318],
+        content: 'Orders placed before 2:00 PM EST ship same business day via FedEx Ground. Priority Air cut-off is strictly 12:00 PM EST.',
+        embeddingSnippet: [-0.0519, 0.0332, 0.0118, -0.0782, 0.0441],
       },
       {
         id: 'CHK-002-B',
         chunkIndex: 1,
-        tokenCount: 490,
-        similarityScore: 0.76,
+        tokenCount: 560,
+        similarityScore: 0.95,
         metadata: {
-          section: 'DDP Duty & Tax Settlement',
+          section: 'Lost-in-Transit Thresholds & Claims',
           category: 'shipping',
           policyVersion: 'v3.1',
-          effectiveDate: '2026-02-01',
+          effectiveDate: '2026-01-15',
         },
-        content: 'All orders qualify for Delivered Duty Paid settlement. Customers incur no supplemental carrier disbursements upon delivery.',
-        embeddingSnippet: [0.0441, -0.0219, 0.0712, 0.0189, -0.0512],
+        content: 'Parcels without carrier scan events for more than 14 consecutive days are classified as lost-in-transit. In such cases, full refunds or expedited replacement dispatch are automatically authorized.',
+        embeddingSnippet: [0.0612, -0.0245, 0.0991, 0.0123, -0.0381],
       },
     ],
   },
   {
     id: 'DOC-003',
-    title: 'Hardware Limited Warranty & Replacement Terms',
+    title: '2-Year Limited Hardware Warranty Terms',
     category: 'warranty',
     format: 'markdown',
-    tokenCount: 1950,
-    chunkCount: 4,
-    embeddingModel: 'text-embedding-3-small (1536d)',
+    tokenCount: 1120,
+    chunkCount: 1,
+    embeddingModel: 'text-embedding-004 (768d)',
     updatedAt: '2026-01-20',
     content: `# Hardware Warranty
 All devices carry a 2-year manufacturer warranty against hardware defects. Accidental liquid damage requires the Care+ supplemental plan.`,
@@ -181,6 +188,9 @@ export const KnowledgePage: React.FC = () => {
   const [newDocTitle, setNewDocTitle] = useState<string>('');
   const [newDocCategory, setNewDocCategory] = useState<'returns' | 'shipping' | 'warranty' | 'payments' | 'faq'>('returns');
   const [newDocContent, setNewDocContent] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [liveSearchResults, setLiveSearchResults] = useState<KnowledgeChunkResult[] | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const filteredDocs = docs.filter(
@@ -189,51 +199,101 @@ export const KnowledgePage: React.FC = () => {
       d.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleUploadSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!searchQuery.trim()) {
+      setLiveSearchResults(null);
+      return;
+    }
+    setIsSearching(true);
+    try {
+      const res = await knowledgeApi.search({
+        query: searchQuery,
+        threshold: similarityThreshold,
+        top_k: 4,
+        organization_id: '11111111-1111-1111-1111-111111111111',
+      });
+      setLiveSearchResults(res.results);
+      setToast({
+        type: 'success',
+        text: `RAG search completed: found ${res.total_matches} matching chunk(s) in ${res.latency_ms}ms`,
+      });
+    } catch (err) {
+      console.warn('RAG search error:', err);
+      setToast({
+        type: 'error',
+        text: 'Live hybrid search failed. Showing local matches.',
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDocTitle.trim() || !newDocContent.trim()) {
       setToast({ type: 'error', text: 'Document title and content are required.' });
       return;
     }
 
-    const newDoc: KnowledgeDocument = {
-      id: `DOC-00${docs.length + 1}`,
-      title: newDocTitle,
-      category: newDocCategory,
-      format: 'markdown',
-      tokenCount: Math.round(newDocContent.length / 4),
-      chunkCount: 2,
-      embeddingModel: 'text-embedding-3-small (1536d)',
-      updatedAt: new Date().toISOString().split('T')[0],
-      content: newDocContent,
-      chunks: [
-        {
-          id: `CHK-${docs.length + 1}-A`,
-          chunkIndex: 0,
-          tokenCount: Math.round(newDocContent.length / 8),
-          similarityScore: 0.92,
-          metadata: {
-            section: 'Introduction & Core Terms',
-            category: newDocCategory,
-            policyVersion: 'v1.0',
-            effectiveDate: new Date().toISOString().split('T')[0],
-          },
-          content: newDocContent.slice(0, 300),
-          embeddingSnippet: [0.0219, -0.0614, 0.1182, 0.0415, -0.0219],
-        },
-      ],
-    };
+    setIsSubmitting(true);
+    try {
+      const res = await knowledgeApi.upload({
+        title: newDocTitle,
+        content: newDocContent,
+        category: newDocCategory,
+        document_type: 'policy',
+        version: 'v1.0',
+        status: 'active',
+      });
 
-    setDocs((prev) => [newDoc, ...prev]);
-    setSelectedDoc(newDoc);
-    setSelectedChunk(newDoc.chunks[0]);
-    setUploadModalOpen(false);
-    setNewDocTitle('');
-    setNewDocContent('');
-    setToast({
-      type: 'success',
-      text: `Document "${newDoc.title}" ingested & embedded with 2 vector chunks.`,
-    });
+      const newDoc: KnowledgeDocument = {
+        id: res.doc_id || `DOC-00${docs.length + 1}`,
+        title: res.title || newDocTitle,
+        category: newDocCategory,
+        format: 'markdown',
+        tokenCount: res.token_count || Math.round(newDocContent.length / 4),
+        chunkCount: res.chunks_created || 2,
+        embeddingModel: 'text-embedding-004 (768d)',
+        updatedAt: new Date().toISOString().split('T')[0],
+        content: newDocContent,
+        chunks: [
+          {
+            id: `CHK-${docs.length + 1}-A`,
+            chunkIndex: 0,
+            tokenCount: Math.round(newDocContent.length / 8),
+            similarityScore: 0.92,
+            metadata: {
+              section: newDocTitle,
+              category: newDocCategory,
+              policyVersion: 'v1.0',
+              effectiveDate: new Date().toISOString().split('T')[0],
+            },
+            content: newDocContent.slice(0, 300),
+            embeddingSnippet: [0.0219, -0.0614, 0.1182, 0.0415, -0.0219],
+          },
+        ],
+      };
+
+      setDocs((prev) => [newDoc, ...prev]);
+      setSelectedDoc(newDoc);
+      setSelectedChunk(newDoc.chunks[0]);
+      setUploadModalOpen(false);
+      setNewDocTitle('');
+      setNewDocContent('');
+      setToast({
+        type: 'success',
+        text: `Document "${newDoc.title}" successfully ingested and embedded into pgvector (${res.chunks_created} chunks).`,
+      });
+    } catch (err) {
+      console.warn('Backend ingestion error:', err);
+      setToast({
+        type: 'error',
+        text: 'Document ingestion failed. Please verify database connectivity.',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -245,19 +305,20 @@ export const KnowledgePage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight text-white">Knowledge Base &amp; RAG Inspector</h1>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-medium">
-              pgvector 1536d
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-medium flex items-center gap-1.5">
+              <Database className="h-3 w-3" />
+              pgvector (768d) + FTS
             </span>
           </div>
           <p className="text-sm text-slate-400 mt-1">
-            Search ingested policy documents, inspect vector chunk tokens, and simulate similarity queries.
+            Search ingested policy documents, inspect Reciprocal Rank Fusion scores, and embed new knowledge.
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => setUploadModalOpen(true)}
-          className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 flex items-center gap-2 cursor-pointer"
+          className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 flex items-center gap-2 cursor-pointer transition-colors"
         >
           <Upload className="h-4 w-4" />
           <span>Upload Document</span>
@@ -266,7 +327,7 @@ export const KnowledgePage: React.FC = () => {
 
       {/* RAG Search & Threshold Simulator Bar */}
       <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
+        <form onSubmit={handleSearchSubmit} className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
@@ -274,29 +335,50 @@ export const KnowledgePage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search policies or test RAG query (e.g., 'What is return window on open items?')..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-10 pr-20 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  setLiveSearchResults(null);
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
+
+          <button
+            type="submit"
+            disabled={isSearching}
+            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            <span>Test RAG Query</span>
+          </button>
 
           {/* Threshold Slider */}
           <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800">
             <Sliders className="h-4 w-4 text-indigo-400 shrink-0" />
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-400">Similarity Cutoff:</span>
+              <span className="text-slate-400">Cutoff:</span>
               <span className="font-mono font-bold text-white">{(similarityThreshold * 100).toFixed(0)}%</span>
             </div>
             <input
               type="range"
-              min="0.5"
+              min="0.4"
               max="0.95"
               step="0.05"
               value={similarityThreshold}
               onChange={(e) => setSimilarityThreshold(parseFloat(e.target.value))}
-              className="w-24 accent-indigo-500 cursor-pointer"
+              className="w-20 accent-indigo-500 cursor-pointer"
             />
           </div>
 
-          {/* Hybrid Mode Toggle */}
+          {/* Hybrid Mode Badge */}
           <button
             type="button"
             onClick={() => setHybridSearch(!hybridSearch)}
@@ -307,10 +389,57 @@ export const KnowledgePage: React.FC = () => {
             }`}
           >
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Hybrid Search (Dense + BM25)</span>
+            <span>Hybrid (Dense + BM25)</span>
           </button>
-        </div>
+        </form>
       </div>
+
+      {/* Live RAG Search Results Drawer (if active) */}
+      {liveSearchResults && (
+        <div className="p-5 rounded-2xl bg-indigo-950/20 border border-indigo-500/30 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-indigo-400" />
+              <h2 className="text-sm font-semibold text-white">
+                Live PostgreSQL Hybrid Search Matches ({liveSearchResults.length})
+              </h2>
+            </div>
+            <button
+              onClick={() => setLiveSearchResults(null)}
+              className="text-xs text-slate-400 hover:text-white flex items-center gap-1 cursor-pointer"
+            >
+              <X className="h-3.5 w-3.5" />
+              <span>Dismiss</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {liveSearchResults.map((chunk, idx) => (
+              <div
+                key={chunk.chunk_id || idx}
+                className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2 text-xs"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-white">{chunk.doc_title || 'Document Chunk'}</span>
+                  <div className="flex items-center gap-1.5 font-mono">
+                    <span className="px-1.5 py-0.5 rounded bg-indigo-500/15 text-indigo-300 font-bold">
+                      RRF: {chunk.hybrid_score.toFixed(4)}
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300">
+                      Dense: {chunk.dense_score.toFixed(3)}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-slate-300 leading-relaxed line-clamp-3">{chunk.content}</p>
+                <div className="flex items-center justify-between text-slate-500 font-mono text-[11px] pt-1 border-t border-slate-800">
+                  <span>{chunk.section || chunk.category}</span>
+                  <span>{chunk.token_count} tokens</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Main 2-Column Split: Document Library & Chunk Inspector */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -338,22 +467,24 @@ export const KnowledgePage: React.FC = () => {
                       : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-xs text-indigo-400 font-bold">{doc.id}</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 uppercase">
-                      {doc.format}
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-mono text-indigo-400 font-bold">{doc.id}</span>
+                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                      {doc.category}
                     </span>
                   </div>
-                  <h3 className="text-sm font-bold text-white mb-1.5">{doc.title}</h3>
-                  <div className="flex items-center gap-3 text-xs text-slate-400">
-                    <span className="flex items-center gap-1 font-mono">
-                      <Layers className="h-3.5 w-3.5 text-slate-500" />
-                      <span>{doc.chunkCount} Chunks</span>
-                    </span>
-                    <span>•</span>
-                    <span className="capitalize">{doc.category}</span>
-                    <span>•</span>
-                    <span>Updated {doc.updatedAt}</span>
+
+                  <h3 className="text-sm font-semibold text-white mt-1.5 leading-snug">{doc.title}</h3>
+
+                  <div className="mt-3 flex items-center justify-between text-xs text-slate-400 pt-2.5 border-t border-slate-800/80">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-1 font-mono">
+                        <Hash className="h-3 w-3 text-slate-500" />
+                        {doc.chunkCount} chunks
+                      </span>
+                      <span className="font-mono text-slate-500">{doc.tokenCount} tokens</span>
+                    </div>
+                    <span className="text-slate-500">{doc.updatedAt}</span>
                   </div>
                 </button>
               );
@@ -361,45 +492,43 @@ export const KnowledgePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Chunk Inspector & Embedding Visualizer */}
+        {/* Right Column: Chunk Inspector & Embedding Vector Inspector */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
-            {/* Active Document Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
-                <span className="text-xs font-mono text-indigo-400">{selectedDoc.id}</span>
-                <h2 className="text-lg font-bold text-white mt-0.5">{selectedDoc.title}</h2>
-                <div className="flex items-center gap-3 text-xs text-slate-400 mt-1 font-mono">
-                  <span>Embedding: {selectedDoc.embeddingModel}</span>
-                  <span>•</span>
-                  <span>Tokens: ~{selectedDoc.tokenCount}</span>
-                </div>
+                <span className="text-xs font-mono text-indigo-400 uppercase tracking-wider">{selectedDoc.id}</span>
+                <h2 className="text-base font-semibold text-white">{selectedDoc.title}</h2>
               </div>
+              <span className="px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-mono">
+                {selectedDoc.embeddingModel}
+              </span>
             </div>
 
-            {/* Chunks Navigation Bar */}
+            {/* Chunk Selector Pills */}
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-300">
-                Vector Chunks in Document:
+              <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                <Layers className="h-3.5 w-3.5 text-indigo-400" />
+                <span>Vector Chunks ({selectedDoc.chunks.length})</span>
               </span>
+
               <div className="flex flex-wrap gap-2">
-                {selectedDoc.chunks.map((chunk) => {
-                  const isChunkActive = selectedChunk?.id === chunk.id;
+                {selectedDoc.chunks.map((chunk, idx) => {
+                  const isSelected = selectedChunk?.id === chunk.id;
                   return (
                     <button
                       key={chunk.id}
                       type="button"
                       onClick={() => setSelectedChunk(chunk)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer flex items-center gap-2 border ${
-                        isChunkActive
-                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-md'
-                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
+                      className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all cursor-pointer flex items-center gap-2 ${
+                        isSelected
+                          ? 'bg-indigo-600 text-white shadow-sm'
+                          : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
                       }`}
                     >
-                      <Hash className="h-3 w-3" />
-                      <span>Chunk {chunk.chunkIndex + 1}</span>
+                      <span>Chunk {idx + 1}</span>
                       {chunk.similarityScore && (
-                        <span className="text-[10px] px-1 rounded bg-black/30 text-emerald-400 font-bold">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800/80 text-emerald-400 font-bold">
                           {(chunk.similarityScore * 100).toFixed(0)}%
                         </span>
                       )}
@@ -409,43 +538,51 @@ export const KnowledgePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Selected Chunk Content & Metadata */}
-            {selectedChunk && (
+            {/* Selected Chunk Content & Vector Snippet */}
+            {selectedChunk ? (
               <div className="space-y-4 pt-2">
                 <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-200">
-                      {selectedChunk.metadata.section}
-                    </span>
-                    <span className="text-xs font-mono text-slate-500">
-                      {selectedChunk.tokenCount} Tokens
-                    </span>
+                  <div className="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800/60 pb-2">
+                    <span className="font-semibold text-slate-200">{selectedChunk.metadata.section}</span>
+                    <span className="font-mono text-slate-500">{selectedChunk.tokenCount} tokens</span>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed font-sans">
-                    {selectedChunk.content}
-                  </p>
+                  <p className="text-xs text-slate-300 leading-relaxed font-sans">{selectedChunk.content}</p>
                 </div>
 
-                {/* Metadata & Vector Embedding Snippet */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                    <span className="font-semibold text-slate-400 block">Chunk Metadata</span>
-                    <div className="space-y-0.5 text-slate-300 font-mono text-[11px]">
-                      <div>Category: {selectedChunk.metadata.category}</div>
-                      <div>Policy Version: {selectedChunk.metadata.policyVersion}</div>
-                      <div>Effective: {selectedChunk.metadata.effectiveDate}</div>
-                    </div>
+                {/* Metadata Badges */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                    <span className="text-[10px] text-slate-500 block uppercase">Policy Version</span>
+                    <span className="font-mono text-white text-xs">{selectedChunk.metadata.policyVersion}</span>
                   </div>
-
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                    <span className="font-semibold text-slate-400 block">
-                      Vector Vector Snippet (1536-dim)
-                    </span>
-                    <p className="font-mono text-[11px] text-emerald-400 break-all leading-tight">
-                      [{selectedChunk.embeddingSnippet.join(', ')}, ...]
-                    </p>
+                  <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                    <span className="text-[10px] text-slate-500 block uppercase">Effective Date</span>
+                    <span className="font-mono text-white text-xs">{selectedChunk.metadata.effectiveDate}</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                    <span className="text-[10px] text-slate-500 block uppercase">Category</span>
+                    <span className="font-mono text-white text-xs uppercase">{selectedChunk.metadata.category}</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
+                    <span className="text-[10px] text-slate-500 block uppercase">Index Bounds</span>
+                    <span className="font-mono text-emerald-400 text-xs">Passes Filter</span>
                   </div>
                 </div>
+
+                {/* Vector Embedding Inspect Box */}
+                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-400 space-y-1.5">
+                  <div className="flex items-center justify-between text-slate-500">
+                    <span>Dense Vector Embedding Preview (768d unit vector)</span>
+                    <span className="text-indigo-400 font-bold">Cosine Similarity Active</span>
+                  </div>
+                  <div className="text-slate-300 break-all bg-slate-900/60 p-2 rounded border border-slate-800/80">
+                    [{selectedChunk.embeddingSnippet.join(', ')}, ...]
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-8 text-center text-xs text-slate-500">
+                Select a chunk from above to inspect text tokens and vector embeddings.
               </div>
             )}
           </div>
@@ -454,13 +591,13 @@ export const KnowledgePage: React.FC = () => {
 
       {/* Upload Document Modal */}
       {uploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Upload className="h-5 w-5 text-indigo-400" />
-                <span>Upload &amp; Embed Knowledge Doc</span>
-              </h3>
+                <h3 className="text-base font-semibold text-white">Ingest Knowledge Document</h3>
+              </div>
               <button
                 type="button"
                 onClick={() => setUploadModalOpen(false)}
@@ -520,9 +657,17 @@ export const KnowledgePage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 cursor-pointer"
+                  disabled={isSubmitting}
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                 >
-                  Embed &amp; Ingest
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Embedding...</span>
+                    </>
+                  ) : (
+                    <span>Embed &amp; Ingest</span>
+                  )}
                 </button>
               </div>
             </form>
