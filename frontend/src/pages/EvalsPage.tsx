@@ -124,15 +124,20 @@ export const EvalsPage: React.FC = () => {
       {toast && <Toast type={toast.type} message={toast.text} onClose={() => setToast(null)} />}
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: 'var(--border)' }}>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-white">Agent Evaluation Benchmark</h1>
-            <span className="px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20 text-xs font-mono font-medium">
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Agent Evaluation Benchmark
+            </h1>
+            <span
+              className="px-2 py-0.5 rounded-full border text-xs font-mono font-medium"
+              style={{ background: 'var(--accent-light)', color: 'var(--accent)', borderColor: 'var(--border)' }}
+            >
               LLM Judge &amp; CI/CD Harness
             </span>
           </div>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
             Automated test runner for tool calling schemas, RAG precision, and safety guardrail boundaries.
           </p>
         </div>
@@ -141,7 +146,10 @@ export const EvalsPage: React.FC = () => {
           type="button"
           onClick={handleRunSuite}
           disabled={isRunning}
-          className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold shadow-lg shadow-indigo-600/30 flex items-center gap-2 cursor-pointer"
+          className="px-4 py-2 rounded-lg text-white text-xs font-semibold shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
+          style={{ background: 'var(--accent)' }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--accent-hover)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--accent)')}
         >
           {isRunning ? (
             <>
@@ -159,18 +167,18 @@ export const EvalsPage: React.FC = () => {
 
       {/* Progress Bar (Visible when running) */}
       {isRunning && (
-        <div className="p-4 rounded-xl bg-slate-900 border border-indigo-500/40 space-y-2">
-          <div className="flex items-center justify-between text-xs text-slate-300">
-            <span className="flex items-center gap-2">
-              <Cpu className="h-4 w-4 text-indigo-400" />
+        <div className="p-4 rounded-xl border space-y-2" style={{ background: 'var(--bg-card)', borderColor: 'var(--accent)' }}>
+          <div className="flex items-center justify-between text-xs">
+            <span className="flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+              <Cpu className="h-4 w-4" style={{ color: 'var(--accent)' }} />
               <span>Evaluating agent inference across 5 validation test suites...</span>
             </span>
-            <span className="font-mono text-indigo-400 font-bold">{progress}%</span>
+            <span className="font-mono font-bold" style={{ color: 'var(--accent)' }}>{progress}%</span>
           </div>
-          <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+          <div className="w-full h-2 rounded-full overflow-hidden" style={{ background: 'var(--bg-muted)' }}>
             <div
-              className="h-full bg-indigo-500 transition-all duration-300"
-              style={{ width: `${progress}%` }}
+              className="h-full transition-all duration-300"
+              style={{ width: `${progress}%`, background: 'var(--accent)' }}
             />
           </div>
         </div>
@@ -178,45 +186,45 @@ export const EvalsPage: React.FC = () => {
 
       {/* Benchmark Scorecard Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>Overall Accuracy</span>
-            <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+            <CheckCircle2 className="h-4 w-4" style={{ color: 'var(--success)' }} />
           </div>
-          <p className="text-2xl font-bold text-emerald-400">98.6%</p>
-          <p className="text-xs text-slate-400 mt-1 font-mono">5 / 5 test suites passed</p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--success)', fontFamily: "'Space Grotesk', sans-serif" }}>98.6%</p>
+          <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>5 / 5 test suites passed</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>Tool Schema Validity</span>
-            <Code2 className="h-4 w-4 text-indigo-400" />
+            <Code2 className="h-4 w-4" style={{ color: 'var(--accent)' }} />
           </div>
-          <p className="text-2xl font-bold text-indigo-400">100%</p>
-          <p className="text-xs text-slate-400 mt-1 font-mono">Zero malformed JSON payloads</p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--accent)', fontFamily: "'Space Grotesk', sans-serif" }}>100%</p>
+          <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>Zero malformed JSON payloads</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>Hallucination Rate</span>
-            <ShieldCheck className="h-4 w-4 text-sky-400" />
+            <ShieldCheck className="h-4 w-4" style={{ color: 'var(--sky)' }} />
           </div>
-          <p className="text-2xl font-bold text-sky-400">0.0%</p>
-          <p className="text-xs text-slate-400 mt-1 font-mono">Ground truth adherence verified</p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--sky)', fontFamily: "'Space Grotesk', sans-serif" }}>0.0%</p>
+          <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>Ground truth adherence verified</p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800 backdrop-blur-sm shadow-md">
-          <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+        <div className="p-4 rounded-xl border shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+          <div className="flex items-center justify-between text-xs mb-1" style={{ color: 'var(--text-muted)' }}>
             <span>Avg Inference Latency</span>
-            <Clock className="h-4 w-4 text-amber-400" />
+            <Clock className="h-4 w-4" style={{ color: 'var(--warning)' }} />
           </div>
-          <p className="text-2xl font-bold text-white">520 ms</p>
-          <p className="text-xs text-slate-400 mt-1 font-mono">Within 1000ms latency budget</p>
+          <p className="text-2xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>520 ms</p>
+          <p className="text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>Within 1000ms latency budget</p>
         </div>
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-3">
+      <div className="flex flex-wrap items-center gap-2 border-b pb-3" style={{ borderColor: 'var(--border)' }}>
         {[
           { id: 'all', label: 'All Test Scenarios' },
           { id: 'tool_calling', label: 'Tool Calling' },
@@ -228,11 +236,12 @@ export const EvalsPage: React.FC = () => {
             key={tab.id}
             type="button"
             onClick={() => setActiveSuite(tab.id)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-              activeSuite === tab.id
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white bg-slate-900'
-            }`}
+            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border"
+            style={{
+              background: activeSuite === tab.id ? 'var(--accent)' : 'var(--bg-card)',
+              color: activeSuite === tab.id ? '#ffffff' : 'var(--text-muted)',
+              borderColor: activeSuite === tab.id ? 'var(--accent)' : 'var(--border)',
+            }}
           >
             {tab.label}
           </button>
@@ -240,47 +249,50 @@ export const EvalsPage: React.FC = () => {
       </div>
 
       {/* Test Scenarios Table */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
+      <div className="rounded-xl border overflow-hidden shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-950/80 text-xs uppercase text-slate-400 font-semibold tracking-wider border-b border-slate-800">
+          <table className="w-full text-left text-sm">
+            <thead className="text-xs uppercase font-semibold tracking-wider border-b" style={{ background: 'var(--bg-muted)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
               <tr>
-                <th scope="col" className="px-6 py-4">Scenario ID &amp; Name</th>
-                <th scope="col" className="px-6 py-4">Suite</th>
-                <th scope="col" className="px-6 py-4">Judge Score</th>
-                <th scope="col" className="px-6 py-4">Latency</th>
-                <th scope="col" className="px-6 py-4">Status</th>
-                <th scope="col" className="px-6 py-4 text-right">Inspection</th>
+                <th scope="col" className="px-6 py-3.5">Scenario ID &amp; Name</th>
+                <th scope="col" className="px-6 py-3.5">Suite</th>
+                <th scope="col" className="px-6 py-3.5">Judge Score</th>
+                <th scope="col" className="px-6 py-3.5">Latency</th>
+                <th scope="col" className="px-6 py-3.5">Status</th>
+                <th scope="col" className="px-6 py-3.5 text-right">Inspection</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80">
+            <tbody className="divide-y" style={{ borderColor: 'var(--border)' }}>
               {filteredScenarios.map((sc) => (
                 <tr
                   key={sc.id}
-                  className="hover:bg-slate-800/30 transition-colors cursor-pointer"
+                  className="hover:bg-slate-50 transition-colors cursor-pointer"
                   onClick={() => setSelectedScenario(sc)}
                 >
                   <td className="px-6 py-4">
-                    <span className="font-mono text-xs font-bold text-indigo-400 block">{sc.id}</span>
-                    <span className="text-sm font-semibold text-white">{sc.name}</span>
+                    <span className="font-mono text-xs font-bold block" style={{ color: 'var(--accent)' }}>{sc.id}</span>
+                    <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{sc.name}</span>
                   </td>
 
                   <td className="px-6 py-4">
-                    <span className="font-mono text-xs uppercase px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                    <span className="font-mono text-xs uppercase px-2 py-0.5 rounded border" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
                       {sc.suite}
                     </span>
                   </td>
 
-                  <td className="px-6 py-4 font-mono font-bold text-emerald-400 text-xs">
+                  <td className="px-6 py-4 font-mono font-bold text-xs" style={{ color: 'var(--success)' }}>
                     {sc.judgeScore} / 100
                   </td>
 
-                  <td className="px-6 py-4 font-mono text-xs text-slate-400">
+                  <td className="px-6 py-4 font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
                     {sc.latencyMs} ms
                   </td>
 
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    <span
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      style={{ background: 'var(--success-light)', color: 'var(--success)' }}
+                    >
                       <CheckCircle2 className="h-3 w-3" /> Passed
                     </span>
                   </td>
@@ -292,7 +304,8 @@ export const EvalsPage: React.FC = () => {
                         e.stopPropagation();
                         setSelectedScenario(sc);
                       }}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-medium border border-slate-700/80 transition-colors cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors hover:bg-slate-50 cursor-pointer"
+                      style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
                     >
                       View Diff &amp; Rationale
                     </button>
@@ -306,20 +319,24 @@ export const EvalsPage: React.FC = () => {
 
       {/* Scenario Detail Modal */}
       {selectedScenario && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="w-full max-w-2xl rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-xs p-4">
+          <div
+            className="w-full max-w-2xl rounded-2xl border p-6 shadow-2xl space-y-5"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: 'var(--border)' }}>
               <div>
-                <span className="text-xs font-mono text-indigo-400 font-bold">
+                <span className="text-xs font-mono font-bold" style={{ color: 'var(--accent)' }}>
                   {selectedScenario.id} • {selectedScenario.suite.toUpperCase()}
                 </span>
-                <h2 className="text-lg font-bold text-white mt-0.5">{selectedScenario.name}</h2>
+                <h2 className="text-lg font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>{selectedScenario.name}</h2>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedScenario(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white bg-slate-850 hover:bg-slate-800 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg transition-colors cursor-pointer hover:bg-slate-100"
+                style={{ color: 'var(--text-muted)' }}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -327,8 +344,8 @@ export const EvalsPage: React.FC = () => {
 
             {/* Prompt */}
             <div className="space-y-1">
-              <span className="text-xs font-semibold text-slate-400">Evaluated User Prompt</span>
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white">
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Evaluated User Prompt</span>
+              <div className="p-3.5 rounded-xl border text-xs" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}>
                 "{selectedScenario.userPrompt}"
               </div>
             </div>
@@ -336,37 +353,38 @@ export const EvalsPage: React.FC = () => {
             {/* Expected vs Actual Diff */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="space-y-1">
-                <span className="font-semibold text-slate-400">Target Golden Baseline</span>
-                <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 font-mono text-[11px] leading-relaxed">
+                <span className="font-semibold" style={{ color: 'var(--text-muted)' }}>Target Golden Baseline</span>
+                <div className="p-3.5 rounded-xl border font-mono text-[11px] leading-relaxed" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
                   {selectedScenario.expectedToolOrOutput}
                 </div>
               </div>
 
               <div className="space-y-1">
-                <span className="font-semibold text-emerald-400">Agent Inferred Output</span>
-                <div className="p-3.5 rounded-xl bg-slate-950 border border-emerald-500/30 text-emerald-300 font-mono text-[11px] leading-relaxed">
+                <span className="font-semibold" style={{ color: 'var(--success)' }}>Agent Inferred Output</span>
+                <div className="p-3.5 rounded-xl border font-mono text-[11px] leading-relaxed" style={{ background: 'var(--success-light)', borderColor: 'var(--success)', color: 'var(--success)' }}>
                   {selectedScenario.actualOutput}
                 </div>
               </div>
             </div>
 
             {/* LLM Judge Rationale */}
-            <div className="p-4 rounded-xl bg-slate-850 border border-slate-700/60 space-y-1 text-xs">
+            <div className="p-4 rounded-xl border space-y-1 text-xs" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}>
               <div className="flex items-center justify-between">
-                <span className="font-bold text-white">LLM Judge Rationale</span>
-                <span className="font-mono font-bold text-indigo-400">
+                <span className="font-bold" style={{ color: 'var(--text-primary)' }}>LLM Judge Rationale</span>
+                <span className="font-mono font-bold" style={{ color: 'var(--accent)' }}>
                   Score: {selectedScenario.judgeScore}/100
                 </span>
               </div>
-              <p className="text-slate-300 leading-relaxed">{selectedScenario.judgeRationale}</p>
+              <p className="leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{selectedScenario.judgeRationale}</p>
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-2 border-t border-slate-800 flex justify-end">
+            <div className="pt-2 border-t flex justify-end" style={{ borderColor: 'var(--border)' }}>
               <button
                 type="button"
                 onClick={() => setSelectedScenario(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-semibold cursor-pointer"
+                className="px-4 py-2 rounded-lg border text-xs font-medium cursor-pointer hover:bg-slate-50"
+                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
               >
                 Close
               </button>

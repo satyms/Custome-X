@@ -139,31 +139,46 @@ export const OrdersPage: React.FC = () => {
     switch (status) {
       case 'delivered':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+          <span
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium"
+            style={{ background: 'var(--success-light)', color: 'var(--success)' }}
+          >
             <CheckCircle2 className="h-3 w-3" /> Delivered
           </span>
         );
       case 'in_transit':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-500/15 text-sky-400 border border-sky-500/30">
+          <span
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium"
+            style={{ background: 'var(--sky-light)', color: 'var(--sky)' }}
+          >
             <Truck className="h-3 w-3" /> In Transit
           </span>
         );
       case 'processing':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+          <span
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium"
+            style={{ background: 'var(--warning-light)', color: 'var(--warning)' }}
+          >
             <Clock className="h-3 w-3" /> Processing
           </span>
         );
       case 'refunded':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-500/15 text-purple-400 border border-purple-500/30">
+          <span
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium"
+            style={{ background: '#FAF5FF', color: '#9333EA' }}
+          >
             <RotateCcw className="h-3 w-3" /> Refunded
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30">
+          <span
+            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium"
+            style={{ background: 'var(--danger-light)', color: 'var(--danger)' }}
+          >
             <AlertTriangle className="h-3 w-3" /> Cancelled
           </span>
         );
@@ -173,15 +188,20 @@ export const OrdersPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: 'var(--border)' }}>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-white">E-Commerce Orders Registry</h1>
-            <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-mono font-medium">
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              E-Commerce Orders Registry
+            </h1>
+            <span
+              className="px-2 py-0.5 rounded-full border text-xs font-mono font-medium"
+              style={{ background: 'var(--accent-light)', color: 'var(--accent)', borderColor: 'var(--border)' }}
+            >
               Store Order Hub
             </span>
           </div>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
             Track package shipments, line items, carrier tracking, and order dispute actions.
           </p>
         </div>
@@ -189,20 +209,22 @@ export const OrdersPage: React.FC = () => {
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by order #, tracking #, or name..."
-              className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border text-xs focus:outline-none"
+              style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
 
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer"
+            className="border rounded-lg px-3 py-2 text-xs focus:outline-none cursor-pointer"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
           >
             <option value="all">All Statuses</option>
             <option value="in_transit">In Transit</option>
@@ -215,24 +237,24 @@ export const OrdersPage: React.FC = () => {
       </div>
 
       {/* Orders Table */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
+      <div className="rounded-xl border overflow-hidden shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-950/80 text-xs uppercase text-slate-400 font-semibold tracking-wider border-b border-slate-800">
+          <table className="w-full text-left text-sm">
+            <thead className="text-xs uppercase font-semibold tracking-wider border-b" style={{ background: 'var(--bg-muted)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
               <tr>
-                <th scope="col" className="px-6 py-4">Order Reference</th>
-                <th scope="col" className="px-6 py-4">Customer</th>
-                <th scope="col" className="px-6 py-4">Fulfillment Status</th>
-                <th scope="col" className="px-6 py-4">Tracking &amp; Carrier</th>
-                <th scope="col" className="px-6 py-4">Total Amount</th>
-                <th scope="col" className="px-6 py-4 text-right">Actions</th>
+                <th scope="col" className="px-6 py-3.5">Order Reference</th>
+                <th scope="col" className="px-6 py-3.5">Customer</th>
+                <th scope="col" className="px-6 py-3.5">Fulfillment Status</th>
+                <th scope="col" className="px-6 py-3.5">Tracking &amp; Carrier</th>
+                <th scope="col" className="px-6 py-3.5">Total Amount</th>
+                <th scope="col" className="px-6 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80">
+            <tbody className="divide-y" style={{ borderColor: 'var(--border)' }}>
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-12 text-center text-slate-400">
-                    <Package className="h-8 w-8 mx-auto text-slate-600 mb-2" />
+                  <td colSpan={6} className="p-12 text-center" style={{ color: 'var(--text-muted)' }}>
+                    <Package className="h-8 w-8 mx-auto mb-2 opacity-40" />
                     No orders matching criteria.
                   </td>
                 </tr>
@@ -240,22 +262,22 @@ export const OrdersPage: React.FC = () => {
                 filteredOrders.map((order) => (
                   <tr
                     key={order.id}
-                    className="hover:bg-slate-800/30 transition-colors cursor-pointer"
+                    className="hover:bg-slate-50 transition-colors cursor-pointer"
                     onClick={() => setSelectedOrder(order)}
                   >
-                    <td className="px-6 py-4 font-mono font-bold text-white">
+                    <td className="px-6 py-4 font-mono font-bold" style={{ color: 'var(--text-primary)' }}>
                       <div className="flex items-center gap-2">
-                        <Package className="h-4 w-4 text-indigo-400" />
+                        <Package className="h-4 w-4" style={{ color: 'var(--accent)' }} />
                         <span>{order.orderNumber}</span>
                       </div>
-                      <span className="text-[11px] text-slate-500 font-sans font-normal block mt-0.5">
+                      <span className="text-[11px] font-sans font-normal block mt-0.5" style={{ color: 'var(--text-muted)' }}>
                         {new Date(order.orderDate).toLocaleDateString()}
                       </span>
                     </td>
 
                     <td className="px-6 py-4 text-xs">
-                      <span className="font-semibold text-white block">{order.customerName}</span>
-                      <span className="text-slate-400 font-mono text-[11px]">{order.customerEmail}</span>
+                      <span className="font-semibold block" style={{ color: 'var(--text-primary)' }}>{order.customerName}</span>
+                      <span className="font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{order.customerEmail}</span>
                     </td>
 
                     <td className="px-6 py-4">{getStatusBadge(order.status)}</td>
@@ -263,17 +285,17 @@ export const OrdersPage: React.FC = () => {
                     <td className="px-6 py-4 text-xs font-mono">
                       {order.carrier && order.trackingNumber ? (
                         <div className="space-y-0.5">
-                          <span className="text-slate-200 font-semibold">{order.carrier}</span>
-                          <span className="text-indigo-400 block truncate max-w-[150px]">
+                          <span className="font-semibold" style={{ color: 'var(--text-secondary)' }}>{order.carrier}</span>
+                          <span className="block truncate max-w-[150px]" style={{ color: 'var(--accent)' }}>
                             {order.trackingNumber}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-slate-500">-</span>
+                        <span style={{ color: 'var(--text-muted)' }}>-</span>
                       )}
                     </td>
 
-                    <td className="px-6 py-4 font-mono font-bold text-emerald-400 text-xs">
+                    <td className="px-6 py-4 font-mono font-bold text-xs" style={{ color: 'var(--success)' }}>
                       ${order.totalAmount.toFixed(2)}
                     </td>
 
@@ -284,7 +306,8 @@ export const OrdersPage: React.FC = () => {
                           e.stopPropagation();
                           setSelectedOrder(order);
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-medium border border-slate-700/80 transition-colors cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors hover:bg-slate-50 cursor-pointer"
+                        style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
                       >
                         Inspect Order
                       </button>
@@ -299,23 +322,27 @@ export const OrdersPage: React.FC = () => {
 
       {/* Order Details Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="w-full max-w-2xl rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-xs p-4">
+          <div
+            className="w-full max-w-2xl rounded-2xl border p-6 shadow-2xl space-y-5"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: 'var(--border)' }}>
               <div>
                 <div className="flex items-center gap-2.5">
-                  <h2 className="text-lg font-bold text-white font-mono">{selectedOrder.orderNumber}</h2>
+                  <h2 className="text-lg font-bold font-mono" style={{ color: 'var(--text-primary)' }}>{selectedOrder.orderNumber}</h2>
                   {getStatusBadge(selectedOrder.status)}
                 </div>
-                <span className="text-xs text-slate-400 mt-1 block">
+                <span className="text-xs mt-1 block" style={{ color: 'var(--text-muted)' }}>
                   Purchased on {new Date(selectedOrder.orderDate).toLocaleString()}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedOrder(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white bg-slate-850 hover:bg-slate-800 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg transition-colors cursor-pointer hover:bg-slate-100"
+                style={{ color: 'var(--text-muted)' }}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -323,15 +350,15 @@ export const OrdersPage: React.FC = () => {
 
             {/* Line Items List */}
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-300">Purchased Items</span>
-              <div className="rounded-xl border border-slate-800 bg-slate-950 divide-y divide-slate-800/80">
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>Purchased Items</span>
+              <div className="rounded-xl border divide-y" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}>
                 {selectedOrder.items.map((item) => (
                   <div key={item.sku} className="p-3.5 flex items-center justify-between text-xs">
                     <div>
-                      <span className="font-semibold text-white block">{item.name}</span>
-                      <span className="text-slate-500 font-mono text-[11px]">SKU: {item.sku} × {item.quantity}</span>
+                      <span className="font-semibold block" style={{ color: 'var(--text-primary)' }}>{item.name}</span>
+                      <span className="font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>SKU: {item.sku} × {item.quantity}</span>
                     </div>
-                    <span className="font-mono font-bold text-slate-200">
+                    <span className="font-mono font-bold" style={{ color: 'var(--text-secondary)' }}>
                       ${(item.unitPrice * item.quantity).toFixed(2)}
                     </span>
                   </div>
@@ -341,22 +368,22 @@ export const OrdersPage: React.FC = () => {
 
             {/* Logistics & Delivery Details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="font-semibold text-slate-400 flex items-center gap-1.5">
-                  <MapPin className="h-3.5 w-3.5 text-slate-500" /> Shipping Destination
+              <div className="p-3.5 rounded-xl border space-y-1" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}>
+                <span className="font-semibold flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                  <MapPin className="h-3.5 w-3.5" /> Shipping Destination
                 </span>
-                <p className="text-slate-200 leading-relaxed font-sans">{selectedOrder.shippingAddress}</p>
+                <p className="leading-relaxed font-sans" style={{ color: 'var(--text-primary)' }}>{selectedOrder.shippingAddress}</p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="font-semibold text-slate-400 flex items-center gap-1.5">
-                  <CreditCard className="h-3.5 w-3.5 text-slate-500" /> Payment &amp; Carrier
+              <div className="p-3.5 rounded-xl border space-y-1" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}>
+                <span className="font-semibold flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                  <CreditCard className="h-3.5 w-3.5" /> Payment &amp; Carrier
                 </span>
-                <div className="space-y-0.5 text-slate-300">
+                <div className="space-y-0.5" style={{ color: 'var(--text-secondary)' }}>
                   <div>Method: {selectedOrder.paymentMethod}</div>
                   <div>Carrier: {selectedOrder.carrier || 'Standard Freight'}</div>
                   {selectedOrder.trackingNumber && (
-                    <div className="text-indigo-400 font-mono">
+                    <div className="font-mono" style={{ color: 'var(--accent)' }}>
                       Tracking: {selectedOrder.trackingNumber}
                     </div>
                   )}
@@ -365,23 +392,25 @@ export const OrdersPage: React.FC = () => {
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
-              <div className="text-sm font-bold text-white font-mono">
+            <div className="pt-3 border-t flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
+              <div className="text-sm font-bold font-mono" style={{ color: 'var(--text-primary)' }}>
                 Total: ${selectedOrder.totalAmount.toFixed(2)}
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => setSelectedOrder(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-semibold cursor-pointer"
+                  className="px-4 py-2 rounded-lg border text-xs font-medium cursor-pointer hover:bg-slate-50"
+                  style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
                 >
                   Close
                 </button>
 
                 <Link
                   to={`/tickets`}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-lg text-white text-xs font-semibold shadow-sm flex items-center gap-1.5"
+                  style={{ background: 'var(--accent)' }}
                 >
                   <TicketIcon className="h-3.5 w-3.5" />
                   <span>Create Ticket from Order</span>

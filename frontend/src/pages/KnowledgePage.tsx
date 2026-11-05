@@ -241,15 +241,20 @@ export const KnowledgePage: React.FC = () => {
       {toast && <Toast type={toast.type} message={toast.text} onClose={() => setToast(null)} />}
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: 'var(--border)' }}>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-white">Knowledge Base &amp; RAG Inspector</h1>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-medium">
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Knowledge Base &amp; RAG Inspector
+            </h1>
+            <span
+              className="px-2 py-0.5 rounded-full border text-xs font-mono font-medium"
+              style={{ background: 'var(--success-light)', color: 'var(--success)', borderColor: 'var(--border)' }}
+            >
               pgvector 1536d
             </span>
           </div>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
             Search ingested policy documents, inspect vector chunk tokens, and simulate similarity queries.
           </p>
         </div>
@@ -257,7 +262,10 @@ export const KnowledgePage: React.FC = () => {
         <button
           type="button"
           onClick={() => setUploadModalOpen(true)}
-          className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 flex items-center gap-2 cursor-pointer"
+          className="px-4 py-2 rounded-lg text-white text-xs font-semibold shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
+          style={{ background: 'var(--accent)' }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--accent-hover)')}
+          onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--accent)')}
         >
           <Upload className="h-4 w-4" />
           <span>Upload Document</span>
@@ -265,25 +273,26 @@ export const KnowledgePage: React.FC = () => {
       </div>
 
       {/* RAG Search & Threshold Simulator Bar */}
-      <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4">
+      <div className="p-4 rounded-xl border space-y-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search policies or test RAG query (e.g., 'What is return window on open items?')..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border text-xs focus:outline-none"
+              style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
             />
           </div>
 
           {/* Threshold Slider */}
-          <div className="flex items-center gap-3 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800">
-            <Sliders className="h-4 w-4 text-indigo-400 shrink-0" />
+          <div className="flex items-center gap-3 px-4 py-2 rounded-lg border" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}>
+            <Sliders className="h-4 w-4 shrink-0" style={{ color: 'var(--accent)' }} />
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-400">Similarity Cutoff:</span>
-              <span className="font-mono font-bold text-white">{(similarityThreshold * 100).toFixed(0)}%</span>
+              <span style={{ color: 'var(--text-muted)' }}>Similarity Cutoff:</span>
+              <span className="font-mono font-bold" style={{ color: 'var(--text-primary)' }}>{(similarityThreshold * 100).toFixed(0)}%</span>
             </div>
             <input
               type="range"
@@ -292,7 +301,7 @@ export const KnowledgePage: React.FC = () => {
               step="0.05"
               value={similarityThreshold}
               onChange={(e) => setSimilarityThreshold(parseFloat(e.target.value))}
-              className="w-24 accent-indigo-500 cursor-pointer"
+              className="w-24 accent-indigo-600 cursor-pointer"
             />
           </div>
 
@@ -300,11 +309,12 @@ export const KnowledgePage: React.FC = () => {
           <button
             type="button"
             onClick={() => setHybridSearch(!hybridSearch)}
-            className={`px-3 py-2 rounded-xl border text-xs font-medium transition-colors cursor-pointer flex items-center gap-2 ${
-              hybridSearch
-                ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
-                : 'bg-slate-950 text-slate-400 border-slate-800'
-            }`}
+            className="px-3 py-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer flex items-center gap-2"
+            style={{
+              background: hybridSearch ? 'var(--accent-light)' : 'transparent',
+              color: hybridSearch ? 'var(--accent)' : 'var(--text-muted)',
+              borderColor: 'var(--border)',
+            }}
           >
             <Sparkles className="h-3.5 w-3.5" />
             <span>Hybrid Search (Dense + BM25)</span>
@@ -316,7 +326,7 @@ export const KnowledgePage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Documents List */}
         <div className="lg:col-span-5 space-y-3">
-          <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+          <div className="flex items-center justify-between text-xs px-1" style={{ color: 'var(--text-muted)' }}>
             <span className="font-semibold uppercase tracking-wider">Ingested Policy Documents</span>
             <span>{filteredDocs.length} Total</span>
           </div>
@@ -334,20 +344,24 @@ export const KnowledgePage: React.FC = () => {
                   }}
                   className={`w-full text-left p-4 rounded-xl border transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-slate-850 border-indigo-500/60 shadow-lg shadow-indigo-500/10'
-                      : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                      ? 'border-indigo-500 shadow-sm'
+                      : 'hover:bg-slate-50'
                   }`}
+                  style={{
+                    background: isSelected ? 'var(--accent-light)' : 'var(--bg-card)',
+                    borderColor: isSelected ? 'var(--accent)' : 'var(--border)',
+                  }}
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-xs text-indigo-400 font-bold">{doc.id}</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 uppercase">
+                    <span className="font-mono text-xs font-bold" style={{ color: 'var(--accent)' }}>{doc.id}</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded border uppercase" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
                       {doc.format}
                     </span>
                   </div>
-                  <h3 className="text-sm font-bold text-white mb-1.5">{doc.title}</h3>
-                  <div className="flex items-center gap-3 text-xs text-slate-400">
+                  <h3 className="text-sm font-semibold mb-1.5" style={{ color: 'var(--text-primary)' }}>{doc.title}</h3>
+                  <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
                     <span className="flex items-center gap-1 font-mono">
-                      <Layers className="h-3.5 w-3.5 text-slate-500" />
+                      <Layers className="h-3.5 w-3.5" />
                       <span>{doc.chunkCount} Chunks</span>
                     </span>
                     <span>•</span>
@@ -363,13 +377,13 @@ export const KnowledgePage: React.FC = () => {
 
         {/* Right Column: Chunk Inspector & Embedding Visualizer */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-5">
+          <div className="p-5 rounded-xl border space-y-5 shadow-sm" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
             {/* Active Document Header */}
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: 'var(--border)' }}>
               <div>
-                <span className="text-xs font-mono text-indigo-400">{selectedDoc.id}</span>
-                <h2 className="text-lg font-bold text-white mt-0.5">{selectedDoc.title}</h2>
-                <div className="flex items-center gap-3 text-xs text-slate-400 mt-1 font-mono">
+                <span className="text-xs font-mono font-bold" style={{ color: 'var(--accent)' }}>{selectedDoc.id}</span>
+                <h2 className="text-lg font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>{selectedDoc.title}</h2>
+                <div className="flex items-center gap-3 text-xs mt-1 font-mono" style={{ color: 'var(--text-muted)' }}>
                   <span>Embedding: {selectedDoc.embeddingModel}</span>
                   <span>•</span>
                   <span>Tokens: ~{selectedDoc.tokenCount}</span>
@@ -379,7 +393,7 @@ export const KnowledgePage: React.FC = () => {
 
             {/* Chunks Navigation Bar */}
             <div className="space-y-2">
-              <span className="text-xs font-semibold text-slate-300">
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
                 Vector Chunks in Document:
               </span>
               <div className="flex flex-wrap gap-2">
@@ -390,16 +404,23 @@ export const KnowledgePage: React.FC = () => {
                       key={chunk.id}
                       type="button"
                       onClick={() => setSelectedChunk(chunk)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer flex items-center gap-2 border ${
-                        isChunkActive
-                          ? 'bg-indigo-600 text-white border-indigo-500 shadow-md'
-                          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-700'
-                      }`}
+                      className="px-3 py-1.5 rounded-lg text-xs font-mono transition-colors cursor-pointer flex items-center gap-2 border"
+                      style={{
+                        background: isChunkActive ? 'var(--accent)' : 'var(--bg-app)',
+                        color: isChunkActive ? '#ffffff' : 'var(--text-secondary)',
+                        borderColor: isChunkActive ? 'var(--accent)' : 'var(--border)',
+                      }}
                     >
                       <Hash className="h-3 w-3" />
                       <span>Chunk {chunk.chunkIndex + 1}</span>
                       {chunk.similarityScore && (
-                        <span className="text-[10px] px-1 rounded bg-black/30 text-emerald-400 font-bold">
+                        <span
+                          className="text-[10px] px-1 rounded font-bold"
+                          style={{
+                            background: isChunkActive ? 'rgba(255,255,255,0.2)' : 'var(--success-light)',
+                            color: isChunkActive ? '#ffffff' : 'var(--success)',
+                          }}
+                        >
                           {(chunk.similarityScore * 100).toFixed(0)}%
                         </span>
                       )}
@@ -412,36 +433,36 @@ export const KnowledgePage: React.FC = () => {
             {/* Selected Chunk Content & Metadata */}
             {selectedChunk && (
               <div className="space-y-4 pt-2">
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+                <div className="p-4 rounded-xl border space-y-2" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-200">
+                    <span className="text-xs font-bold" style={{ color: 'var(--text-primary)' }}>
                       {selectedChunk.metadata.section}
                     </span>
-                    <span className="text-xs font-mono text-slate-500">
+                    <span className="text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
                       {selectedChunk.tokenCount} Tokens
                     </span>
                   </div>
-                  <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                  <p className="text-xs leading-relaxed font-sans" style={{ color: 'var(--text-secondary)' }}>
                     {selectedChunk.content}
                   </p>
                 </div>
 
                 {/* Metadata & Vector Embedding Snippet */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                    <span className="font-semibold text-slate-400 block">Chunk Metadata</span>
-                    <div className="space-y-0.5 text-slate-300 font-mono text-[11px]">
+                  <div className="p-3 rounded-xl border space-y-1" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}>
+                    <span className="font-semibold block" style={{ color: 'var(--text-muted)' }}>Chunk Metadata</span>
+                    <div className="space-y-0.5 font-mono text-[11px]" style={{ color: 'var(--text-secondary)' }}>
                       <div>Category: {selectedChunk.metadata.category}</div>
                       <div>Policy Version: {selectedChunk.metadata.policyVersion}</div>
                       <div>Effective: {selectedChunk.metadata.effectiveDate}</div>
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                    <span className="font-semibold text-slate-400 block">
-                      Vector Vector Snippet (1536-dim)
+                  <div className="p-3 rounded-xl border space-y-1" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}>
+                    <span className="font-semibold block" style={{ color: 'var(--text-muted)' }}>
+                      Vector Snippet (1536-dim)
                     </span>
-                    <p className="font-mono text-[11px] text-emerald-400 break-all leading-tight">
+                    <p className="font-mono text-[11px] break-all leading-tight" style={{ color: 'var(--accent)' }}>
                       [{selectedChunk.embeddingSnippet.join(', ')}, ...]
                     </p>
                   </div>
@@ -454,17 +475,21 @@ export const KnowledgePage: React.FC = () => {
 
       {/* Upload Document Modal */}
       {uploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-800 p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Upload className="h-5 w-5 text-indigo-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-xs p-4">
+          <div
+            className="w-full max-w-lg rounded-2xl border p-6 shadow-2xl space-y-4"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: 'var(--border)' }}>
+              <h3 className="text-base font-bold flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                <Upload className="h-5 w-5" style={{ color: 'var(--accent)' }} />
                 <span>Upload &amp; Embed Knowledge Doc</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setUploadModalOpen(false)}
-                className="text-slate-400 hover:text-white"
+                className="hover:opacity-75 cursor-pointer"
+                style={{ color: 'var(--text-muted)' }}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -472,23 +497,25 @@ export const KnowledgePage: React.FC = () => {
 
             <form onSubmit={handleUploadSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Document Title</label>
+                <label className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Document Title</label>
                 <input
                   type="text"
                   value={newDocTitle}
                   onChange={(e) => setNewDocTitle(e.target.value)}
                   placeholder="e.g. Holiday Season Extended Return Window"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full border rounded-lg px-3.5 py-2 text-xs focus:outline-none"
+                  style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                   required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Category</label>
+                <label className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Category</label>
                 <select
                   value={newDocCategory}
                   onChange={(e) => setNewDocCategory(e.target.value as any)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full border rounded-lg px-3 py-2 text-xs focus:outline-none cursor-pointer"
+                  style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                 >
                   <option value="returns">Returns &amp; Refunds</option>
                   <option value="shipping">Shipping &amp; Delivery</option>
@@ -499,13 +526,14 @@ export const KnowledgePage: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-300">Document Content (Markdown)</label>
+                <label className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Document Content (Markdown)</label>
                 <textarea
                   value={newDocContent}
                   onChange={(e) => setNewDocContent(e.target.value)}
                   rows={6}
                   placeholder="Paste policy terms or markdown documentation..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none font-mono"
+                  className="w-full border rounded-lg p-3 text-xs focus:outline-none resize-none font-mono"
+                  style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
                   required
                 />
               </div>
@@ -514,13 +542,15 @@ export const KnowledgePage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setUploadModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-medium cursor-pointer"
+                  className="px-4 py-2 rounded-lg border text-xs font-medium cursor-pointer hover:bg-slate-50"
+                  style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 cursor-pointer"
+                  className="px-5 py-2 rounded-lg text-white text-xs font-semibold shadow-sm cursor-pointer"
+                  style={{ background: 'var(--accent)' }}
                 >
                   Embed &amp; Ingest
                 </button>

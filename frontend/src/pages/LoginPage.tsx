@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { z } from 'zod';
 import { useAuth } from '../context/AuthContext';
-import { ShaderDotCanvas } from '../components/ui/ShaderDotCanvas';
 import { Toast } from '../components/ui/Toast';
 import {
   Bot,
@@ -180,19 +179,10 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500 selection:text-white px-4 py-8">
-      {/* Dynamic Procedural Dot Matrix Background */}
-      <ShaderDotCanvas />
-
-      {/* Radial Vignette */}
-      <div
-        className="absolute inset-0 z-1 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(circle at center, rgba(2, 6, 23, 0.5) 0%, rgba(2, 6, 23, 0.95) 100%)',
-        }}
-      />
-
+    <div
+      className="min-h-screen w-full flex items-center justify-center px-4 py-8"
+      style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }}
+    >
       {/* Global Toast Notification System */}
       {apiError && (
         <Toast type="error" message={apiError} onClose={() => setApiError(null)} />
@@ -201,25 +191,41 @@ export const LoginPage: React.FC = () => {
         <Toast type="success" message={apiSuccess} onClose={() => setApiSuccess(null)} />
       )}
 
-      {/* Centered Frosted Glass Modal Card */}
-      <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-800/80 bg-slate-900/80 p-8 shadow-2xl backdrop-blur-xl transition-all">
+      {/* Centered Minimal Card */}
+      <div
+        className="w-full max-w-md rounded-2xl border p-8 shadow-sm transition-all"
+        style={{
+          background: 'var(--bg-card)',
+          borderColor: 'var(--border)',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)',
+        }}
+      >
         {/* Brand Header */}
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 border border-white/10">
+          <div
+            className="mx-auto h-11 w-11 rounded-xl flex items-center justify-center shadow-sm"
+            style={{ background: 'var(--accent)' }}
+          >
             <Bot className="h-6 w-6 text-white" />
           </div>
-          <h1 className="mt-4 text-2xl font-bold tracking-tight text-white">
+          <h1
+            className="mt-4 text-2xl font-bold tracking-tight"
+            style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}
+          >
             {isLoginView ? 'Sign in to Custome-X' : 'Register Support Agent'}
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-xs" style={{ color: 'var(--text-muted)' }}>
             {isLoginView
-              ? 'Autonomous agentic customer support command center'
+              ? 'Autonomous customer support command center'
               : 'Create internal agent credentials for your organization'}
           </p>
         </div>
 
         {/* View Toggle Tabs */}
-        <div className="mt-6 flex rounded-lg bg-slate-800/70 p-1 border border-slate-700/50">
+        <div
+          className="mt-6 flex rounded-lg p-1 border"
+          style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}
+        >
           <button
             type="button"
             onClick={() => {
@@ -227,11 +233,12 @@ export const LoginPage: React.FC = () => {
               setFieldErrors({});
               setApiError(null);
             }}
-            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-              isLoginView
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className="flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer"
+            style={{
+              background: isLoginView ? 'var(--bg-card)' : 'transparent',
+              color: isLoginView ? 'var(--text-primary)' : 'var(--text-muted)',
+              boxShadow: isLoginView ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
+            }}
           >
             Agent Sign In
           </button>
@@ -242,11 +249,12 @@ export const LoginPage: React.FC = () => {
               setFieldErrors({});
               setApiError(null);
             }}
-            className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer ${
-              !isLoginView
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
-            }`}
+            className="flex-1 py-1.5 text-xs font-semibold rounded-md transition-all cursor-pointer"
+            style={{
+              background: !isLoginView ? 'var(--bg-card)' : 'transparent',
+              color: !isLoginView ? 'var(--text-primary)' : 'var(--text-muted)',
+              boxShadow: !isLoginView ? '0 1px 3px rgba(0,0,0,0.06)' : 'none',
+            }}
           >
             Create Account
           </button>
@@ -259,13 +267,14 @@ export const LoginPage: React.FC = () => {
             <div>
               <label
                 htmlFor="fullName"
-                className="block text-xs font-medium text-slate-300"
+                className="block text-xs font-medium mb-1"
+                style={{ color: 'var(--text-secondary)' }}
               >
                 Full Name
               </label>
-              <div className="relative mt-1">
+              <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <UserIcon className="h-4 w-4 text-slate-400" />
+                  <UserIcon className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
                 </div>
                 <input
                   id="fullName"
@@ -273,15 +282,16 @@ export const LoginPage: React.FC = () => {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Alex Johnson"
-                  className={`block w-full rounded-lg border bg-slate-800/90 pl-9 pr-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none transition-colors min-h-[42px] ${
-                    fieldErrors.fullName
-                      ? 'border-rose-500 focus:ring-1 focus:ring-rose-500'
-                      : 'border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20'
-                  }`}
+                  className="block w-full rounded-lg border pl-9 pr-3 py-2 text-sm focus:outline-none transition-colors min-h-[40px]"
+                  style={{
+                    background: 'var(--bg-card)',
+                    borderColor: fieldErrors.fullName ? 'var(--danger)' : 'var(--border)',
+                    color: 'var(--text-primary)',
+                  }}
                 />
               </div>
               {fieldErrors.fullName && (
-                <p className="mt-1 flex items-center gap-1 text-xs text-rose-400">
+                <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: 'var(--danger)' }}>
                   <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                   <span>{fieldErrors.fullName}</span>
                 </p>
@@ -291,12 +301,16 @@ export const LoginPage: React.FC = () => {
 
           {/* Email Address Field */}
           <div>
-            <label htmlFor="email" className="block text-xs font-medium text-slate-300">
+            <label
+              htmlFor="email"
+              className="block text-xs font-medium mb-1"
+              style={{ color: 'var(--text-secondary)' }}
+            >
               Email Address
             </label>
-            <div className="relative mt-1">
+            <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Mail className="h-4 w-4 text-slate-400" />
+                <Mail className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
               </div>
               <input
                 id="email"
@@ -305,15 +319,16 @@ export const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="agent@custome-x.internal"
-                className={`block w-full rounded-lg border bg-slate-800/90 pl-9 pr-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none transition-colors min-h-[42px] ${
-                  fieldErrors.email
-                    ? 'border-rose-500 focus:ring-1 focus:ring-rose-500'
-                    : 'border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20'
-                }`}
+                className="block w-full rounded-lg border pl-9 pr-3 py-2 text-sm focus:outline-none transition-colors min-h-[40px]"
+                style={{
+                  background: 'var(--bg-card)',
+                  borderColor: fieldErrors.email ? 'var(--danger)' : 'var(--border)',
+                  color: 'var(--text-primary)',
+                }}
               />
             </div>
             {fieldErrors.email && (
-              <p className="mt-1 flex items-center gap-1 text-xs text-rose-400">
+              <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: 'var(--danger)' }}>
                 <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                 <span>{fieldErrors.email}</span>
               </p>
@@ -324,13 +339,14 @@ export const LoginPage: React.FC = () => {
           <div>
             <label
               htmlFor="password"
-              className="block text-xs font-medium text-slate-300"
+              className="block text-xs font-medium mb-1"
+              style={{ color: 'var(--text-secondary)' }}
             >
               Password
             </label>
-            <div className="relative mt-1">
+            <div className="relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Lock className="h-4 w-4 text-slate-400" />
+                <Lock className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
               </div>
               <input
                 id="password"
@@ -339,23 +355,25 @@ export const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder={isLoginView ? '••••••••••••' : 'Min 8 characters'}
-                className={`block w-full rounded-lg border bg-slate-800/90 pl-9 pr-10 py-2 text-sm text-white placeholder-slate-500 focus:outline-none transition-colors min-h-[42px] ${
-                  fieldErrors.password
-                    ? 'border-rose-500 focus:ring-1 focus:ring-rose-500'
-                    : 'border-slate-700 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20'
-                }`}
+                className="block w-full rounded-lg border pl-9 pr-10 py-2 text-sm focus:outline-none transition-colors min-h-[40px]"
+                style={{
+                  background: 'var(--bg-card)',
+                  borderColor: fieldErrors.password ? 'var(--danger)' : 'var(--border)',
+                  color: 'var(--text-primary)',
+                }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-200 cursor-pointer min-h-[42px] min-w-[36px] justify-center"
+                className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer min-h-[40px] min-w-[36px] justify-center"
+                style={{ color: 'var(--text-muted)' }}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             {fieldErrors.password && (
-              <p className="mt-1 flex items-center gap-1 text-xs text-rose-400">
+              <p className="mt-1 flex items-center gap-1 text-xs" style={{ color: 'var(--danger)' }}>
                 <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                 <span>{fieldErrors.password}</span>
               </p>
@@ -366,7 +384,10 @@ export const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-2 flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-indigo-600/30 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[44px] cursor-pointer"
+            className="w-full mt-2 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all min-h-[42px] cursor-pointer"
+            style={{ background: 'var(--accent)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--accent-hover)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--accent)')}
           >
             {isLoading ? (
               <>
@@ -384,20 +405,25 @@ export const LoginPage: React.FC = () => {
 
         {/* Demo Credentials Quick-Fill Pill */}
         {isLoginView && (
-          <div className="mt-6 pt-4 border-t border-slate-800 text-center">
+          <div className="mt-6 pt-4 border-t text-center" style={{ borderColor: 'var(--border)' }}>
             <button
               type="button"
               onClick={fillDemoCredentials}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 text-xs font-mono transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-mono transition-colors cursor-pointer"
+              style={{
+                background: 'var(--accent-light)',
+                borderColor: 'var(--border)',
+                color: 'var(--accent)',
+              }}
             >
-              <Sparkles className="h-3 w-3 text-indigo-400" />
+              <Sparkles className="h-3 w-3" />
               <span>Fill Demo Agent Credentials</span>
             </button>
           </div>
         )}
 
         {/* Security & Organization Notice */}
-        <p className="mt-5 text-center text-xs text-slate-500">
+        <p className="mt-5 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
           Custome-X Autonomous Support Architecture
           <br />
           Enterprise Supabase Auth &amp; Multi-Tenant RLS

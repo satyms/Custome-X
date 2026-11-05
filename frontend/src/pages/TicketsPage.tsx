@@ -124,25 +124,25 @@ export const TicketsPage: React.FC = () => {
     switch (priority) {
       case 'urgent':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border" style={{ background: 'var(--danger-light)', color: 'var(--danger)', borderColor: '#FECACA' }}>
             <ShieldAlert className="h-3 w-3" /> Urgent
           </span>
         );
       case 'high':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border" style={{ background: 'var(--warning-light)', color: 'var(--warning)', borderColor: '#FDE68A' }}>
             High
           </span>
         );
       case 'normal':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border" style={{ background: 'var(--sky-light)', color: 'var(--sky)', borderColor: '#BAE6FD' }}>
             Normal
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border" style={{ background: 'var(--bg-muted)', color: 'var(--text-muted)', borderColor: 'var(--border)' }}>
             Low
           </span>
         );
@@ -154,29 +154,29 @@ export const TicketsPage: React.FC = () => {
     switch (status) {
       case 'open':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-sky-400 animate-pulse" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border" style={{ background: 'var(--sky-light)', color: 'var(--sky)', borderColor: '#BAE6FD' }}>
+            <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: 'var(--sky)' }} />
             Open
           </span>
         );
       case 'in_progress':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border" style={{ background: 'var(--warning-light)', color: 'var(--warning)', borderColor: '#FDE68A' }}>
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--warning)' }} />
             In Progress
           </span>
         );
       case 'escalated':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border" style={{ background: 'var(--danger-light)', color: 'var(--danger)', borderColor: '#FECACA' }}>
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--danger)' }} />
             Escalated
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border" style={{ background: 'var(--success-light)', color: 'var(--success)', borderColor: '#A7F3D0' }}>
+            <span className="h-1.5 w-1.5 rounded-full" style={{ background: 'var(--success)' }} />
             Closed
           </span>
         );
@@ -201,10 +201,10 @@ export const TicketsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl font-semibold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
             Support Ticket Queue
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
             Automated ticket routing, triage status, and triage queue
           </p>
         </div>
@@ -215,7 +215,8 @@ export const TicketsPage: React.FC = () => {
               fetchTickets();
             }}
             disabled={isLoading}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 text-sm font-medium transition-colors cursor-pointer min-h-[40px]"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium border transition-colors cursor-pointer min-h-[40px] hover:bg-slate-50 disabled:opacity-50"
+            style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)', background: 'var(--bg-card)' }}
             title="Refresh queue"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -239,9 +240,9 @@ export const TicketsPage: React.FC = () => {
       />
 
       {/* Filter and Search Controls */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-4">
+      <div className="rounded-xl border p-4 space-y-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         {/* Status Filter Tabs */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-slate-800/80 pb-3">
+        <div className="flex flex-wrap items-center gap-2 border-b pb-3" style={{ borderColor: 'var(--border)' }}>
           {statusTabs.map((tab) => {
             const isActive = statusFilter === tab.id;
             return (
@@ -252,11 +253,13 @@ export const TicketsPage: React.FC = () => {
                   setStatusFilter(tab.id);
                   setCurrentPage(1);
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer min-h-[36px] ${
-                  isActive
-                    ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                }`}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer min-h-[36px]"
+                style={{
+                  background: isActive ? 'var(--accent)' : 'transparent',
+                  color: isActive ? '#fff' : 'var(--text-muted)',
+                }}
+                onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = 'var(--bg-hover)'; }}
+                onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
               >
                 {tab.label}
               </button>
@@ -268,19 +271,25 @@ export const TicketsPage: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center gap-3">
           {/* Search Input */}
           <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by ticket title, subject, or ID..."
-              className="w-full rounded-lg border border-slate-700 bg-slate-800/80 pl-9 pr-9 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 min-h-[40px]"
+              className="w-full rounded-lg border pl-9 pr-9 py-2 text-sm focus:outline-none min-h-[40px]"
+              style={{
+                borderColor: 'var(--border)',
+                background: 'var(--bg-muted)',
+                color: 'var(--text-primary)',
+              }}
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                style={{ color: 'var(--text-muted)' }}
                 aria-label="Clear search"
               >
                 <X className="h-4 w-4" />
@@ -290,14 +299,15 @@ export const TicketsPage: React.FC = () => {
 
           {/* Priority Filter Dropdown */}
           <div className="flex items-center gap-2 w-full md:w-auto">
-            <Filter className="h-4 w-4 text-slate-400 shrink-0" />
+            <Filter className="h-4 w-4 shrink-0" style={{ color: 'var(--text-muted)' }} />
             <select
               value={priorityFilter}
               onChange={(e) => {
                 setPriorityFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full md:w-auto rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 min-h-[40px] cursor-pointer"
+              className="w-full md:w-auto rounded-lg border px-3 py-2 text-sm focus:outline-none min-h-[40px] cursor-pointer"
+              style={{ borderColor: 'var(--border)', background: 'var(--bg-muted)', color: 'var(--text-primary)' }}
             >
               <option value="all">All Priorities</option>
               <option value="urgent">Urgent</option>
@@ -310,49 +320,39 @@ export const TicketsPage: React.FC = () => {
       </div>
 
       {/* Ticket Queue Table */}
-      <div className="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden shadow-xl">
+      <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-950/70 text-xs uppercase text-slate-400 font-semibold tracking-wider border-b border-slate-800">
-              <tr>
-                <th scope="col" className="px-6 py-3.5">
+          <table className="w-full text-left text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid var(--border)` }}>
+                <th scope="col" className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)', background: 'var(--bg-muted)' }}>
                   <div className="flex items-center gap-1.5">
                     <span>Ticket</span>
                     <ArrowUpDown className="h-3 w-3" />
                   </div>
                 </th>
-                <th scope="col" className="px-6 py-3.5">Status</th>
-                <th scope="col" className="px-6 py-3.5">Priority</th>
-                <th scope="col" className="px-6 py-3.5">Customer / UUID</th>
-                <th scope="col" className="px-6 py-3.5">Last Updated</th>
-                <th scope="col" className="px-6 py-3.5 text-right">Actions</th>
+                <th scope="col" className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)', background: 'var(--bg-muted)' }}>Status</th>
+                <th scope="col" className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)', background: 'var(--bg-muted)' }}>Priority</th>
+                <th scope="col" className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)', background: 'var(--bg-muted)' }}>Customer / UUID</th>
+                <th scope="col" className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)', background: 'var(--bg-muted)' }}>Last Updated</th>
+                <th scope="col" className="px-6 py-3.5 text-xs font-semibold uppercase tracking-wider text-right" style={{ color: 'var(--text-muted)', background: 'var(--bg-muted)' }}>Actions</th>
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-slate-800/80">
-              {/* SKELETON LOADING STATE (Prevents Cumulative Layout Shift) */}
+            <tbody>
+              {/* SKELETON LOADING STATE */}
               {isLoading ? (
                 Array.from({ length: pageSize }).map((_, i) => (
-                  <tr key={`skeleton-${i}`} className="animate-pulse">
+                  <tr key={`skeleton-${i}`} className="animate-pulse" style={{ borderBottom: `1px solid var(--border)` }}>
                     <td className="px-6 py-4">
                       <Skeleton className="h-4 w-48 mb-1.5" />
                       <Skeleton className="h-3 w-24" />
                     </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-6 w-20 rounded-full" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-6 w-16 rounded-full" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-32" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-28" />
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <Skeleton className="h-7 w-16 ml-auto rounded-lg" />
-                    </td>
+                    <td className="px-6 py-4"><Skeleton className="h-6 w-20 rounded-full" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-6 w-16 rounded-full" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
+                    <td className="px-6 py-4"><Skeleton className="h-4 w-28" /></td>
+                    <td className="px-6 py-4 text-right"><Skeleton className="h-7 w-16 ml-auto rounded-lg" /></td>
                   </tr>
                 ))
               ) : error ? (
@@ -360,13 +360,14 @@ export const TicketsPage: React.FC = () => {
                 <tr>
                   <td colSpan={6} className="p-12 text-center">
                     <div className="max-w-md mx-auto space-y-3">
-                      <div className="h-10 w-10 mx-auto rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
+                      <div className="h-10 w-10 mx-auto rounded-full flex items-center justify-center" style={{ background: 'var(--danger-light)', color: 'var(--danger)' }}>
                         <X className="h-5 w-5" />
                       </div>
-                      <p className="text-sm text-rose-300 font-medium">{error}</p>
+                      <p className="text-sm font-medium" style={{ color: 'var(--danger)' }}>{error}</p>
                       <button
                         onClick={fetchTickets}
-                        className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold cursor-pointer"
+                        className="px-4 py-2 rounded-lg text-white text-xs font-semibold cursor-pointer"
+                        style={{ background: 'var(--accent)' }}
                       >
                         Try Again
                       </button>
@@ -378,11 +379,11 @@ export const TicketsPage: React.FC = () => {
                 <tr>
                   <td colSpan={6} className="p-16 text-center">
                     <div className="max-w-sm mx-auto space-y-3">
-                      <div className="h-12 w-12 mx-auto rounded-2xl bg-slate-800 flex items-center justify-center text-slate-500">
+                      <div className="h-12 w-12 mx-auto rounded-2xl flex items-center justify-center" style={{ background: 'var(--bg-hover)', color: 'var(--text-muted)' }}>
                         <Inbox className="h-6 w-6" />
                       </div>
-                      <h3 className="text-base font-semibold text-white">No Tickets Found</h3>
-                      <p className="text-xs text-slate-400">
+                      <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>No Tickets Found</h3>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                         {statusFilter !== 'all' || priorityFilter !== 'all' || searchQuery
                           ? 'No tickets match the selected filters or search criteria.'
                           : 'There are currently no tickets in your organization queue.'}
@@ -391,7 +392,8 @@ export const TicketsPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={resetFilters}
-                          className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-600/30 text-xs font-semibold transition-colors cursor-pointer"
+                          className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer border"
+                          style={{ color: 'var(--accent)', borderColor: 'var(--accent-light)', background: 'var(--accent-light)' }}
                         >
                           Reset Filters
                         </button>
@@ -404,16 +406,22 @@ export const TicketsPage: React.FC = () => {
                 displayedTickets.map((ticket) => (
                   <tr
                     key={ticket.id}
-                    className="hover:bg-slate-800/40 transition-colors group cursor-pointer"
+                    className="transition-colors group cursor-pointer"
+                    style={{ borderBottom: `1px solid var(--border)` }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
                   >
                     <td className="px-6 py-4">
                       <Link
                         to={`/tickets/${ticket.id}`}
-                        className="font-semibold text-slate-100 group-hover:text-indigo-400 transition-colors block max-w-sm truncate"
+                        className="font-semibold block max-w-sm truncate transition-colors"
+                        style={{ color: 'var(--text-primary)' }}
+                        onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+                        onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
                       >
                         {ticket.title}
                       </Link>
-                      <span className="font-mono text-xs text-slate-500">
+                      <span className="font-mono text-xs" style={{ color: 'var(--text-muted)' }}>
                         #{ticket.id.slice(0, 8)}
                       </span>
                     </td>
@@ -422,11 +430,11 @@ export const TicketsPage: React.FC = () => {
 
                     <td className="px-6 py-4">{renderPriorityBadge(ticket.priority)}</td>
 
-                    <td className="px-6 py-4 font-mono text-xs text-slate-400 truncate max-w-[140px]">
+                    <td className="px-6 py-4 font-mono text-xs truncate max-w-[140px]" style={{ color: 'var(--text-muted)' }}>
                       {ticket.customer_id.slice(0, 13)}...
                     </td>
 
-                    <td className="px-6 py-4 text-xs text-slate-400">
+                    <td className="px-6 py-4 text-xs" style={{ color: 'var(--text-muted)' }}>
                       {new Date(ticket.updated_at).toLocaleDateString([], {
                         month: 'short',
                         day: 'numeric',
@@ -438,7 +446,18 @@ export const TicketsPage: React.FC = () => {
                     <td className="px-6 py-4 text-right">
                       <Link
                         to={`/tickets/${ticket.id}`}
-                        className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-200 hover:text-white text-xs font-medium border border-slate-700/80 hover:border-indigo-500 transition-all min-h-[32px]"
+                        className="inline-flex items-center gap-1 px-3 py-1 rounded-lg text-xs font-medium border transition-all min-h-[32px]"
+                        style={{ color: 'var(--text-secondary)', borderColor: 'var(--border)', background: 'var(--bg-muted)' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'var(--accent)';
+                          e.currentTarget.style.color = '#fff';
+                          e.currentTarget.style.borderColor = 'var(--accent)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'var(--bg-muted)';
+                          e.currentTarget.style.color = 'var(--text-secondary)';
+                          e.currentTarget.style.borderColor = 'var(--border)';
+                        }}
                       >
                         <span>Open</span>
                         <ExternalLink className="h-3 w-3" />
@@ -452,17 +471,17 @@ export const TicketsPage: React.FC = () => {
         </div>
 
         {/* Pagination Controls Bar */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/40 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="p-4 border-t flex flex-col sm:flex-row items-center justify-between gap-4" style={{ borderColor: 'var(--border)', background: 'var(--bg-muted)' }}>
           {/* Record range indicator */}
-          <div className="text-xs text-slate-400">
-            Showing <strong className="text-slate-200">{startItem}</strong> to{' '}
-            <strong className="text-slate-200">{endItem}</strong> of{' '}
-            <strong className="text-slate-200">{totalCount}</strong> tickets
+          <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            Showing <strong style={{ color: 'var(--text-primary)' }}>{startItem}</strong> to{' '}
+            <strong style={{ color: 'var(--text-primary)' }}>{endItem}</strong> of{' '}
+            <strong style={{ color: 'var(--text-primary)' }}>{totalCount}</strong> tickets
           </div>
 
           <div className="flex items-center gap-4">
             {/* Page Size Selector */}
-            <div className="flex items-center gap-2 text-xs text-slate-400">
+            <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
               <span>Per page:</span>
               <select
                 value={pageSize}
@@ -470,7 +489,8 @@ export const TicketsPage: React.FC = () => {
                   setPageSize(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="bg-slate-800 border border-slate-700 rounded-md px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                className="border rounded-md px-2 py-1 text-xs focus:outline-none"
+                style={{ borderColor: 'var(--border)', background: 'var(--bg-card)', color: 'var(--text-primary)' }}
               >
                 <option value={10}>10</option>
                 <option value={20}>20</option>
@@ -484,13 +504,14 @@ export const TicketsPage: React.FC = () => {
                 type="button"
                 onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                 disabled={currentPage <= 1 || isLoading}
-                className="p-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 transition-colors"
+                className="p-1.5 rounded-lg border disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                style={{ borderColor: 'var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)' }}
                 aria-label="Previous page"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
 
-              <span className="px-3 text-xs font-mono text-slate-400">
+              <span className="px-3 text-xs font-mono" style={{ color: 'var(--text-muted)' }}>
                 Page {currentPage} of {totalPages}
               </span>
 
@@ -498,7 +519,8 @@ export const TicketsPage: React.FC = () => {
                 type="button"
                 onClick={() => setCurrentPage((p) => p + 1)}
                 disabled={!hasMore && currentPage >= totalPages}
-                className="p-1.5 rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 transition-colors"
+                className="p-1.5 rounded-lg border disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                style={{ borderColor: 'var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)' }}
                 aria-label="Next page"
               >
                 <ChevronRight className="h-4 w-4" />

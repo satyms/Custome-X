@@ -284,8 +284,8 @@ export const TicketDetailPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex h-[calc(100vh-8rem)] w-full items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-slate-400">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+        <div className="flex flex-col items-center gap-3" style={{ color: 'var(--text-muted)' }}>
+          <Loader2 className="h-7 w-7 animate-spin" style={{ color: 'var(--accent)' }} />
           <p className="text-sm font-medium">Loading ticket conversation...</p>
         </div>
       </div>
@@ -295,15 +295,19 @@ export const TicketDetailPage: React.FC = () => {
   if (!ticket) {
     return (
       <div className="flex h-[calc(100vh-8rem)] items-center justify-center">
-        <div className="max-w-md p-8 text-center bg-slate-900/60 rounded-2xl border border-slate-800">
-          <AlertTriangle className="h-10 w-10 text-rose-400 mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-white">Ticket Not Found</h2>
-          <p className="mt-1 text-sm text-slate-400">
+        <div
+          className="max-w-md p-8 text-center rounded-2xl border"
+          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          <AlertTriangle className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--danger)' }} />
+          <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>Ticket Not Found</h2>
+          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
             This ticket does not exist or has been removed from your organization.
           </p>
           <Link
             to="/tickets"
-            className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold"
+            className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-xs font-semibold"
+            style={{ background: 'var(--accent)' }}
           >
             <ArrowLeft className="h-4 w-4" /> Return to Ticket Queue
           </Link>
@@ -313,7 +317,7 @@ export const TicketDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-6.5rem)] flex flex-col overflow-hidden -m-6 md:-m-8">
+    <div className="h-[calc(100vh-6rem)] flex flex-col overflow-hidden -m-6 border rounded-xl" style={{ borderColor: 'var(--border)', background: 'var(--bg-app)' }}>
       {/* Toast Notification Alert */}
       {toastMessage && (
         <Toast
@@ -324,33 +328,38 @@ export const TicketDetailPage: React.FC = () => {
       )}
 
       {/* Top Context Breadcrumb & Panel Visibility Toggles */}
-      <div className="h-13 px-4 border-b border-slate-800 bg-slate-900/70 backdrop-blur-md flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-3">
+      <div
+        className="h-12 px-4 border-b flex items-center justify-between shrink-0"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+      >
+        <div className="flex items-center gap-2.5">
           <Link
             to="/tickets"
-            className="flex items-center gap-1.5 text-xs font-medium text-slate-400 hover:text-slate-200 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-medium hover:underline transition-colors"
+            style={{ color: 'var(--text-muted)' }}
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">All Tickets</span>
           </Link>
-          <span className="text-slate-600">/</span>
-          <span className="font-mono text-xs text-indigo-400">#{ticket.id.slice(0, 8)}</span>
-          <span className="text-slate-600 hidden md:inline">/</span>
-          <span className="text-xs font-medium text-slate-200 truncate max-w-xs md:max-w-md hidden md:inline">
+          <span style={{ color: 'var(--border-strong)' }}>/</span>
+          <span className="font-mono text-xs font-semibold" style={{ color: 'var(--accent)' }}>#{ticket.id.slice(0, 8)}</span>
+          <span style={{ color: 'var(--border-strong)' }} className="hidden md:inline">/</span>
+          <span className="text-xs font-medium truncate max-w-xs md:max-w-md hidden md:inline" style={{ color: 'var(--text-primary)' }}>
             {ticket.title}
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {/* Toggle Left Queue Panel */}
           <button
             type="button"
             onClick={() => setShowLeftQueue(!showLeftQueue)}
-            className={`p-1.5 rounded-lg border text-xs font-medium transition-colors ${
-              showLeftQueue
-                ? 'bg-slate-800 border-slate-700 text-indigo-400'
-                : 'bg-transparent border-slate-800 text-slate-400 hover:text-slate-200'
-            }`}
+            className="p-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer"
+            style={{
+              background: showLeftQueue ? 'var(--accent-light)' : 'transparent',
+              borderColor: 'var(--border)',
+              color: showLeftQueue ? 'var(--accent)' : 'var(--text-muted)',
+            }}
             title="Toggle Queue Panel"
           >
             {showLeftQueue ? (
@@ -364,11 +373,12 @@ export const TicketDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowRightInspector(!showRightInspector)}
-            className={`p-1.5 rounded-lg border text-xs font-medium transition-colors ${
-              showRightInspector
-                ? 'bg-slate-800 border-slate-700 text-indigo-400'
-                : 'bg-transparent border-slate-800 text-slate-400 hover:text-slate-200'
-            }`}
+            className="p-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer"
+            style={{
+              background: showRightInspector ? 'var(--accent-light)' : 'transparent',
+              borderColor: 'var(--border)',
+              color: showRightInspector ? 'var(--accent)' : 'var(--text-muted)',
+            }}
             title="Toggle Context Inspector"
           >
             {showRightInspector ? (
@@ -386,23 +396,31 @@ export const TicketDetailPage: React.FC = () => {
         {/* COLUMN 1 (LEFT): MINI TICKET QUEUE */}
         {/* ========================================================= */}
         {showLeftQueue && (
-          <aside className="w-72 lg:w-80 border-r border-slate-800 bg-slate-900/40 flex flex-col shrink-0">
+          <aside
+            className="w-72 lg:w-80 border-r flex flex-col shrink-0"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
             {/* Search Queue Header */}
-            <div className="p-3 border-b border-slate-800/80">
+            <div className="p-3 border-b" style={{ borderColor: 'var(--border)' }}>
               <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: 'var(--text-muted)' }} />
                 <input
                   type="text"
                   value={queueSearch}
                   onChange={(e) => setQueueSearch(e.target.value)}
                   placeholder="Filter active queue..."
-                  className="w-full bg-slate-800/80 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full border rounded-lg pl-8 pr-3 py-1.5 text-xs focus:outline-none"
+                  style={{
+                    background: 'var(--bg-app)',
+                    borderColor: 'var(--border)',
+                    color: 'var(--text-primary)',
+                  }}
                 />
               </div>
             </div>
 
             {/* Ticket List */}
-            <div className="flex-1 overflow-y-auto divide-y divide-slate-800/50">
+            <div className="flex-1 overflow-y-auto divide-y" style={{ borderColor: 'var(--border)' }}>
               {isQueueLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
                   <div key={`skel-queue-${i}`} className="p-3 space-y-2">
@@ -414,7 +432,7 @@ export const TicketDetailPage: React.FC = () => {
                   </div>
                 ))
               ) : filteredQueue.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-400">
+                <div className="p-6 text-center text-xs" style={{ color: 'var(--text-muted)' }}>
                   No tickets found matching search.
                 </div>
               ) : (
@@ -429,30 +447,31 @@ export const TicketDetailPage: React.FC = () => {
                           navigate(`/tickets/${item.id}`);
                         }
                       }}
-                      className={`w-full text-left p-3.5 transition-colors cursor-pointer border-l-2 ${
+                      className={`w-full text-left p-3 transition-colors cursor-pointer border-l-2 ${
                         isActive
-                          ? 'bg-slate-800/70 border-l-indigo-500 text-white'
-                          : 'border-l-transparent text-slate-300 hover:bg-slate-800/30'
+                          ? 'border-l-indigo-600'
+                          : 'border-l-transparent hover:bg-slate-50'
                       }`}
+                      style={{
+                        background: isActive ? 'var(--accent-light)' : 'transparent',
+                      }}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-mono text-[11px] text-slate-400">
+                        <span className="font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>
                           #{item.id.slice(0, 8)}
                         </span>
                         <span
-                          className={`text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded ${
-                            item.priority === 'urgent'
-                              ? 'bg-rose-500/10 text-rose-400'
-                              : item.priority === 'high'
-                              ? 'bg-amber-500/10 text-amber-400'
-                              : 'bg-slate-800 text-slate-400'
-                          }`}
+                          className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded"
+                          style={{
+                            background: item.priority === 'urgent' ? 'var(--danger-light)' : item.priority === 'high' ? 'var(--warning-light)' : 'var(--bg-muted)',
+                            color: item.priority === 'urgent' ? 'var(--danger)' : item.priority === 'high' ? 'var(--warning)' : 'var(--text-muted)',
+                          }}
                         >
                           {item.priority}
                         </span>
                       </div>
-                      <p className="text-xs font-medium truncate text-slate-100">{item.title}</p>
-                      <div className="flex items-center justify-between mt-2 text-[11px] text-slate-500">
+                      <p className="text-xs font-medium truncate" style={{ color: 'var(--text-primary)' }}>{item.title}</p>
+                      <div className="flex items-center justify-between mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
                         <span className="capitalize">{item.status.replace('_', ' ')}</span>
                         <span>{new Date(item.updated_at).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
                       </div>
@@ -467,48 +486,64 @@ export const TicketDetailPage: React.FC = () => {
         {/* ========================================================= */}
         {/* COLUMN 2 (CENTER): CONVERSATION THREAD & RICH COMPOSER */}
         {/* ========================================================= */}
-        <section className="flex-1 flex flex-col min-w-0 bg-slate-950">
+        <section className="flex-1 flex flex-col min-w-0" style={{ background: 'var(--bg-app)' }}>
           {/* Conversation Header Bar */}
-          <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/60 backdrop-blur-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+          <div
+            className="px-5 py-3 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
             <div>
-              <div className="flex items-center gap-2.5">
-                <h1 className="text-lg font-bold text-white tracking-tight truncate max-w-xl">
+              <div className="flex items-center gap-2">
+                <h1 className="text-base font-semibold tracking-tight truncate max-w-xl" style={{ color: 'var(--text-primary)' }}>
                   {ticket.title}
                 </h1>
                 <span
-                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border ${
-                    ticket.status === 'open'
-                      ? 'bg-sky-500/10 text-sky-400 border-sky-500/20'
-                      : ticket.status === 'in_progress'
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                      : ticket.status === 'escalated'
-                      ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                      : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                  }`}
+                  className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                  style={{
+                    background:
+                      ticket.status === 'open'
+                        ? 'var(--sky-light)'
+                        : ticket.status === 'in_progress'
+                        ? 'var(--warning-light)'
+                        : ticket.status === 'escalated'
+                        ? 'var(--danger-light)'
+                        : 'var(--success-light)',
+                    color:
+                      ticket.status === 'open'
+                        ? 'var(--sky)'
+                        : ticket.status === 'in_progress'
+                        ? 'var(--warning)'
+                        : ticket.status === 'escalated'
+                        ? 'var(--danger)'
+                        : 'var(--success)',
+                  }}
                 >
                   {ticket.status.replace('_', ' ')}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
+              <p className="text-xs mt-0.5 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
                 <span>Created {new Date(ticket.created_at).toLocaleString()}</span>
                 <span>•</span>
                 <span>Customer ID: {ticket.customer_id.slice(0, 8)}...</span>
               </p>
             </div>
 
-            {/* Live WebSocket Connection Pill */}
+            {/* Controls */}
             <div className="flex items-center gap-3">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800/90 border border-slate-700/80 text-[11px] font-mono shadow-sm">
+              <div
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-mono"
+                style={{ background: 'var(--bg-muted)', borderColor: 'var(--border)' }}
+              >
                 <span
                   className={`h-2 w-2 rounded-full ${
                     connectionStatus === 'connected'
-                      ? 'bg-emerald-400 animate-pulse'
+                      ? 'bg-emerald-500 animate-pulse'
                       : connectionStatus === 'reconnecting'
-                      ? 'bg-amber-400 animate-ping'
-                      : 'bg-slate-500'
+                      ? 'bg-amber-500 animate-ping'
+                      : 'bg-slate-400'
                   }`}
                 />
-                <span className="text-slate-300">
+                <span style={{ color: 'var(--text-secondary)' }}>
                   {connectionStatus === 'connected'
                     ? 'Live Stream'
                     : connectionStatus === 'reconnecting'
@@ -516,37 +551,48 @@ export const TicketDetailPage: React.FC = () => {
                     : 'Real-time Sync'}
                 </span>
               </div>
-            </div>
 
-            {/* Quick Status Transition Dropdown */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400">Status:</span>
-              <select
-                value={ticket.status}
-                onChange={(e) => handleUpdateStatus(e.target.value as TicketStatus)}
-                className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
-              >
-                <option value="open">Open</option>
-                <option value="in_progress">In Progress</option>
-                <option value="escalated">Escalated</option>
-                <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
-              </select>
+              {/* Status Transition Dropdown */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Status:</span>
+                <select
+                  value={ticket.status}
+                  onChange={(e) => handleUpdateStatus(e.target.value as TicketStatus)}
+                  className="border rounded-lg px-2.5 py-1 text-xs font-medium focus:outline-none cursor-pointer"
+                  style={{
+                    background: 'var(--bg-card)',
+                    borderColor: 'var(--border)',
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  <option value="open">Open</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="escalated">Escalated</option>
+                  <option value="resolved">Resolved</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </div>
             </div>
           </div>
 
           {/* Chronological Message History Container */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 overflow-y-auto p-5 space-y-4">
             {/* Initial Audit Log Marker */}
-            <div className="flex items-center justify-center my-2">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-[11px] font-mono text-slate-400">
-                <CheckCircle className="h-3 w-3 text-emerald-400" />
+            <div className="flex items-center justify-center my-1">
+              <div
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-mono"
+                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+              >
+                <CheckCircle className="h-3 w-3" style={{ color: 'var(--success)' }} />
                 <span>Ticket initialized with priority: {ticket.priority}</span>
               </div>
             </div>
 
             {ticket.messages.length === 0 ? (
-              <div className="p-12 text-center text-sm text-slate-400 bg-slate-900/30 rounded-xl border border-slate-800/80">
+              <div
+                className="p-8 text-center text-sm rounded-xl border"
+                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+              >
                 No conversation history found for this ticket.
               </div>
             ) : (
@@ -564,44 +610,58 @@ export const TicketDetailPage: React.FC = () => {
                   >
                     {/* Message Bubble Card */}
                     <div
-                      className={`max-w-2xl rounded-2xl p-4 shadow-md transition-all ${
+                      className={`max-w-2xl rounded-2xl p-4 border transition-all ${
                         isCustomer
-                          ? 'bg-slate-900 border border-slate-800 rounded-tl-sm'
+                          ? 'rounded-tl-sm'
                           : isAi
-                          ? 'bg-purple-950/40 border border-purple-500/30 rounded-tr-sm'
-                          : 'bg-indigo-950/40 border border-indigo-500/30 rounded-tr-sm'
+                          ? 'rounded-tr-sm'
+                          : 'rounded-tr-sm'
                       } ${isOptimistic ? 'opacity-70 animate-pulse' : ''}`}
+                      style={{
+                        background: isCustomer ? 'var(--bg-card)' : isAi ? '#FAF5FF' : 'var(--bg-card)',
+                        borderColor: isAi ? '#E9D5FF' : 'var(--border)',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                      }}
                     >
                       {/* Sender Meta Header */}
                       <div className="flex items-center justify-between gap-4 text-xs mb-2">
                         <div className="flex items-center gap-1.5 font-semibold">
                           {isCustomer ? (
                             <>
-                              <div className="h-5 w-5 rounded-full bg-sky-500/20 text-sky-400 flex items-center justify-center text-[10px]">
+                              <div
+                                className="h-5 w-5 rounded-full flex items-center justify-center text-[10px]"
+                                style={{ background: 'var(--sky-light)', color: 'var(--sky)' }}
+                              >
                                 <User className="h-3 w-3" />
                               </div>
-                              <span className="text-sky-300">
+                              <span style={{ color: 'var(--sky)' }}>
                                 {ticket.customer?.full_name || 'Customer'}
                               </span>
                             </>
                           ) : isAi ? (
                             <>
-                              <div className="h-5 w-5 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[10px]">
+                              <div
+                                className="h-5 w-5 rounded-full flex items-center justify-center text-[10px]"
+                                style={{ background: '#F3E8FF', color: '#9333EA' }}
+                              >
                                 <Bot className="h-3 w-3" />
                               </div>
-                              <span className="text-purple-300">AI Assistant</span>
+                              <span style={{ color: '#9333EA' }}>AI Assistant</span>
                             </>
                           ) : (
                             <>
-                              <div className="h-5 w-5 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-[10px]">
+                              <div
+                                className="h-5 w-5 rounded-full flex items-center justify-center text-[10px]"
+                                style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}
+                              >
                                 <CheckCircle2 className="h-3 w-3" />
                               </div>
-                              <span className="text-indigo-300">Support Agent</span>
+                              <span style={{ color: 'var(--accent)' }}>Support Agent</span>
                             </>
                           )}
                         </div>
 
-                        <span className="text-[11px] text-slate-500 flex items-center gap-1 font-mono">
+                        <span className="text-[11px] flex items-center gap-1 font-mono" style={{ color: 'var(--text-muted)' }}>
                           <Clock className="h-3 w-3" />
                           {new Date(message.created_at).toLocaleTimeString([], {
                             hour: '2-digit',
@@ -611,12 +671,12 @@ export const TicketDetailPage: React.FC = () => {
                       </div>
 
                       {/* Content Body */}
-                      <p className="text-sm text-slate-100 whitespace-pre-wrap leading-relaxed">
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--text-primary)' }}>
                         {message.content}
                       </p>
 
                       {isOptimistic && (
-                        <span className="text-[10px] text-indigo-400 mt-1 block italic font-mono">
+                        <span className="text-[10px] mt-1 block italic font-mono" style={{ color: 'var(--accent)' }}>
                           Delivering reply...
                         </span>
                       )}
@@ -628,21 +688,31 @@ export const TicketDetailPage: React.FC = () => {
 
             {/* Real-time Streaming AI/Agent Token Bubble */}
             {isStreaming && (
-              <div className="flex items-start gap-3 justify-start animate-fade-in">
-                <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center shadow-md shadow-violet-500/20 shrink-0">
-                  <Bot className="h-4 w-4 text-white" />
+              <div className="flex items-start gap-2.5 justify-start">
+                <div
+                  className="h-7 w-7 rounded-full flex items-center justify-center text-white shrink-0"
+                  style={{ background: 'var(--accent)' }}
+                >
+                  <Bot className="h-4 w-4" />
                 </div>
-                <div className="max-w-xl rounded-2xl p-4 bg-slate-900 border border-indigo-500/40 text-slate-100 shadow-xl">
+                <div
+                  className="max-w-xl rounded-2xl p-4 border"
+                  style={{
+                    background: 'var(--bg-card)',
+                    borderColor: 'var(--accent)',
+                    boxShadow: '0 4px 12px rgba(99,102,241,0.1)',
+                  }}
+                >
                   <div className="flex items-center justify-between gap-4 mb-1.5">
-                    <span className="text-xs font-semibold text-indigo-400 flex items-center gap-1.5">
-                      <span className="h-2 w-2 rounded-full bg-indigo-400 animate-ping" />
+                    <span className="text-xs font-semibold flex items-center gap-1.5" style={{ color: 'var(--accent)' }}>
+                      <span className="h-2 w-2 rounded-full animate-ping" style={{ background: 'var(--accent)' }} />
                       {activeTypist || 'AI Agent Streaming'}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-mono">Real-time Token Stream</span>
+                    <span className="text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>Real-time Stream</span>
                   </div>
-                  <p className="text-sm text-slate-100 whitespace-pre-wrap leading-relaxed">
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed" style={{ color: 'var(--text-primary)' }}>
                     {streamingContent}
-                    <span className="inline-block w-2 h-4 ml-1 bg-indigo-400 animate-pulse align-middle" />
+                    <span className="inline-block w-1.5 h-3.5 ml-1 animate-pulse align-middle" style={{ background: 'var(--accent)' }} />
                   </p>
                 </div>
               </div>
@@ -655,8 +725,15 @@ export const TicketDetailPage: React.FC = () => {
           {/* ========================================================= */}
           {/* RICH REPLY COMPOSER */}
           {/* ========================================================= */}
-          <div className="p-4 border-t border-slate-800 bg-slate-900/80 backdrop-blur-md shrink-0">
-            <div className="rounded-xl border border-slate-700 bg-slate-850 focus-within:border-indigo-500 transition-colors shadow-lg">
+          <div className="p-4 border-t shrink-0" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+            <div
+              className="rounded-xl border transition-colors"
+              style={{
+                borderColor: 'var(--border)',
+                background: 'var(--bg-card)',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+              }}
+            >
               <textarea
                 ref={textareaRef}
                 value={replyText}
@@ -664,12 +741,16 @@ export const TicketDetailPage: React.FC = () => {
                 onKeyDown={handleKeyDown}
                 placeholder="Type an agent reply to customer... (Press Ctrl + Enter to send)"
                 rows={3}
-                className="w-full bg-transparent p-3.5 text-sm text-white placeholder-slate-500 focus:outline-none resize-none"
+                className="w-full bg-transparent p-3.5 text-sm focus:outline-none resize-none"
+                style={{ color: 'var(--text-primary)' }}
               />
 
               {/* Composer Toolbar & Actions */}
-              <div className="flex flex-col sm:flex-row items-center justify-between px-3 py-2 border-t border-slate-700/60 bg-slate-900/50 gap-2">
-                <div className="flex items-center gap-2 text-xs text-slate-400">
+              <div
+                className="flex flex-col sm:flex-row items-center justify-between px-3 py-2 border-t gap-2"
+                style={{ borderColor: 'var(--border)', background: 'var(--bg-muted)' }}
+              >
+                <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-muted)' }}>
                   <button
                     type="button"
                     onClick={() => {
@@ -693,18 +774,23 @@ export const TicketDetailPage: React.FC = () => {
                       });
                     }}
                     disabled={isStreaming}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+                    style={{
+                      background: 'var(--accent-light)',
+                      color: 'var(--accent)',
+                      borderColor: 'var(--border)',
+                    }}
                     title="Simulate Real-time AI Assistant stream response"
                   >
                     <Bot className="h-3.5 w-3.5" />
                     <span>{isStreaming ? 'Streaming...' : 'Stream AI Reply'}</span>
                   </button>
                   <span className="hidden sm:inline font-mono">
-                    <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px]">
+                    <kbd className="px-1.5 py-0.5 rounded border text-[10px]" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
                       Ctrl
                     </kbd>{' '}
                     +{' '}
-                    <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px]">
+                    <kbd className="px-1.5 py-0.5 rounded border text-[10px]" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
                       Enter
                     </kbd>{' '}
                     to send
@@ -718,7 +804,12 @@ export const TicketDetailPage: React.FC = () => {
                     onChange={(e) =>
                       setStatusAction(e.target.value as TicketStatus | 'keep_open')
                     }
-                    className="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                    className="border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none cursor-pointer"
+                    style={{
+                      background: 'var(--bg-card)',
+                      borderColor: 'var(--border)',
+                      color: 'var(--text-primary)',
+                    }}
                   >
                     <option value="keep_open">Send &amp; Keep Open</option>
                     <option value="in_progress">Send &amp; In Progress</option>
@@ -732,7 +823,10 @@ export const TicketDetailPage: React.FC = () => {
                     type="button"
                     onClick={() => handleSendMessage()}
                     disabled={isSending || !replyText.trim()}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold shadow-md shadow-indigo-600/30 transition-all cursor-pointer min-h-[36px]"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg disabled:opacity-50 text-white text-xs font-semibold shadow-sm transition-all cursor-pointer min-h-[34px]"
+                    style={{ background: 'var(--accent)' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--accent-hover)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--accent)')}
                   >
                     {isSending ? (
                       <>
@@ -756,46 +850,56 @@ export const TicketDetailPage: React.FC = () => {
         {/* COLUMN 3 (RIGHT): CONTEXT INSPECTOR */}
         {/* ========================================================= */}
         {showRightInspector && (
-          <aside className="w-80 lg:w-88 border-l border-slate-800 bg-slate-900/50 p-6 flex flex-col gap-6 overflow-y-auto shrink-0">
+          <aside
+            className="w-80 lg:w-88 border-l p-5 flex flex-col gap-4 overflow-y-auto shrink-0"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
             {/* Customer Profile Section */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-4 shadow-sm">
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-                <User className="h-4 w-4 text-indigo-400" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+            <div
+              className="rounded-xl border p-4 space-y-3"
+              style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+            >
+              <div className="flex items-center gap-2 border-b pb-2.5" style={{ borderColor: 'var(--border)' }}>
+                <User className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+                <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                   Customer Context
                 </h3>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center font-bold text-white text-sm">
+                <div
+                  className="h-9 w-9 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0"
+                  style={{ background: 'var(--accent)' }}
+                >
                   {ticket.customer?.full_name ? ticket.customer.full_name.slice(0, 2).toUpperCase() : 'CU'}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white truncate">
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
                     {ticket.customer?.full_name || 'Direct Inquirer'}
                   </p>
-                  <p className="text-xs text-slate-400 truncate">
+                  <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
                     {ticket.customer?.email || 'N/A'}
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between text-slate-300">
-                  <span className="text-slate-500 flex items-center gap-1.5">
+              <div className="space-y-2 text-xs pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                     <Mail className="h-3.5 w-3.5" /> Email
                   </span>
-                  <div className="flex items-center gap-1 font-mono text-slate-200">
-                    <span className="truncate max-w-[140px]">{ticket.customer?.email || 'N/A'}</span>
+                  <div className="flex items-center gap-1 font-mono">
+                    <span className="truncate max-w-[140px]" style={{ color: 'var(--text-secondary)' }}>{ticket.customer?.email || 'N/A'}</span>
                     {ticket.customer?.email && (
                       <button
                         type="button"
                         onClick={() => handleCopy(ticket.customer!.email, 'email')}
-                        className="text-slate-400 hover:text-white p-0.5"
+                        className="p-0.5 hover:opacity-75 cursor-pointer"
+                        style={{ color: 'var(--text-muted)' }}
                         title="Copy email"
                       >
                         {copiedField === 'email' ? (
-                          <Check className="h-3 w-3 text-emerald-400" />
+                          <Check className="h-3 w-3" style={{ color: 'var(--success)' }} />
                         ) : (
                           <Copy className="h-3 w-3" />
                         )}
@@ -804,11 +908,11 @@ export const TicketDetailPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-slate-300">
-                  <span className="text-slate-500 flex items-center gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
                     <Phone className="h-3.5 w-3.5" /> Phone
                   </span>
-                  <span className="font-mono text-slate-200">
+                  <span className="font-mono" style={{ color: 'var(--text-secondary)' }}>
                     {ticket.customer?.phone || 'Not provided'}
                   </span>
                 </div>
@@ -816,10 +920,13 @@ export const TicketDetailPage: React.FC = () => {
             </div>
 
             {/* Ticket Metadata Inspector */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-4 shadow-sm">
-              <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
-                <Shield className="h-4 w-4 text-indigo-400" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
+            <div
+              className="rounded-xl border p-4 space-y-3"
+              style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+            >
+              <div className="flex items-center gap-2 border-b pb-2.5" style={{ borderColor: 'var(--border)' }}>
+                <Shield className="h-4 w-4" style={{ color: 'var(--accent)' }} />
+                <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                   Ticket Inspector
                 </h3>
               </div>
@@ -827,17 +934,21 @@ export const TicketDetailPage: React.FC = () => {
               <div className="space-y-3 text-xs">
                 {/* UUID */}
                 <div>
-                  <span className="text-slate-500 block mb-1">Ticket UUID</span>
-                  <div className="flex items-center justify-between bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-700 font-mono text-[11px] text-slate-300">
+                  <span className="block mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Ticket UUID</span>
+                  <div
+                    className="flex items-center justify-between px-2.5 py-1.5 rounded-lg border font-mono text-[11px]"
+                    style={{ background: 'var(--bg-app)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+                  >
                     <span className="truncate">{ticket.id}</span>
                     <button
                       type="button"
                       onClick={() => handleCopy(ticket.id, 'uuid')}
-                      className="ml-2 text-slate-400 hover:text-white"
+                      className="ml-2 hover:opacity-75 cursor-pointer"
+                      style={{ color: 'var(--text-muted)' }}
                       title="Copy Ticket ID"
                     >
                       {copiedField === 'uuid' ? (
-                        <Check className="h-3.5 w-3.5 text-emerald-400" />
+                        <Check className="h-3.5 w-3.5" style={{ color: 'var(--success)' }} />
                       ) : (
                         <Copy className="h-3.5 w-3.5" />
                       )}
@@ -847,13 +958,18 @@ export const TicketDetailPage: React.FC = () => {
 
                 {/* Priority Selector */}
                 <div>
-                  <span className="text-slate-500 block mb-1">Priority Urgency</span>
+                  <span className="block mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Priority Urgency</span>
                   <select
                     value={ticket.priority}
                     onChange={(e) =>
                       handleUpdatePriority(e.target.value as TicketPriority)
                     }
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                    className="w-full border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none cursor-pointer"
+                    style={{
+                      background: 'var(--bg-card)',
+                      borderColor: 'var(--border)',
+                      color: 'var(--text-primary)',
+                    }}
                   >
                     <option value="urgent">Urgent</option>
                     <option value="high">High</option>
@@ -864,20 +980,22 @@ export const TicketDetailPage: React.FC = () => {
 
                 {/* Status Indicator */}
                 <div>
-                  <span className="text-slate-500 block mb-1">Lifecycle Status</span>
+                  <span className="block mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Lifecycle Status</span>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`inline-block h-2 w-2 rounded-full ${
-                        ticket.status === 'open'
-                          ? 'bg-sky-400'
-                          : ticket.status === 'in_progress'
-                          ? 'bg-amber-400'
-                          : ticket.status === 'escalated'
-                          ? 'bg-rose-400'
-                          : 'bg-emerald-400'
-                      }`}
+                      className="inline-block h-2 w-2 rounded-full"
+                      style={{
+                        background:
+                          ticket.status === 'open'
+                            ? 'var(--sky)'
+                            : ticket.status === 'in_progress'
+                            ? 'var(--warning)'
+                            : ticket.status === 'escalated'
+                            ? 'var(--danger)'
+                            : 'var(--success)',
+                      }}
                     />
-                    <span className="font-semibold capitalize text-slate-200">
+                    <span className="font-semibold capitalize" style={{ color: 'var(--text-primary)' }}>
                       {ticket.status.replace('_', ' ')}
                     </span>
                   </div>
@@ -885,14 +1003,14 @@ export const TicketDetailPage: React.FC = () => {
 
                 {/* Assigned Agent */}
                 <div>
-                  <span className="text-slate-500 block mb-1">Assigned Agent</span>
-                  <span className="font-mono text-slate-300">
+                  <span className="block mb-1 font-medium" style={{ color: 'var(--text-muted)' }}>Assigned Agent</span>
+                  <span className="font-mono" style={{ color: 'var(--text-secondary)' }}>
                     {ticket.assigned_to ? `#${ticket.assigned_to.slice(0, 8)}` : 'Unassigned (Queue Pool)'}
                   </span>
                 </div>
 
                 {/* Timestamps */}
-                <div className="pt-2 border-t border-slate-800/80 space-y-1.5 text-[11px] text-slate-500">
+                <div className="pt-2 border-t space-y-1.5 text-[11px]" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
                   <div className="flex justify-between">
                     <span>Opened:</span>
                     <span>{new Date(ticket.created_at).toLocaleDateString()}</span>

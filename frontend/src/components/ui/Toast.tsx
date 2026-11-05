@@ -14,38 +14,46 @@ export const Toast: React.FC<ToastProps> = ({ type = 'error', message, onClose }
     switch (type) {
       case 'success':
         return {
-          bg: 'bg-emerald-950/90 border-emerald-500/30 text-emerald-200',
+          borderLeft: '3px solid #10B981',
           icon: CheckCircle,
-          iconColor: 'text-emerald-400',
+          iconColor: '#10B981',
         };
       case 'info':
         return {
-          bg: 'bg-sky-950/90 border-sky-500/30 text-sky-200',
+          borderLeft: '3px solid #0EA5E9',
           icon: Info,
-          iconColor: 'text-sky-400',
+          iconColor: '#0EA5E9',
         };
       default:
         return {
-          bg: 'bg-rose-950/90 border-rose-500/30 text-rose-200',
+          borderLeft: '3px solid #EF4444',
           icon: AlertCircle,
-          iconColor: 'text-rose-400',
+          iconColor: '#EF4444',
         };
     }
   };
 
-  const { bg, icon: Icon, iconColor } = getStyles();
+  const { icon: Icon, iconColor } = getStyles();
 
   return (
     <div
       role="alert"
-      className={`fixed top-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-md max-w-md animate-in fade-in slide-in-from-top-3 duration-200 ${bg}`}
+      className="fixed top-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg max-w-md"
+      style={{
+        background: 'var(--bg-card)',
+        borderColor: 'var(--border)',
+        borderLeftWidth: '3px',
+        borderLeftColor: iconColor,
+        color: 'var(--text-primary)',
+      }}
     >
-      <Icon className={`h-5 w-5 shrink-0 ${iconColor}`} />
-      <span className="text-sm font-medium flex-1">{message}</span>
+      <Icon className="h-5 w-5 shrink-0" style={{ color: iconColor }} />
+      <span className="text-sm font-medium flex-1" style={{ color: 'var(--text-secondary)' }}>{message}</span>
       {onClose && (
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-white p-1 rounded-md transition-colors"
+          className="p-1 rounded-md hover:bg-slate-100 transition-colors cursor-pointer"
+          style={{ color: 'var(--text-muted)' }}
           aria-label="Close notification"
         >
           <X className="h-4 w-4" />
