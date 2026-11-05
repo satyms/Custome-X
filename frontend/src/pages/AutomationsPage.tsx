@@ -91,32 +91,24 @@ export const AutomationsPage: React.FC = () => {
     <div className="space-y-6">
       {toast && <Toast type={toast.type} message={toast.text} onClose={() => setToast(null)} />}
 
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: 'var(--border)' }}>
-        <div>
+      {/* 1. Twenty CRM Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2.5">
+          <Zap className="h-5 w-5 text-slate-700" />
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
-              Automations &amp; Webhooks
+            <h1 className="text-[16px] font-semibold tracking-tight text-slate-900">
+              Automations &amp; Workflows
             </h1>
-            <span
-              className="px-2 py-0.5 rounded-full border text-xs font-mono font-medium"
-              style={{ background: 'var(--accent-light)', color: 'var(--accent)', borderColor: 'var(--border)' }}
-            >
-              n8n Workflow Engine
+            <span className="px-1.5 py-0.2 rounded text-[11px] font-mono text-slate-400 bg-slate-100">
+              {workflows.length}
             </span>
           </div>
-          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-            Real-time webhook routing, asynchronous notification dispatches, and scheduled RAG ingestion.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono font-medium"
-            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
-          >
-            <span className="h-2 w-2 rounded-full animate-pulse" style={{ background: 'var(--success)' }} />
-            4 Active Workflows
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-slate-200 bg-white text-xs font-mono text-slate-700 shadow-2xs">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            {workflows.filter(w => w.status === 'active').length} Active Workflows
           </span>
         </div>
       </div>
@@ -210,14 +202,9 @@ export const AutomationsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => toggleStatus(wf.id)}
-                className="px-3.5 py-2 rounded-lg border text-xs font-medium cursor-pointer transition-colors hover:bg-slate-50"
-                style={{
-                  background: 'var(--bg-card)',
-                  borderColor: 'var(--border)',
-                  color: 'var(--text-primary)',
-                }}
+                className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs font-medium shadow-2xs transition-colors cursor-pointer"
               >
-                {wf.status === 'active' ? 'Pause Workflow' : 'Resume Workflow'}
+                {wf.status === 'active' ? 'Pause' : 'Resume'}
               </button>
             </div>
           </div>
