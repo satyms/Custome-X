@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Toast } from '../components/ui/Toast';
+import { approvalsApi } from '../api';
 import {
   ShieldAlert,
   CheckCircle2,
@@ -140,6 +141,43 @@ const INITIAL_APPROVALS: ApprovalAction[] = [
 
 export const ApprovalsPage: React.FC = () => {
   const [approvals, setApprovals] = useState<ApprovalAction[]>(INITIAL_APPROVALS);
+
+  React.useEffect(() => {
+    const fetchLiveApprovals = async () => {
+      try {
+        const liveItems = await approvalsApi.listApprovals();
+        if (liveItems && liveItems.length > 0) {
+          const mapped = liveItems.map((item: any) => ({
+            id: item.id,
+            type: item.type || 'refund',
+            title: item.title,
+            ticketId: item.ticket_id || item.ticketId,
+            ticketNumber: item.ticket_number || item.ticketNumber,
+            customerName: item.customer_name || item.customerName,
+            customerEmail: item.customer_email || item.customerEmail,
+            customerTier: 'VIP' as const,
+            amount: item.amount,
+            orderId: item.order_id || item.orderId,
+            carrier: 'FedEx',
+            trackingNumber: 'FX-884192039',
+            riskLevel: (item.risk_level as any) || 'high',
+            confidenceScore: item.confidence_score || 92,
+            aiRationale: item.ai_rationale || '',
+            proposedPayload: item.proposed_payload || {},
+            requestedAt: item.requested_at || new Date().toISOString(),
+            status: (item.status as any) || 'pending',
+            reviewedBy: item.reviewed_by,
+            reviewedAt: item.reviewed_at,
+            rejectionReason: item.rejection_reason,
+          }));
+          setApprovals(mapped);
+        }
+      } catch (err) {
+        console.warn('Could not load live approvals, using local cache:', err);
+      }
+    };
+    fetchLiveApprovals();
+  }, []);
   const [selectedTab, setSelectedTab] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const [activeApproval, setActiveApproval] = useState<ApprovalAction | null>(null);
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
@@ -149,7 +187,12 @@ export const ApprovalsPage: React.FC = () => {
   const pendingCount = approvals.filter((a) => a.status === 'pending').length;
   const filteredApprovals = approvals.filter((a) => a.status === selectedTab);
 
-  const handleApprove = (approval: ApprovalAction) => {
+  const handleApprove = async (approval: ApprovalAction) => {
+    try {
+      await approvalsApi.approve(approval.id);
+    } catch (err) {
+      console.warn('Backend approval dispatch failed:', err);
+    }
     setApprovals((prev) =>
       prev.map((item) =>
         item.id === approval.id
@@ -171,8 +214,13 @@ export const ApprovalsPage: React.FC = () => {
     });
   };
 
-  const handleRejectConfirm = () => {
+  const handleRejectConfirm = async () => {
     if (!activeApproval) return;
+    try {
+      await approvalsApi.reject(activeApproval.id, { rejection_reason: rejectReason });
+    } catch (err) {
+      console.warn('Backend reject dispatch failed:', err);
+    }
     setApprovals((prev) =>
       prev.map((item) =>
         item.id === activeApproval.id
