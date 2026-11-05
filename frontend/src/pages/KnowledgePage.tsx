@@ -9,12 +9,8 @@ import {
   Sliders,
   Hash,
   X,
-  FileText,
-  CheckCircle2,
   Database,
-  ArrowRight,
   Loader2,
-  RefreshCw,
 } from 'lucide-react';
 
 export interface KnowledgeDocument {
