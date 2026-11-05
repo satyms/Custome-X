@@ -52,7 +52,7 @@ SAMPLE_CHUNKS: List[Dict[str, Any]] = [
         "doc_title": "Express Shipping & Carrier Tracking Policy",
         "category": "shipping",
         "section": "Carrier Transit SLAs & Lost In Transit Protocols",
-        "content": "Parcels without carrier scan events for more than 14 consecutive days are classified as lost-in-transit. In such cases, full refunds or expedited replacement dispatch are automatically authorized.",
+        "content": "Parcels shipped via FedEx Ground or partner carriers without carrier scan events for more than 14 consecutive days are classified as lost-in-transit. In such cases, full refunds or expedited replacement shipping dispatch are automatically authorized.",
         "keywords": ["shipping", "carrier", "transit", "lost", "fedex", "ups", "tracking", "scan", "14 days"],
     },
     {
@@ -349,13 +349,28 @@ async def search_knowledge_hybrid(
                         )
                     )
             elapsed_ms = round((time.time() - start_time) * 1000, 2)
-            return KnowledgeSearchResponse(
-                query=req.query,
-                total_matches=len(results),
-                retrieval_strategy="PostgreSQL pgvector HNSW + FTS GIN (Hybrid RRF)",
-                execution_time_ms=elapsed_ms,
-                results=results,
-            )
+
+            if results:
+                return KnowledgeSearchResponse(
+                    query=req.query,
+                    total_matches=len(results),
+                    retrieval_strategy="PostgreSQL pgvector HNSW + FTS GIN (Hybrid RRF)",
+                    execution_time_ms=elapsed_ms,
+                    results=results,
+                )
+            elif effective_org_id is None:
+                # If no specific organization filter was provided and database is empty,
+                # fall back to default sample knowledge base
+                return search_knowledge(req)
+            else:
+                # Specific tenant search with 0 matches legitimately returns 0 results
+                return KnowledgeSearchResponse(
+                    query=req.query,
+                    total_matches=0,
+                    retrieval_strategy="PostgreSQL pgvector HNSW + FTS GIN (Hybrid RRF)",
+                    execution_time_ms=elapsed_ms,
+                    results=[],
+                )
         except Exception as e:
             logger.warning(f"Database hybrid search failed: {e}. Falling back to sample chunks.")
 

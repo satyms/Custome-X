@@ -14,6 +14,8 @@ import {
   Package,
   BarChart3,
   Sparkles,
+  Zap,
+  Sliders,
 } from 'lucide-react';
 
 export const AppLayout: React.FC = () => {
@@ -34,6 +36,8 @@ export const AppLayout: React.FC = () => {
     { name: 'Customers 360', path: '/customers', icon: Users },
     { name: 'Analytics', path: '/analytics', icon: BarChart3 },
     { name: 'Agent Evals', path: '/evals', icon: Sparkles },
+    { name: 'Automations', path: '/automations', icon: Zap },
+    { name: 'Settings', path: '/settings', icon: Sliders },
   ];
 
   const getRoleBadge = (role?: string) => {

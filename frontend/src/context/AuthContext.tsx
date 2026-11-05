@@ -64,43 +64,33 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const login = useCallback(async (credentials: UserLoginRequest) => {
-    setIsLoading(true);
-    try {
-      const data = await authApi.login(credentials);
-      localStorage.setItem(TOKEN_KEY, data.access_token);
-      if (data.refresh_token) {
-        localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
-      }
-      localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-
-      setToken(data.access_token);
-      setUser(data.user);
-    } finally {
-      setIsLoading(false);
+    const data = await authApi.login(credentials);
+    localStorage.setItem(TOKEN_KEY, data.access_token);
+    if (data.refresh_token) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
     }
+    localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+
+    setToken(data.access_token);
+    setUser(data.user);
   }, []);
 
   const register = useCallback(async (payload: UserRegisterRequest) => {
-    setIsLoading(true);
-    try {
-      await authApi.register(payload);
-      // Auto-login after successful registration
-      const loginData = await authApi.login({
-        email: payload.email,
-        password: payload.password,
-      });
+    await authApi.register(payload);
+    // Auto-login after successful registration
+    const loginData = await authApi.login({
+      email: payload.email,
+      password: payload.password,
+    });
 
-      localStorage.setItem(TOKEN_KEY, loginData.access_token);
-      if (loginData.refresh_token) {
-        localStorage.setItem(REFRESH_TOKEN_KEY, loginData.refresh_token);
-      }
-      localStorage.setItem(USER_KEY, JSON.stringify(loginData.user));
-
-      setToken(loginData.access_token);
-      setUser(loginData.user);
-    } finally {
-      setIsLoading(false);
+    localStorage.setItem(TOKEN_KEY, loginData.access_token);
+    if (loginData.refresh_token) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, loginData.refresh_token);
     }
+    localStorage.setItem(USER_KEY, JSON.stringify(loginData.user));
+
+    setToken(loginData.access_token);
+    setUser(loginData.user);
   }, []);
 
   const logout = useCallback(() => {

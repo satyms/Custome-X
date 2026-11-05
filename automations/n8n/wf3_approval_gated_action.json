@@ -1,0 +1,64 @@
+{
+  "name": "WF3: Approval Notification for Gated Actions",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "customex-approvals",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-approval-trigger",
+      "name": "Approval Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "channel": "#supervisor-approvals",
+        "text": "=🛡️ *Supervisor Approval Required: {{ $json.body.action_type }}*\n*Order:* {{ $json.body.order_id }}\n*Proposed Amount:* ${{ ($json.body.refund_amount_cents / 100).toFixed(2) }}\n*AI Reason:* {{ $json.body.reason }}\n*Review Queue:* http://localhost:5173/approvals"
+      },
+      "id": "node-supervisor-slack",
+      "name": "Alert Supervisor Queue",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [540, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"approval_notified\",\n  \"event_id\": \"{{ $headers['x-idempotency-key'] }}\"\n}"
+      },
+      "id": "node-approval-response",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [820, 300]
+    }
+  ],
+  "connections": {
+    "Approval Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Alert Supervisor Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Supervisor Queue": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

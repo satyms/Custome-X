@@ -1,0 +1,69 @@
+{
+  "name": "WF4: Scheduled ETL & KPI Refresh",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "node-cron-trigger",
+      "name": "Hourly Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8000/api/v1/automations/stats",
+        "options": {}
+      },
+      "id": "node-fetch-stats",
+      "name": "Fetch Live Backend KPIs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "cxpilot-kpi-metrics",
+        "range": "Sheet1!A:F"
+      },
+      "id": "node-record-metrics",
+      "name": "Record Operational KPIs",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [740, 300]
+    }
+  ],
+  "connections": {
+    "Hourly Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Live Backend KPIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Live Backend KPIs": {
+      "main": [
+        [
+          {
+            "node": "Record Operational KPIs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
