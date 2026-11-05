@@ -69,13 +69,10 @@ export const SettingsPage: React.FC = () => {
         <button
           type="button"
           onClick={handleSave}
-          className="px-4 py-2 rounded-lg text-white text-xs font-semibold shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
-          style={{ background: 'var(--accent)' }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--accent-hover)')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--accent)')}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-xs font-medium shadow-2xs transition-colors cursor-pointer"
         >
-          <Save className="h-4 w-4" />
-          <span>Save Changes</span>
+          <Save className="h-3.5 w-3.5 text-slate-600" />
+          <span>Save Configuration</span>
         </button>
       </div>
 
