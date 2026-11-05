@@ -13,6 +13,8 @@ from app.core.exceptions import (
     ForbiddenError,
     RateLimitExceededError,
     WebhookVerificationError,
+    OwnershipViolationError,
+    SecurityViolationError,
 )
 
 logger = logging.getLogger("customex.api")
@@ -38,8 +40,10 @@ def register_exception_handlers(app: FastAPI) -> None:
             status_code = status.HTTP_409_CONFLICT
         elif isinstance(exc, (AuthenticationError, WebhookVerificationError)):
             status_code = status.HTTP_401_UNAUTHORIZED
-        elif isinstance(exc, ForbiddenError):
+        elif isinstance(exc, (ForbiddenError, OwnershipViolationError)):
             status_code = status.HTTP_403_FORBIDDEN
+        elif isinstance(exc, SecurityViolationError):
+            status_code = status.HTTP_400_BAD_REQUEST
         elif isinstance(exc, InvalidStatusTransitionError):
             status_code = status.HTTP_400_BAD_REQUEST
         elif isinstance(exc, RateLimitExceededError):
@@ -62,13 +66,28 @@ def register_exception_handlers(app: FastAPI) -> None:
             },
         )
 
+    @app.exception_handler(StarletteHTTPException)
+    async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+        request_id = get_request_id(request)
+        return JSONResponse(
+            status_code=exc.status_code,
+            headers=exc.headers,
+            content={
+                "error": {
+                    "code": f"HTTP_{exc.status_code}",
+                    "message": exc.detail,
+                    "request_id": request_id,
+                }
+            },
+        )
+
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(request: Request, exc: RequestValidationError):
         request_id = get_request_id(request)
-        formatted_errors = []
+        formatted_details = []
         for err in exc.errors():
             loc = " -> ".join([str(p) for p in err.get("loc", []) if p != "body"])
-            formatted_errors.append({
+            formatted_details.append({
                 "field": loc or "body",
                 "message": err.get("msg", "Invalid value"),
                 "type": err.get("type", "value_error"),
@@ -81,38 +100,21 @@ def register_exception_handlers(app: FastAPI) -> None:
                     "code": "VALIDATION_ERROR",
                     "message": "The request payload failed schema validation.",
                     "request_id": request_id,
-                    "details": formatted_errors,
-                }
-            },
-        )
-
-    @app.exception_handler(StarletteHTTPException)
-    async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-        request_id = get_request_id(request)
-        return JSONResponse(
-            status_code=exc.status_code,
-            content={
-                "error": {
-                    "code": f"HTTP_{exc.status_code}",
-                    "message": exc.detail,
-                    "request_id": request_id,
+                    "details": formatted_details,
                 }
             },
         )
 
     @app.exception_handler(Exception)
-    async def unhandled_exception_handler(request: Request, exc: Exception):
+    async def generic_exception_handler(request: Request, exc: Exception):
         request_id = get_request_id(request)
-        logger.error(
-            f"Unhandled server error [request_id={request_id}]: {str(exc)}",
-            exc_info=True,
-        )
+        logger.exception(f"Unhandled internal server error [{request_id}]: {str(exc)}")
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "error": {
                     "code": "INTERNAL_SERVER_ERROR",
-                    "message": "An unexpected server error occurred.",
+                    "message": "An unexpected server error occurred. Please contact support with the request ID.",
                     "request_id": request_id,
                 }
             },

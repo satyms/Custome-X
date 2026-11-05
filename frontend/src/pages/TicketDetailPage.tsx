@@ -13,6 +13,7 @@ import type {
 } from '../types';
 import { Toast } from '../components/ui/Toast';
 import { Skeleton } from '../components/ui/Skeleton';
+import { OrchestratorInspector } from '../components/tickets/OrchestratorInspector';
 import {
   ArrowLeft,
   User,
@@ -89,6 +90,19 @@ export const TicketDetailPage: React.FC = () => {
   // Auto-scroll ref
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleApplyDraft = (draftText: string) => {
+    setReplyText(draftText);
+    textareaRef.current?.focus();
+    setToastMessage({
+      type: 'success',
+      text: 'AI Orchestrator draft inserted into composer.',
+    });
+  };
+
+  const latestCustomerMessage = [...(ticket?.messages || [])]
+    .reverse()
+    .find((m) => m.sender_type === 'customer')?.content;
 
   // Scroll to bottom smoothly
   const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
@@ -814,6 +828,15 @@ export const TicketDetailPage: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* AI Orchestration Engine (Layer 3) */}
+            <OrchestratorInspector
+              ticketId={ticket.id}
+              customerId={ticket.customer_id}
+              customerEmail={ticket.customer?.email}
+              latestCustomerMessage={latestCustomerMessage}
+              onApplyDraft={handleApplyDraft}
+            />
 
             {/* Ticket Metadata Inspector */}
             <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-4 shadow-sm">

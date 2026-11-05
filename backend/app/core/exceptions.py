@@ -87,3 +87,18 @@ class WebhookVerificationError(CustomeXException):
     """Raised when webhook HMAC SHA-256 signature verification fails."""
     def __init__(self, message: str = "Invalid webhook signature."):
         super().__init__(message=message, code="INVALID_WEBHOOK_SIGNATURE")
+
+
+class OwnershipViolationError(CustomeXException):
+    """Raised when an operation attempts cross-customer resource access."""
+    def __init__(self, resource_name: str, resource_id: str, message: str = "Resource does not belong to this customer"):
+        self.resource_name = resource_name
+        self.resource_id = resource_id
+        super().__init__(message=f"Ownership violation: {message} ({resource_name}:{resource_id})", code="OWNERSHIP_VIOLATION")
+
+
+class SecurityViolationError(CustomeXException):
+    """Raised when an input or output violates AI security constraints (prompt injection, malicious delimiter, etc.)."""
+    def __init__(self, reason: str, code: str = "SECURITY_VIOLATION"):
+        self.reason = reason
+        super().__init__(message=f"Security policy violation: {reason}", code=code)
