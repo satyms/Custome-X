@@ -1,0 +1,130 @@
+{
+  "name": "WF2: Escalation to Human Queue",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "customex-escalation",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "045b8463-f7bc-4b75-a35b-0bbe49b59163",
+      "name": "Escalation Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        64
+      ],
+      "webhookId": "db734f18-031b-4694-b1ee-3d846015cba8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $headers['x-event-type'] }}",
+              "value2": "ticket.escalated"
+            }
+          ]
+        }
+      },
+      "id": "e9e4ef2a-4711-4500-b1e3-6523400089b1",
+      "name": "Verify Escalation Event",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        224,
+        64
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "2119067564",
+        "text": "=🚨 <b>URGENT SLA ESCALATION: Ticket #{{ $json.body.ticket_number }}</b>\n<b>Reason:</b> {{ $json.body.reason }}\n<b>Customer:</b> {{ $json.body.customer_email }}\n<b>SLA Deadline:</b> 30 minutes\n<b>Dashboard Link:</b> http://localhost:5173/tickets/{{ $json.body.ticket_id }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "27d0e5f5-0022-4071-925d-e8eecdd500b2",
+      "name": "Alert Urgent On-Call Channel",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        0
+      ],
+      "webhookId": "02191b1f-4747-47b4-866f-e18c60f6e38f",
+      "credentials": {
+        "telegramApi": {
+          "id": "O6ke07QdHcWpDRim",
+          "name": "Telegram account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"escalated_queued\",\n  \"event_id\": \"{{ $headers['x-idempotency-key'] }}\",\n  \"routing\": \"tier_2_human_specialist\"\n}",
+        "options": {}
+      },
+      "id": "252455eb-5ccc-470f-8ea1-6ec4ce2d42ca",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        704,
+        64
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Escalation Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Verify Escalation Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify Escalation Event": {
+      "main": [
+        [
+          {
+            "node": "Alert Urgent On-Call Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Urgent On-Call Channel": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "68ef75d2-5b10-4bd3-85d1-54dc6435b905",
+  "meta": {
+    "instanceId": "43f2593eaad09319ce55141d33690ae3ffd9429ca7a317b6c1ab5306ac702e23"
+  },
+  "nodeGroups": [],
+  "id": "DY5RZFTwWwyCpWuR",
+  "tags": []
+}
