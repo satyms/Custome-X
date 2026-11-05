@@ -60,35 +60,31 @@ export const CustomersPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: 'var(--border)' }}>
-        <div>
+      {/* 1. Twenty CRM Header & Search Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2.5">
+          <Users className="h-5 w-5 text-slate-700" />
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
-              Customer 360 Registry
+            <h1 className="text-[16px] font-semibold tracking-tight text-slate-900">
+              Contacts & Accounts
             </h1>
-            <span
-              className="px-2 py-0.5 rounded-full border text-xs font-mono font-medium"
-              style={{ background: 'var(--accent-light)', color: 'var(--accent)', borderColor: 'var(--border)' }}
-            >
-              Multi-tenant Directory
+            <span className="px-1.5 py-0.2 rounded text-[11px] font-mono text-slate-400 bg-slate-100">
+              {filteredCustomers.length}
             </span>
           </div>
-          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-            Profiles, lifetime order metrics, and support history across your tenant organization.
-          </p>
         </div>
 
-        <div className="relative w-full md:w-72">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4" style={{ color: 'var(--text-muted)' }} />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name, email, or phone..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg border text-xs focus:outline-none"
-            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
-          />
+        <div className="flex items-center gap-2">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Filter by name, email, or phone..."
+              className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:border-slate-400 shadow-2xs"
+            />
+          </div>
         </div>
       </div>
 
@@ -126,8 +122,7 @@ export const CustomersPage: React.FC = () => {
                   >
                     <td className="px-6 py-4 font-medium flex items-center gap-3">
                       <div
-                        className="h-8 w-8 rounded-full text-white flex items-center justify-center text-xs font-bold shrink-0"
-                        style={{ background: 'var(--accent)' }}
+                        className="h-7 w-7 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs font-semibold shrink-0 border border-slate-300/60"
                       >
                         {c.full_name.slice(0, 2).toUpperCase()}
                       </div>

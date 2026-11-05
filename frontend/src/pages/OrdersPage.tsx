@@ -187,23 +187,18 @@ export const OrdersPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5" style={{ borderColor: 'var(--border)' }}>
-        <div>
+      {/* 1. Twenty CRM Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2.5">
+          <Package className="h-5 w-5 text-slate-700" />
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
-              E-Commerce Orders Registry
+            <h1 className="text-[16px] font-semibold tracking-tight text-slate-900">
+              Orders Registry
             </h1>
-            <span
-              className="px-2 py-0.5 rounded-full border text-xs font-mono font-medium"
-              style={{ background: 'var(--accent-light)', color: 'var(--accent)', borderColor: 'var(--border)' }}
-            >
-              Store Order Hub
+            <span className="px-1.5 py-0.2 rounded text-[11px] font-mono text-slate-400 bg-slate-100">
+              {filteredOrders.length}
             </span>
           </div>
-          <p className="mt-1 text-sm" style={{ color: 'var(--text-muted)' }}>
-            Track package shipments, line items, carrier tracking, and order dispute actions.
-          </p>
         </div>
 
         {/* Filters */}
