@@ -317,7 +317,7 @@ export const TicketDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col overflow-hidden -m-6 border rounded-xl" style={{ borderColor: 'var(--border)', background: 'var(--bg-app)' }}>
+    <div className="h-full flex flex-col overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--bg-app)' }}>
       {/* Toast Notification Alert */}
       {toastMessage && (
         <Toast
