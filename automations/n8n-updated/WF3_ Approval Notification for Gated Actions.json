@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "chatId": "2119067564",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
         "text": "=🛡️ <b>Supervisor Approval Required: {{ $json.body.action_type }}</b>\n<b>Order:</b> {{ $json.body.order_id }}\n<b>Proposed Amount:</b> ${{ ($json.body.refund_amount_cents / 100).toFixed(2) }}\n<b>AI Reason:</b> {{ $json.body.reason }}\n<b>Review Queue:</b> http://localhost:5173/approvals",
         "additionalFields": {
           "appendAttribution": false,

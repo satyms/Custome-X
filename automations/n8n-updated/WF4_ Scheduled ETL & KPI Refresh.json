@@ -37,7 +37,7 @@
     },
     {
       "parameters": {
-        "chatId": "2119067564",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
         "text": "=📊 <b>Custome-X Hourly KPI Report</b>\n━━━━━━━━━━━━━━━━━━━━\n<b>Total Executions:</b> {{ $json.total_executions }}\n<b>Success Rate:</b> {{ $json.success_rate_percent }}%\n<b>Successful Dispatches:</b> {{ $json.successful_executions }}\n<b>Failed (DLQ) Events:</b> {{ $json.failed_dlq_events }}\n<b>Queued / Retrying:</b> {{ $json.queued_or_retrying }}\n<b>Active Workflows:</b> {{ $json.active_workflows }}\n━━━━━━━━━━━━━━━━━━━━\n<i>Generated at {{ $now.toFormat('yyyy-MM-dd HH:mm:ss') }} UTC</i>",
         "additionalFields": {
           "appendAttribution": false,

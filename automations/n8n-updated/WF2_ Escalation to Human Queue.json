@@ -40,7 +40,7 @@
     },
     {
       "parameters": {
-        "chatId": "2119067564",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
         "text": "=🚨 <b>URGENT SLA ESCALATION: Ticket #{{ $json.body.ticket_number }}</b>\n<b>Reason:</b> {{ $json.body.reason }}\n<b>Customer:</b> {{ $json.body.customer_email }}\n<b>SLA Deadline:</b> 30 minutes\n<b>Dashboard Link:</b> http://localhost:5173/tickets/{{ $json.body.ticket_id }}",
         "additionalFields": {
           "appendAttribution": false,
