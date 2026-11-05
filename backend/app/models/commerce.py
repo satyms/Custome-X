@@ -8,9 +8,9 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     CheckConstraint,
-    UniqueConstraint,
     Index,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -23,10 +23,12 @@ if TYPE_CHECKING:
 
 
 class Product(Base):
+    """
+    E-commerce product catalogue.
+    """
     __tablename__ = "products"
     __table_args__ = (
-        UniqueConstraint("organization_id", "sku", name="uq_products_org_sku"),
-        Index("idx_products_org_sku", "organization_id", "sku"),
+        Index("idx_products_org_sku", "organization_id", "sku", unique=True),
         Index("idx_products_org_name", "organization_id", "name"),
     )
 
@@ -34,11 +36,13 @@ class Product(Base):
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
     )
     organization_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("organizations.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
     sku: Mapped[str] = mapped_column(String(100), nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -56,19 +60,27 @@ class Product(Base):
         nullable=False,
     )
 
+    # Relationships
+    organization: Mapped["Organization"] = relationship("Organization")
     order_items: Mapped[List["OrderItem"]] = relationship("OrderItem", back_populates="product")
+
+    def __repr__(self) -> str:
+        return f"<Product id={self.id} sku='{self.sku}' name='{self.name}'>"
 
 
 class Order(Base):
+    """
+    Order master record (ARCHITECTURE.md Section 3.4).
+    """
     __tablename__ = "orders"
     __table_args__ = (
         CheckConstraint(
             "status IN ('pending', 'paid', 'shipped', 'delivered', 'cancelled')",
             name="check_valid_order_status",
         ),
-        UniqueConstraint("organization_id", "order_number", name="uq_orders_org_number"),
         Index("idx_orders_org_status", "organization_id", "status"),
         Index("idx_orders_customer_id", "customer_id"),
+        Index("idx_orders_order_number", "organization_id", "order_number", unique=True),
         Index("idx_orders_created_at", "created_at"),
     )
 
@@ -76,16 +88,19 @@ class Order(Base):
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
     )
     organization_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("organizations.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
     customer_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("customers.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
     order_number: Mapped[str] = mapped_column(String(100), nullable=False)
     status: Mapped[str] = mapped_column(String(50), nullable=False, default="pending")
@@ -103,12 +118,28 @@ class Order(Base):
         nullable=False,
     )
 
+    # Relationships
+    organization: Mapped["Organization"] = relationship("Organization")
     customer: Mapped["Customer"] = relationship("Customer")
-    items: Mapped[List["OrderItem"]] = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
-    shipments: Mapped[List["Shipment"]] = relationship("Shipment", back_populates="order", cascade="all, delete-orphan")
+    items: Mapped[List["OrderItem"]] = relationship(
+        "OrderItem",
+        back_populates="order",
+        cascade="all, delete-orphan",
+    )
+    shipments: Mapped[List["Shipment"]] = relationship(
+        "Shipment",
+        back_populates="order",
+        cascade="all, delete-orphan",
+    )
+
+    def __repr__(self) -> str:
+        return f"<Order id={self.id} order_number='{self.order_number}' status='{self.status}'>"
 
 
 class OrderItem(Base):
+    """
+    Line items per order.
+    """
     __tablename__ = "order_items"
     __table_args__ = (
         Index("idx_order_items_order_id", "order_id"),
@@ -119,6 +150,7 @@ class OrderItem(Base):
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
     )
     order_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -138,11 +170,18 @@ class OrderItem(Base):
         nullable=False,
     )
 
+    # Relationships
     order: Mapped["Order"] = relationship("Order", back_populates="items")
     product: Mapped["Product"] = relationship("Product", back_populates="order_items")
 
+    def __repr__(self) -> str:
+        return f"<OrderItem id={self.id} order_id={self.order_id} qty={self.quantity}>"
+
 
 class Shipment(Base):
+    """
+    Logistics fulfillment tracking.
+    """
     __tablename__ = "shipments"
     __table_args__ = (
         CheckConstraint(
@@ -158,6 +197,7 @@ class Shipment(Base):
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
     )
     organization_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -185,13 +225,24 @@ class Shipment(Base):
         nullable=False,
     )
 
+    # Relationships
     order: Mapped["Order"] = relationship("Order", back_populates="shipments")
+    organization: Mapped["Organization"] = relationship("Organization")
     events: Mapped[List["ShipmentEvent"]] = relationship(
-        "ShipmentEvent", back_populates="shipment", cascade="all, delete-orphan"
+        "ShipmentEvent",
+        back_populates="shipment",
+        cascade="all, delete-orphan",
+        order_by="ShipmentEvent.event_time",
     )
+
+    def __repr__(self) -> str:
+        return f"<Shipment id={self.id} carrier='{self.carrier}' tracking='{self.tracking_number}'>"
 
 
 class ShipmentEvent(Base):
+    """
+    Carrier scan checkpoints along shipment route.
+    """
     __tablename__ = "shipment_events"
     __table_args__ = (
         Index("idx_shipment_events_shipment_id", "shipment_id"),
@@ -202,6 +253,7 @@ class ShipmentEvent(Base):
         UUID(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
     )
     shipment_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -217,4 +269,8 @@ class ShipmentEvent(Base):
         nullable=False,
     )
 
+    # Relationships
     shipment: Mapped["Shipment"] = relationship("Shipment", back_populates="events")
+
+    def __repr__(self) -> str:
+        return f"<ShipmentEvent id={self.id} event='{self.event_type}' time='{self.event_time}'>"
