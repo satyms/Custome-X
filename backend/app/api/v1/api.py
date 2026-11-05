@@ -8,6 +8,7 @@ from app.api.v1.endpoints import (
     knowledge,
     approvals,
     webhooks,
+    automations,
 )
 
 api_router = APIRouter(prefix="/api/v1")
@@ -21,3 +22,4 @@ api_router.include_router(agent.router, prefix="/agent", tags=["Agent"])
 api_router.include_router(knowledge.router, prefix="/knowledge", tags=["Knowledge Base"])
 api_router.include_router(approvals.router, prefix="/approvals", tags=["Human Approvals"])
 api_router.include_router(webhooks.router, prefix="/webhooks", tags=["Webhooks"])
+api_router.include_router(automations.router, prefix="/automations", tags=["Automations & DLQ"])

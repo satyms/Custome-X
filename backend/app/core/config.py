@@ -44,6 +44,11 @@ class Settings(BaseSettings):
         "usps.com",
     ]
 
+    # Automation & n8n Webhook Settings
+    WEBHOOK_OUTBOUND_URL: Optional[str] = "http://localhost:5678/webhook/customex"
+    WEBHOOK_HMAC_SECRET: str = "cx_webhook_secret_dev_key_2026"
+    MAX_WEBHOOK_RETRIES: int = 3
+
     @property
     def cors_origins_list(self) -> List[str]:
         if isinstance(self.CORS_ORIGINS, list):

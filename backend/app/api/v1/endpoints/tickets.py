@@ -1,4 +1,5 @@
 import uuid
+import logging
 from typing import Optional
 from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +19,9 @@ from app.schemas.ticket import (
 )
 from app.schemas.ticket_event import TicketTimelineResponse
 from app.services import ticket_service
+from app.services.webhook_dispatcher import WebhookDispatcher
 
+logger = logging.getLogger("customex.tickets")
 router = APIRouter()
 
 
@@ -90,7 +93,27 @@ async def create_ticket(
     current_user: User = Depends(get_current_user),
 ):
     payload.organization_id = current_user.organization_id
-    return await ticket_service.create_ticket(session=db, payload=payload)
+    ticket = await ticket_service.create_ticket(session=db, payload=payload)
+
+    # Layer 5: Asynchronously dispatch ticket.created (WF1) to n8n webhook
+    try:
+        await WebhookDispatcher.dispatch_event(
+            session=db,
+            organization_id=ticket.organization_id,
+            event_type="ticket.created",
+            payload={
+                "ticket_id": str(ticket.id),
+                "ticket_number": ticket.ticket_number,
+                "title": ticket.title,
+                "priority": ticket.priority,
+                "status": ticket.status,
+                "customer_id": str(ticket.customer_id) if ticket.customer_id else None,
+            },
+        )
+    except Exception as e:
+        logger.warning(f"Failed to dispatch ticket.created webhook: {e}")
+
+    return ticket
 
 
 @router.get(
@@ -149,13 +172,33 @@ async def update_ticket_status(
     current_user: User = Depends(get_current_user),
 ):
     status_val = payload.status.value if hasattr(payload.status, "value") else str(payload.status)
-    return await ticket_service.update_ticket_status(
+    ticket = await ticket_service.update_ticket_status(
         session=db,
         ticket_id=ticket_id,
         new_status=status_val,
         actor_id=current_user.id,
         organization_id=current_user.organization_id,
     )
+
+    # Layer 5: Asynchronously dispatch ticket.escalated (WF2) when escalated
+    if status_val == "escalated":
+        try:
+            await WebhookDispatcher.dispatch_event(
+                session=db,
+                organization_id=ticket.organization_id,
+                event_type="ticket.escalated",
+                payload={
+                    "ticket_id": str(ticket.id),
+                    "ticket_number": ticket.ticket_number,
+                    "title": ticket.title,
+                    "priority": ticket.priority,
+                    "escalated_by": str(current_user.id),
+                },
+            )
+        except Exception as e:
+            logger.warning(f"Failed to dispatch ticket.escalated webhook: {e}")
+
+    return ticket
 
 
 @router.patch(

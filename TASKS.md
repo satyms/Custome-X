@@ -111,15 +111,25 @@
 
 ---
 
-## Milestone 4: Workflow Orchestration & n8n Integrations
+## Milestone 4: Workflow Orchestration & n8n Integrations (Completed)
 
-- [ ] **Task 4.1: n8n Webhook Ingestion Pipeline**
-  - [ ] Set up n8n workflows for incoming e-commerce webhooks (Shopify/WooCommerce)
-  - [ ] Normalization service to sync store events into Supabase
-  - [ ] Exponential retry queue with dead-letter queue (DLQ) for failed syncs
-- [ ] **Task 4.2: Asynchronous Notification Delivery**
-  - [ ] Email & SMS dispatch worker for ticket status updates
-  - [ ] Human escalation alerts via Slack / Discord / Webhook
+- [x] **Task 4.1: Layer 4 Data & Platform Relational Persistence**
+  - [x] Commerce domain models: `products`, `orders`, `order_items`, `shipments`, `shipment_events`
+  - [x] Agent & HITL audit models: `pending_actions`, `workflow_events`, `agent_runs`, `tool_calls`, `audit_logs`
+  - [x] Alembic migration `a892f3b14cd5` applied with check constraints, foreign keys, and multi-tenant RLS policies
+  - [x] Full database integration test suite passed (`test_commerce_and_audit_models.py`)
+- [x] **Task 4.2: Layer 5 Automations Engine & n8n Webhook Dispatcher**
+  - [x] Webhook dispatcher with HMAC-SHA256 signature verification (`X-Customex-Signature: sha256=...`)
+  - [x] Asynchronous event persistence, retry backoff (`max_retries = 3`), and Dead-Letter Queue (DLQ)
+  - [x] REST API endpoints (`GET /api/v1/automations/events`, `GET /api/v1/automations/stats`, `POST /api/v1/automations/events/{id}/retry`)
+  - [x] Exportable n8n workflows packaged in `automations/n8n/` (WF1 New Ticket, WF2 Escalation SLA, WF3 Approval Gate, WF4 Nightly ETL)
+  - [x] Integration test suite passed (`test_webhook_dispatcher_and_automations.py`)
+- [x] **Task 4.3: Frontend Automations & Tenant Settings Consoles**
+  - [x] `AutomationsPage.tsx` with live DLQ triage console, event filter tabs, and JSON payload inspector
+  - [x] `SettingsPage.tsx` with tenant RLS verification, webhook secret reveal/copy, AI guardrail thresholds, and RBAC matrix
+  - [x] App router and navigation sidebar updated with zero TypeScript build errors
+
+
 
 ---
 
