@@ -206,6 +206,15 @@ def looks_like_instruction(note: str) -> bool:
 
 ---
 
+### 5.3 Tenant Isolation & Cross-Tenant Boundary Model
+Custome-X enforces application-level multi-tenant isolation via strict `organization_id` query scoping:
+- All database entities (`Ticket`, `Customer`, `Order`, `KnowledgeDocument`, `ApprovalRequest`, `WorkflowEvent`) contain a mandatory `organization_id` UUID foreign key.
+- All service methods (`list_tickets`, `get_ticket_by_id`, etc.) filter unconditionally on `organization_id == current_user.organization_id`.
+- Cross-tenant queries return `None` and trigger HTTP 404 `TicketNotFoundError`, preventing cross-tenant leakage or existence enumeration.
+- Automated test coverage in `tests/test_tenant_a_cannot_read_tenant_b_tickets.py` confirms that Tenant A reading Tenant B's tickets receives 0 items on list and 404 on direct fetch.
+
+---
+
 ## 6. Testing the security layer
 
 ### 6.1 Measure every guardrail on a labelled set

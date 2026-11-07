@@ -170,7 +170,9 @@ flowchart TD
   * Example: If `issue_refund` amount exceeds $50.00, status is automatically set to `requires_approval`, halting execution until staff review.
 
 ### 5.4 Layer 4 & 5: Data & Integration
-* **Multi-Tenant Row-Level Security (RLS)**:
+* **Multi-Tenant Isolation Architecture & Decision**:
+  * Multi-tenancy is enforced through **Application-Level Tenant Isolation** using strict `organization_id` query filters on all database access paths, backed by foreign-key relational schemas.
+  * Verified in `tests/test_tenant_a_cannot_read_tenant_b_tickets.py`: Tenant A attempting to read Tenant B's tickets gets nothing (0 items on list queries, HTTP 404 `TicketNotFoundError` on direct ID lookups).
   * Database policies enforce `tenant_id = auth.jwt() ->> 'tenant_id'`, ensuring zero data leakage across organizations.
 * **n8n Master Workflows**:
   * `WF1`: New ticket ingestion & initial classification notification.

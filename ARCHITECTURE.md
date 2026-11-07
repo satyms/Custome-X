@@ -231,6 +231,16 @@ flowchart TD
 
 ### 3.4 Layer 4 · Data & Platform (Supabase & PostgreSQL)
 
+#### Multi-Tenant Isolation Architecture & Decision
+Custome-X enforces **Application-Level Multi-Tenant Isolation** backed by relational foreign keys:
+- **Decision & Rationale:** Backend database queries execute through an asynchronous SQLAlchemy connection pooler (`asyncpg` via Supabase connection pooler). To prevent connection-state cross-talk across pooled connections, tenant scoping is enforced deterministically at the application and service layer.
+- **Enforcement Mechanism:**
+  - `get_current_user` extracts and verifies the user's `organization_id`.
+  - Every SQL query unconditionally includes `WHERE table.organization_id = :current_user.organization_id`.
+  - If a user from Tenant A requests a resource ID belonging to Tenant B (e.g. `GET /api/v1/tickets/{tenant_b_ticket_id}`), the service returns `None` and raises `TicketNotFoundError` (HTTP 404). Tenant A receives nothing.
+- **Empirical Test Proof:** Verified in `tests/test_tenant_a_cannot_read_tenant_b_tickets.py` and `tests/test_multi_tenant_isolation.py`.
+
+
 #### Entity Relationship Schema
 
 ```mermaid
