@@ -201,14 +201,18 @@ def generate_embedding(text_content: str) -> List[float]:
 
     api_key = settings.GEMINI_API_KEY
     if api_key:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key={api_key}"
+        url = "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent"
+        headers = {
+            "x-goog-api-key": api_key,
+            "Content-Type": "application/json",
+        }
         payload = {
             "model": "models/text-embedding-004",
             "content": {"parts": [{"text": text_content[:2048]}]},
         }
         try:
             with httpx.Client(timeout=4.0) as client:
-                resp = client.post(url, json=payload)
+                resp = client.post(url, json=payload, headers=headers)
                 if resp.status_code == 200:
                     data = resp.json()
                     values = data.get("embedding", {}).get("values")
