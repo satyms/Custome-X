@@ -30,7 +30,7 @@ Custome-X pairs an **autonomous 7-step orchestration engine** with a **determini
 | **Server Engine** | **Uvicorn 0.54** | Asynchronous Server Gateway Interface (ASGI) runtime with hot reload |
 | **Database & ORM** | **PostgreSQL 16**, **SQLAlchemy 2.0 (asyncpg)**, **Alembic** | Multi-tenant relational schema, strict foreign keys, async connection pooling, migrations |
 | **Vector Search (RAG)** | **pgvector (1536-dim)** + **PostgreSQL FTS** | Hybrid Reciprocal Rank Fusion (RRF) search combining semantic cosine similarity and lexical search |
-| **AI & LLM Engine** | **Google Gemini API** (`AQ.Ab8...`), Google GenAI SDK | Intent recognition, entity extraction, semantic reasoning, and structured tool proposals |
+| **AI & LLM Engine** | **Google Gemini API**, Google GenAI SDK | Intent recognition, entity extraction, semantic reasoning, and structured tool proposals |
 | **Security & Auth** | **Supabase Auth & RLS**, PyJWT, passlib/bcrypt, HMAC-SHA256 | Multi-tenant row-level security, webhook verification, token-bucket rate limiting |
 | **Workflow Engine** | **n8n Master Automations** | Asynchronous webhook routing (Shopify/WooCommerce), Slack/email alerts, DLQ handling |
 | **Knowledge Graph** | **Graphify (NetworkX, tree-sitter, AST)** | Codebase symbol topology, dependency clustering, god-node detection, and static analysis |
