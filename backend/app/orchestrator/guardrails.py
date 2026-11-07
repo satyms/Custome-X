@@ -42,7 +42,7 @@ def mask_pii(text: str) -> str:
 
 # --- Direct & Indirect Prompt Injection Detection ---
 DIRECT_INJECTION_PATTERNS = [
-    re.compile(r"(?i)\b(ignore|disregard|forget|override|bypass)\b.*\b(previous|all|system|rule|rules|instructions?|prompts?)\b"),
+    re.compile(r"(?i)\b(ignore|disregard|forget|override|bypass)\b.*?\b(?:(?:previous|all|prior|system)\s+)?(?:instructions?|prompts?|rules?|directives?|guidelines?|constraints?)\b"),
     re.compile(r"(?i)\b(you are now|act as|pretend to be)\b.*\b(unrestricted|jailbreak|developer mode|dan|evil|root|admin)\b"),
     re.compile(r"(?i)\b(repeat|print|reveal|output|display|show|leak)\b.*\b(system\s*prompt|initial\s*instructions?|hidden\s*prompt)\b"),
     re.compile(r"(?i)<\s*system\s*>|<\s*/?\s*untrusted[^>]*>"),
@@ -53,25 +53,35 @@ DIRECTIVE_WORDS = re.compile(r"(?i)\b(always|never|must|ignore|from now on|disre
 ASSISTANT_TARGETS = re.compile(r"(?i)\b(reply|replies|answer|respond|response|instruction|prompt|system|refund|approve)\b")
 
 
-def detect_prompt_injection(text: str) -> Tuple[bool, Optional[str]]:
+def detect_prompt_injection(text: str, is_customer_message: bool = True) -> Tuple[bool, Optional[str]]:
     """
     Detects attempts to manipulate, jailbreak, or extract the system prompt.
     Returns (is_injection, matched_pattern_reason).
+
+    For live customer messages (is_customer_message=True):
+      Uses only DIRECT_INJECTION_PATTERNS to prevent false positives on legitimate customer
+      inquiries containing ordinary imperative words like 'must reply', 'disregard my previous email', etc.
+
+    For stored notes, KB text, and tool results (is_customer_message=False):
+      Also runs looks_like_instruction() to prevent indirect/stored prompt injection attacks.
     """
     for rx in DIRECT_INJECTION_PATTERNS:
         match = rx.search(text)
         if match:
             return True, f"Prompt injection pattern detected: '{match.group(0)[:50]}'"
 
-    # Check for compound instruction-like injection (e.g. carrier notes or ticket notes)
-    if looks_like_instruction(text):
+    # Check for compound instruction-like injection (kept for stored notes, KB text, and tool results)
+    if not is_customer_message and looks_like_instruction(text):
         return True, "Directive instructing agent behavior detected in untrusted content"
 
     return False, None
 
 
 def looks_like_instruction(note: str) -> bool:
-    """Refuses or flags instruction-like text planted in free-text fields."""
+    """
+    Refuses or flags instruction-like text planted in free-text fields.
+    Intended for stored notes, knowledge base documents, and external tool outputs.
+    """
     return bool(DIRECTIVE_WORDS.search(note) and ASSISTANT_TARGETS.search(note))
 
 

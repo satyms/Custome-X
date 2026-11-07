@@ -10,6 +10,7 @@ from app.orchestrator.guardrails import (
     fence,
     mask_pii,
     detect_prompt_injection,
+    looks_like_instruction,
     strip_unknown_urls,
     verify_ownership,
 )
@@ -24,6 +25,7 @@ __all__ = [
     "fence",
     "mask_pii",
     "detect_prompt_injection",
+    "looks_like_instruction",
     "strip_unknown_urls",
     "verify_ownership",
 ]

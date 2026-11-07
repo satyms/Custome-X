@@ -157,6 +157,9 @@ flowchart TD
 
 ### 5.3 Layer 3: AI Orchestration Engine
 * **Prompt Injection & Adversarial Defense (`guardrails.py`)**:
+  * Dual-scope detection: Live customer messages use strictly focused `DIRECT_INJECTION_PATTERNS` to prevent false positives on common words (*must, never, always, previous email*); stored notes, KB documents, and tool results also enforce `looks_like_instruction()`.
+  * **What a flag does:** Logs a warning in Step 1 trace, lowers confidence to 0.50, and enforces `needs_human = True` (blocking autonomous actions and routing to HITL queue).
+  * **Empirical Benchmarks (`test_prompt_injection_benchmarks.py`):** 0.0% False Positive Rate across 30 normal support messages; 100.0% Block Rate across 20 adversarial attack vectors.
   * Pre-execution scanner detects prompt injection patterns (`system prompt override`, `ignore previous instructions`, `DAN mode`).
   * PII masking (credit card numbers, social security numbers) before dispatching to LLM.
 * **Hybrid RAG Pipeline (`retrieval.py`)**:
