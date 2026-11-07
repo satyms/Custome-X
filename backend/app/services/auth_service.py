@@ -73,8 +73,10 @@ class AuthService:
             },
         }
 
-        # Bypass slow external Supabase HTTP calls for internal test domains (.internal)
-        is_internal_domain = payload.email.lower().endswith(".internal")
+        is_dev = settings.ENVIRONMENT.lower() == "development"
+
+        # Bypass slow external Supabase HTTP calls for internal test domains (.internal) ONLY in development
+        is_internal_domain = is_dev and payload.email.lower().endswith(".internal")
         if not is_internal_domain:
             try:
                 async with httpx.AsyncClient() as client:
@@ -115,6 +117,11 @@ class AuthService:
 
         # Fallback direct database provisioning if Supabase HTTP signup failed, timed out, or for .internal domain
         if not user_uuid:
+            if not is_dev:
+                logger.error(
+                    f"Supabase Auth signup failed and direct database fallback is disabled outside development environment (ENVIRONMENT={settings.ENVIRONMENT})."
+                )
+                raise AuthenticationError("User registration failed. Supabase Authentication service unavailable.")
             # Check if user already exists in auth.users
             try:
                 existing_auth = (await session.execute(
@@ -200,8 +207,10 @@ class AuthService:
             "password": payload.password,
         }
 
+        is_dev = settings.ENVIRONMENT.lower() == "development"
         resp = None
-        is_internal_domain = payload.email.lower().endswith(".internal")
+        # Bypass Supabase HTTP login for .internal test domains ONLY in development
+        is_internal_domain = is_dev and payload.email.lower().endswith(".internal")
         if not is_internal_domain:
             try:
                 async with httpx.AsyncClient() as client:
@@ -259,6 +268,11 @@ class AuthService:
 
         # Direct database verification fallback if Supabase Auth rejected (e.g. rate limit 429, .internal email, or network issue)
         if not access_token or not user:
+            if not is_dev:
+                logger.warning(
+                    f"Supabase login failed for {payload.email} and direct database fallback is disabled outside development environment (ENVIRONMENT={settings.ENVIRONMENT})."
+                )
+                raise InvalidCredentialsError("Invalid email or password.")
             logger.info(f"Using direct database verification for {payload.email}.")
             auth_check = await session.execute(
                 text("""
