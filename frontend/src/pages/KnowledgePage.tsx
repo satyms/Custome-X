@@ -394,7 +394,7 @@ export const KnowledgePage: React.FC = () => {
             }}
           >
             <Sparkles className="h-3.5 w-3.5" />
-            <span>Hybrid (Dense + BM25)</span>
+            <span>Hybrid (Dense + FTS)</span>
           </button>
         </form>
       </div>

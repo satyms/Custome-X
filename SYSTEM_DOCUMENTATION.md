@@ -29,7 +29,7 @@ Custome-X pairs an **autonomous 7-step orchestration engine** with a **determini
 | **Backend API Gateway** | **FastAPI 0.115+**, **Python 3.14 (AsyncIO)** | High-throughput asynchronous REST API gateway and WebSocket streaming server |
 | **Server Engine** | **Uvicorn 0.54** | Asynchronous Server Gateway Interface (ASGI) runtime with hot reload |
 | **Database & ORM** | **PostgreSQL 16**, **SQLAlchemy 2.0 (asyncpg)**, **Alembic** | Multi-tenant relational schema, strict foreign keys, async connection pooling, migrations |
-| **Vector Search (RAG)** | **pgvector (1536-dim)** + **PostgreSQL FTS** | Hybrid Reciprocal Rank Fusion (RRF) search combining semantic cosine similarity and lexical search |
+| **Vector Search (RAG)** | **pgvector (768-dim)** + **PostgreSQL FTS** | Hybrid Reciprocal Rank Fusion (RRF) search combining semantic cosine similarity and lexical search |
 | **AI & LLM Engine** | **Google Gemini API**, Google GenAI SDK | Intent recognition, entity extraction, semantic reasoning, and structured tool proposals |
 | **Security & Auth** | **Supabase Auth & RLS**, PyJWT, passlib/bcrypt, HMAC-SHA256 | Multi-tenant row-level security, webhook verification, token-bucket rate limiting |
 | **Workflow Engine** | **n8n Master Automations** | Asynchronous webhook routing (Shopify/WooCommerce), Slack/email alerts, DLQ handling |
@@ -69,7 +69,7 @@ These nodes represent the most interconnected centers of gravity in the codebase
 ```mermaid
 flowchart TD
     subgraph Client["Layer 1 · Frontend Client (React 19 + Tailwind CSS)"]
-        UI_Kanban["Twenty CRM Kanban Pipeline"]
+        UI_Kanban["Minimalist Ticket Kanban Pipeline"]
         UI_Tickets["3-Column Ticket Detail & Reasoning Inspector"]
         UI_Approvals["Human-in-the-Loop (HITL) Queue"]
         UI_Knowledge["Hybrid Knowledge Search & Document Ingestion"]
@@ -90,7 +90,7 @@ flowchart TD
         Step1["1. Ingest & Context Assembly"]
         Step2["2. Guardrails & Prompt Injection Defense"]
         Step3["3. Intent & Entity Extraction"]
-        Step4["4. Hybrid RAG (pgvector 1536d + Sparse FTS)"]
+        Step3["3. Hybrid RAG (pgvector 768d + Sparse FTS)"]
         Step5["5. Structured LLM Tool Proposal"]
         Step6["6. Deterministic Business Rules Validator"]
         Step7["7. Execution vs. HITL Gated Action Dispatch"]
@@ -123,9 +123,9 @@ flowchart TD
 ## 5. Detailed Feature Breakdown
 
 ### 5.1 Layer 1: Frontend Client & Dashboard Experience
-* **Twenty CRM Kanban Pipeline (`TicketsPage.tsx`)**:
-  * 4 visual lifecycle stages: *Qualification (◌)*, *Discovery (○)*, *Proposal (○)*, and *Negotiation (○)*.
-  * Drag-and-drop opportunity cards with live stage recalculation and bottom column financial totals.
+* **Minimalist Ticket Kanban Pipeline (`TicketsPage.tsx`)**:
+  * 4 visual support lifecycle stages: *Open (◌)*, *In Progress (🔵)*, *Escalated (🟡)*, and *Resolved (🟣)*.
+  * Drag-and-drop support ticket cards with live stage recalculation and column financial totals.
   * Instant switching between Kanban Board and dense tabular CRM views.
 * **3-Column Ticket Inspector (`TicketDetailPage.tsx` + `OrchestratorInspector.tsx`)**:
   * Left pane: Conversation thread and message history.
@@ -136,7 +136,7 @@ flowchart TD
   * Diff viewer displaying proposed state mutation vs. current database state, with staff approval rationale stamps.
 * **RAG Knowledge Base Explorer (`KnowledgePage.tsx`)**:
   * Document upload and chunking interface.
-  * Live Reciprocal Rank Fusion (RRF) test search with simultaneous dense vector score and lexical BM25 matching score visualization.
+  * Live Reciprocal Rank Fusion (RRF) test search with simultaneous dense vector score (pgvector 768d) and sparse PostgreSQL full-text search (tsvector/tsquery) score visualization.
 * **Operational Analytics & Telemetry (`AnalyticsPage.tsx`)**:
   * Segmented time-range controls (7D, 30D, 90D).
   * KPI cards: Inbound Volume, Autonomous Deflection Rate (target >65%), First Response Time (FRT), and CSAT.
@@ -155,25 +155,38 @@ flowchart TD
   * Verifies `X-Signature-SHA256` using constant-time comparison to prevent timing attacks.
   * Deduplicates events via unique `idempotency_key` stored in database.
 
-### 5.3 Layer 3: AI Orchestration Engine
-* **Prompt Injection & Adversarial Defense (`guardrails.py`)**:
-  * Dual-scope detection: Live customer messages use strictly focused `DIRECT_INJECTION_PATTERNS` to prevent false positives on common words (*must, never, always, previous email*); stored notes, KB documents, and tool results also enforce `looks_like_instruction()`.
-  * **What a flag does:** Logs a warning in Step 1 trace, lowers confidence to 0.50, and enforces `needs_human = True` (blocking autonomous actions and routing to HITL queue).
-  * **Empirical Benchmarks (`test_prompt_injection_benchmarks.py`):** 0.0% False Positive Rate across 30 normal support messages; 100.0% Block Rate across 20 adversarial attack vectors.
-  * Pre-execution scanner detects prompt injection patterns (`system prompt override`, `ignore previous instructions`, `DAN mode`).
-  * PII masking (credit card numbers, social security numbers) before dispatching to LLM.
-* **Hybrid RAG Pipeline (`retrieval.py`)**:
-  * Combines vector cosine similarity with Postgres `tsquery` full-text search using formula:
+### 5.3 Layer 3: AI Orchestration Engine (`engine.py`)
+Custome-X implements a strictly verified **7-Step Deterministic Pipeline**:
+1. **Input Validation & Sanitization:** Enforces length caps (`MAX_MESSAGE_LENGTH = 2000`), masks PII (credit cards, SSNs) in traces, neutralizes XML-like delimiter breakout tags, and executes dual-scope prompt injection defense (`DIRECT_INJECTION_PATTERNS` on live messages; `looks_like_instruction()` on stored KB/notes/tools).
+   * **What a flag does:** Step 1 logs a warning, caps confidence at 0.50, and forces `needs_human = True` (blocking autonomous actions and routing to HITL queue).
+   * **Empirical Benchmark (`test_prompt_injection_benchmarks.py`):** 0.0% False Positive Rate across 30 normal customer messages; 100.0% Block Rate across 20 adversarial injection attacks.
+2. **Intent Classification & Entity Extraction:** Canonical deterministic regex and token extractors parse order identifiers (`ORD-\d+`), SKUs, and dollar amounts before calling the LLM.
+3. **RAG Hybrid Retrieval:** Queries PostgreSQL `public.match_knowledge_chunks` combining 768-dim dense vectors with sparse `tsvector` FTS via Reciprocal Rank Fusion, scoped to tenant and active status.
+4. **Business Data Needs Planning:** Deterministic planner identifies prerequisite server tools; if an order ID is present, automatically schedules `get_order_details`.
+5. **Server-Side Tool Execution & Ownership Validation:** Executes typed Python tools in `ToolRegistry` with strict schema validation. Asserts customer ownership of records; raises `OwnershipViolationError` (HTTP 403) on cross-customer tampering.
+6. **Business Rule Engine & Financial Threshold Guards:** Applies business constraints: 30-day return policy window, $50.00 autonomous refund limit (`REFUND_AUTONOMOUS_THRESHOLD_CENTS = 5000`), block on in-transit cancellations, and outbound URL host allow-listing (`strip_unknown_urls`). High-risk actions set `requires_approval = True`.
+7. **Structured Action Proposal Output:** Grounded response synthesis via Google Gemini API (`GEMINI_MODEL`, fallback `GEMINI_FALLBACK_MODEL`) with deterministic offline fallback, accompanied by full immutable step audit traces in `OrchestrationResponse`.
+
+* **Hybrid RAG Pipeline (`retrieval.py` & `knowledge_service.py`)**:
+  * **Primary SQL RRF Path (`public.match_knowledge_chunks`)**: Executes PostgreSQL stored procedure combining dense vector cosine similarity (768-dim `text-embedding-004` via `pgvector`) and sparse full-text search (`tsvector` generated column against `plainto_tsquery('english', query)`) using Reciprocal Rank Fusion:
     $$RRF\_Score(d) = \frac{1}{60 + rank_{dense}(d)} + \frac{1}{60 + rank_{sparse}(d)}$$
+    strictly scoped by tenant (`organization_id = auth_org_id`) and active status (`status = 'active'`).
+  * **Resilient Keyword Fallback Path (`search_knowledge`)**: In offline environments or development testing without database access, performs in-memory weighted keyword overlap scoring ($hits / |query\_tokens|$) across sample policy chunks. All legacy references to external Lucene/BM25 engines have been eliminated in favor of native PostgreSQL FTS.
 * **Deterministic Business Rules Validator (`rules.py`)**:
   * Validates every tool call proposal against concrete constraints.
   * Example: If `issue_refund` amount exceeds $50.00, status is automatically set to `requires_approval`, halting execution until staff review.
 
 ### 5.4 Layer 4 & 5: Data & Integration
-* **Multi-Tenant Isolation Architecture & Decision**:
+* **Multi-Tenant Isolation Architecture & Verified RLS Policies**:
   * Multi-tenancy is enforced through **Application-Level Tenant Isolation** using strict `organization_id` query filters on all database access paths, backed by foreign-key relational schemas.
   * Verified in `tests/test_tenant_a_cannot_read_tenant_b_tickets.py`: Tenant A attempting to read Tenant B's tickets gets nothing (0 items on list queries, HTTP 404 `TicketNotFoundError` on direct ID lookups).
-  * Database policies enforce `tenant_id = auth.jwt() ->> 'tenant_id'`, ensuring zero data leakage across organizations.
+  * **Actual Database Row-Level Security (RLS) Implementation (Migrations `bad184373bcd` & `675875ef33d9`)**:
+    PostgreSQL RLS policies invoke a `SECURITY DEFINER` function `public.get_auth_organization_id() RETURNS uuid` (`SELECT organization_id FROM public.users WHERE id = auth.uid() LIMIT 1`) to eliminate policy recursion while guaranteeing engine-level isolation:
+    * `public.users`: `(id = auth.uid() OR organization_id = public.get_auth_organization_id())`
+    * `public.organizations`: `(id = public.get_auth_organization_id())`
+    * `public.customers` & `public.tickets`: `(organization_id = public.get_auth_organization_id())`
+    * `public.messages` & `public.ticket_events`: `(ticket_id IN (SELECT id FROM public.tickets WHERE organization_id = public.get_auth_organization_id()))`
+    * `public.knowledge_documents` & `public.knowledge_chunks`: `(organization_id = public.get_auth_organization_id())`
 * **n8n Master Workflows**:
   * `WF1`: New ticket ingestion & initial classification notification.
   * `WF2`: Urgent ticket escalation to supervisor Slack channel.

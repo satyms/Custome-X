@@ -253,7 +253,7 @@ export const SettingsPage: React.FC = () => {
             <div>
               <div className="flex items-center justify-between">
                 <label className="font-semibold uppercase" style={{ color: 'var(--text-muted)' }}>
-                  Hybrid Search Alpha (Dense Vector vs. BM25)
+                  Hybrid Search Alpha (Dense Vector vs. FTS)
                 </label>
                 <span className="font-mono font-bold" style={{ color: 'var(--accent)' }}>{hybridSearchAlpha}</span>
               </div>
@@ -267,7 +267,7 @@ export const SettingsPage: React.FC = () => {
                 className="w-full mt-2 accent-indigo-600 cursor-pointer"
               />
               <div className="flex justify-between text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
-                <span>0.0 (Pure BM25 Keyword)</span>
+                <span>0.0 (Pure FTS Keyword)</span>
                 <span>0.5 (Balanced)</span>
                 <span>1.0 (Pure Dense Vector)</span>
               </div>

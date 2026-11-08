@@ -395,7 +395,7 @@ def search_knowledge(req: KnowledgeSearchRequest) -> KnowledgeSearchResponse:
         if req.category and req.category.lower() != item["category"].lower():
             continue
 
-        # Keyword overlap score (BM25 surrogate)
+        # Weighted keyword overlap fallback score
         content_lower = item["content"].lower()
         title_lower = item["doc_title"].lower()
         keyword_hits = sum(1 for q in query_tokens if q in content_lower or q in title_lower or q in item.get("keywords", []))
@@ -432,7 +432,7 @@ def search_knowledge(req: KnowledgeSearchRequest) -> KnowledgeSearchResponse:
     top_results = scored_results[: req.top_k]
 
     execution_time = round((time.time() - start_time) * 1000, 2)
-    strategy = "Hybrid RRF (Dense Vector + BM25 Sparse)" if req.hybrid else "Dense Cosine Similarity Only"
+    strategy = "Hybrid RRF (Dense Vector + FTS Sparse)" if req.hybrid else "Dense Cosine Similarity Only"
 
     return KnowledgeSearchResponse(
         query=req.query,

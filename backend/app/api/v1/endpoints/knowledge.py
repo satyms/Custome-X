@@ -28,7 +28,7 @@ async def search_knowledge_base(
 ):
     """
     RAG Hybrid Search endpoint with token-bucket rate limiting.
-    Combines dense semantic vector scoring (pgvector) with sparse BM25 keyword matching (tsvector).
+    Combines dense semantic vector scoring (pgvector 768d) with sparse PostgreSQL full-text search (tsvector).
     """
     if request.organization_id is not None:
         return await knowledge_service.search_knowledge_hybrid(session=db, req=request)
