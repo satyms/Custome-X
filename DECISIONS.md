@@ -187,3 +187,19 @@ This log records key architectural and technical decisions made for **Custome-X*
 * **Consequences:**
   * **Pros:** Rapid iteration and developer velocity during demo and evaluation stages; frictionless local multi-port developer experience.
   * **Cons:** `localStorage` is vulnerable if an XSS vulnerability is introduced in the client bundle; production transition to httpOnly cookies and BFF routing is documented as a mandatory pre-launch security milestone.
+
+
+---
+
+## ADR-013: Deterministic Financial Risk Boundary ($50.00 Autonomous Refund Cap)
+
+* **Status:** Accepted
+* **Context:**
+  Autonomous agents executing ecommerce store actions can cause severe financial loss if non-deterministic LLM behavior, hallucinations, or adversarial prompt injections trigger unauthorized high-value refunds. Conversely, requiring human staff approval for low-cost routine refunds (e.g., $15 accessories or defective items) defeats deflection efficiency.
+* **Decision:**
+  1. Define a hard deterministic ceiling for autonomous refund execution at exactly **$50.00 (5,000 cents)** via `REFUND_AUTONOMOUS_THRESHOLD_CENTS = 5000` in `config.py` and enforce it in `BusinessRuleValidator` (`rules.py`).
+  2. For refund requests where `amount <= $50.00` and the order is within the 30-day return policy window, the agent is authorized to execute autonomous processing.
+  3. For refund requests where `amount > $50.00` (e.g. $125 ANC Headphones), the engine unconditionally halts autonomous tool execution, marks `requires_approval = True`, records an immutable proposal in `pending_actions`, and dispatches the action to the Human-in-the-Loop (HITL) supervisor triage queue (`ApprovalsPage.tsx`).
+* **Consequences:**
+  * **Pros:** Mathematical guarantee against unauthorized high-value payouts regardless of LLM generation; preserves ~80% autonomous deflection for standard low-value support claims; full compliance with e-commerce risk standards.
+  * **Cons:** Legitimate high-value refunds must await supervisor inspection; requires human triage UI and approval webhook dispatch.
