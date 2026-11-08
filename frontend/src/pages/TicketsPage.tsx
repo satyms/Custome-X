@@ -33,7 +33,7 @@ interface ExtendedTicketItem {
     initials: string;
     bg?: string;
   };
-  stage: 'qualification' | 'discovery' | 'proposal' | 'negotiation';
+  stage: 'open' | 'in_progress' | 'escalated' | 'resolved';
   priority: TicketPriority;
   status: TicketStatus;
   rawTicket?: Ticket;
@@ -41,7 +41,7 @@ interface ExtendedTicketItem {
 
 // Default benchmark data matching the reference image Twenty CRM 1-to-1
 const REFERENCE_CARDS: ExtendedTicketItem[] = [
-  // Column 1: Qualification
+  // Column 1: Open
   {
     id: 'opp-101',
     title: 'Lumenfield — Data residency (EU)',
@@ -50,7 +50,7 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
     numericValue: 38000,
     date: 'Mar 5, 2027',
     assignee: { name: 'Jamie Rivera', initials: 'JR' },
-    stage: 'qualification',
+    stage: 'open',
     priority: 'normal',
     status: 'open',
   },
@@ -62,7 +62,7 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
     numericValue: 34000,
     date: 'Feb 18, 2027',
     assignee: { name: 'Alex Morgan', initials: 'AM' },
-    stage: 'qualification',
+    stage: 'open',
     priority: 'normal',
     status: 'open',
   },
@@ -74,12 +74,12 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
     numericValue: 27000,
     date: 'Jan 21, 2027',
     assignee: { name: 'Alex Morgan', initials: 'AM' },
-    stage: 'qualification',
+    stage: 'open',
     priority: 'low',
     status: 'open',
   },
 
-  // Column 2: Discovery
+  // Column 2: In Progress
   {
     id: 'opp-201',
     title: 'Halcyon — Clinic network pilot',
@@ -88,7 +88,7 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
     numericValue: 64000,
     date: 'Jan 8, 2027',
     assignee: { name: 'Alex Morgan', initials: 'AM' },
-    stage: 'discovery',
+    stage: 'in_progress',
     priority: 'high',
     status: 'in_progress',
   },
@@ -100,7 +100,7 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
     numericValue: 58000,
     date: 'Dec 25, 2026',
     assignee: { name: 'Jamie Rivera', initials: 'JR' },
-    stage: 'discovery',
+    stage: 'in_progress',
     priority: 'normal',
     status: 'in_progress',
   },
@@ -112,12 +112,12 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
     numericValue: 46000,
     date: 'Jan 1, 2027',
     assignee: { name: 'Alex Morgan', initials: 'AM' },
-    stage: 'discovery',
+    stage: 'in_progress',
     priority: 'normal',
     status: 'in_progress',
   },
 
-  // Column 3: Proposal
+  // Column 3: Escalated
   {
     id: 'opp-301',
     title: 'Brightpath — Fleet analytics rollout',
@@ -126,7 +126,7 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
     numericValue: 96000,
     date: 'Dec 18, 2026',
     assignee: { name: 'Jamie Rivera', initials: 'JR' },
-    stage: 'proposal',
+    stage: 'escalated',
     priority: 'urgent',
     status: 'escalated',
   },
@@ -138,7 +138,7 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
     numericValue: 72500,
     date: 'Dec 7, 2026',
     assignee: { name: 'Sofia Nguyen', initials: 'SN' },
-    stage: 'proposal',
+    stage: 'escalated',
     priority: 'high',
     status: 'escalated',
   },
@@ -150,12 +150,12 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
     numericValue: 124000,
     date: 'Dec 14, 2026',
     assignee: { name: 'Jamie Rivera', initials: 'JR' },
-    stage: 'proposal',
+    stage: 'escalated',
     priority: 'urgent',
     status: 'escalated',
   },
 
-  // Column 4: Negotiation
+  // Column 4: Resolved
   {
     id: 'opp-401',
     title: 'Cedarstone — Omnichannel suite',
@@ -164,7 +164,7 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
     numericValue: 215000,
     date: 'Dec 3, 2026',
     assignee: { name: 'Alex Morgan', initials: 'AM' },
-    stage: 'negotiation',
+    stage: 'resolved',
     priority: 'urgent',
     status: 'closed',
   },
@@ -176,7 +176,7 @@ const REFERENCE_CARDS: ExtendedTicketItem[] = [
     numericValue: 148000,
     date: 'Nov 27, 2026',
     assignee: { name: 'Alex Morgan', initials: 'AM' },
-    stage: 'negotiation',
+    stage: 'resolved',
     priority: 'high',
     status: 'closed',
   },
@@ -200,9 +200,9 @@ export const TicketsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const pageSize = 10;
 
-  // New Opportunity / Ticket Modal State
+  // New Ticket / Ticket Modal State
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [modalStage, setModalStage] = useState<'qualification' | 'discovery' | 'proposal' | 'negotiation'>('qualification');
+  const [modalStage, setModalStage] = useState<'open' | 'in_progress' | 'escalated' | 'resolved'>('open');
   const [newTitle, setNewTitle] = useState('');
   const [newAccount, setNewAccount] = useState('');
   const [newValue, setNewValue] = useState('');
@@ -217,10 +217,10 @@ export const TicketsPage: React.FC = () => {
       if (res.items.length > 0) {
         // Map backend tickets to board items
         const mappedItems: ExtendedTicketItem[] = res.items.map((t, idx) => {
-          let stage: 'qualification' | 'discovery' | 'proposal' | 'negotiation' = 'qualification';
-          if (t.status === 'in_progress') stage = 'discovery';
-          else if (t.status === 'escalated') stage = 'proposal';
-          else if (t.status === 'closed' || t.status === 'resolved') stage = 'negotiation';
+          let stage: 'open' | 'in_progress' | 'escalated' | 'resolved' = 'open';
+          if (t.status === 'in_progress') stage = 'in_progress';
+          else if (t.status === 'escalated') stage = 'escalated';
+          else if (t.status === 'closed' || t.status === 'resolved') stage = 'resolved';
 
           return {
             id: t.id,
@@ -276,47 +276,47 @@ export const TicketsPage: React.FC = () => {
     return result;
   }, [customItems, filterStage, searchQuery]);
 
-  // Columns definition matching Twenty CRM screenshot
+  // Columns definition using ticket states
   const columns = [
     {
-      key: 'qualification',
-      title: 'Qualification',
+      key: 'open',
+      title: 'Open',
       iconStyle: 'border border-dashed border-slate-400 bg-transparent', // ◌ open dashed circle
-      count: filteredItems.filter((i) => i.stage === 'qualification').length,
+      count: filteredItems.filter((i) => i.stage === 'open').length,
       total: filteredItems
-        .filter((i) => i.stage === 'qualification')
+        .filter((i) => i.stage === 'open')
         .reduce((acc, curr) => acc + curr.numericValue, 0),
     },
     {
-      key: 'discovery',
-      title: 'Discovery',
-      iconStyle: 'border-2 border-sky-500 bg-transparent', // 🔵 discovery circle ring
-      count: filteredItems.filter((i) => i.stage === 'discovery').length,
+      key: 'in_progress',
+      title: 'In Progress',
+      iconStyle: 'border-2 border-sky-500 bg-transparent', // 🔵 in_progress circle ring
+      count: filteredItems.filter((i) => i.stage === 'in_progress').length,
       total: filteredItems
-        .filter((i) => i.stage === 'discovery')
+        .filter((i) => i.stage === 'in_progress')
         .reduce((acc, curr) => acc + curr.numericValue, 0),
     },
     {
-      key: 'proposal',
-      title: 'Proposal',
-      iconStyle: 'border-2 border-amber-500 bg-transparent', // 🟡 proposal circle ring
-      count: filteredItems.filter((i) => i.stage === 'proposal').length,
+      key: 'escalated',
+      title: 'Escalated',
+      iconStyle: 'border-2 border-amber-500 bg-transparent', // 🟡 escalated circle ring
+      count: filteredItems.filter((i) => i.stage === 'escalated').length,
       total: filteredItems
-        .filter((i) => i.stage === 'proposal')
+        .filter((i) => i.stage === 'escalated')
         .reduce((acc, curr) => acc + curr.numericValue, 0),
     },
     {
-      key: 'negotiation',
-      title: 'Negotiation',
-      iconStyle: 'border-2 border-purple-500 bg-transparent', // 🟣 negotiation circle ring
-      count: filteredItems.filter((i) => i.stage === 'negotiation').length,
+      key: 'resolved',
+      title: 'Resolved',
+      iconStyle: 'border-2 border-purple-500 bg-transparent', // 🟣 resolved circle ring
+      count: filteredItems.filter((i) => i.stage === 'resolved').length,
       total: filteredItems
-        .filter((i) => i.stage === 'negotiation')
+        .filter((i) => i.stage === 'resolved')
         .reduce((acc, curr) => acc + curr.numericValue, 0),
     },
   ];
 
-  // Handle Create Opportunity / Ticket
+  // Handle Create Ticket / Ticket
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
@@ -341,7 +341,7 @@ export const TicketsPage: React.FC = () => {
       },
       stage: modalStage,
       priority: newPriority,
-      status: modalStage === 'qualification' ? 'open' : 'in_progress',
+      status: modalStage === 'open' ? 'open' : modalStage === 'in_progress' ? 'in_progress' : modalStage === 'escalated' ? 'escalated' : 'resolved',
     };
 
     setCustomItems([newItem, ...customItems]);
@@ -353,7 +353,7 @@ export const TicketsPage: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const openCreateForStage = (stage: 'qualification' | 'discovery' | 'proposal' | 'negotiation') => {
+  const openCreateForStage = (stage: 'open' | 'in_progress' | 'escalated' | 'resolved') => {
     setModalStage(stage);
     setIsModalOpen(true);
   };
@@ -377,11 +377,11 @@ export const TicketsPage: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => openCreateForStage('qualification')}
+            onClick={() => openCreateForStage('open')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 text-[13px] font-medium shadow-2xs transition-colors cursor-pointer"
           >
             <Plus className="h-3.5 w-3.5 text-slate-600" />
-            <span>Create opportunity</span>
+            <span>Create ticket</span>
           </button>
         </div>
       </div>
@@ -436,50 +436,50 @@ export const TicketsPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setFilterStage('qualification');
+                    setFilterStage('open');
                     setShowFilterDropdown(false);
                   }}
                   className={`w-full text-left px-3 py-1.5 hover:bg-slate-50 cursor-pointer ${
-                    filterStage === 'qualification' ? 'font-semibold text-indigo-600' : 'text-slate-700'
+                    filterStage === 'open' ? 'font-semibold text-indigo-600' : 'text-slate-700'
                   }`}
                 >
-                  Qualification
+                  Open
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    setFilterStage('discovery');
+                    setFilterStage('in_progress');
                     setShowFilterDropdown(false);
                   }}
                   className={`w-full text-left px-3 py-1.5 hover:bg-slate-50 cursor-pointer ${
-                    filterStage === 'discovery' ? 'font-semibold text-indigo-600' : 'text-slate-700'
+                    filterStage === 'in_progress' ? 'font-semibold text-indigo-600' : 'text-slate-700'
                   }`}
                 >
-                  Discovery
+                  In Progress
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    setFilterStage('proposal');
+                    setFilterStage('escalated');
                     setShowFilterDropdown(false);
                   }}
                   className={`w-full text-left px-3 py-1.5 hover:bg-slate-50 cursor-pointer ${
-                    filterStage === 'proposal' ? 'font-semibold text-indigo-600' : 'text-slate-700'
+                    filterStage === 'escalated' ? 'font-semibold text-indigo-600' : 'text-slate-700'
                   }`}
                 >
-                  Proposal
+                  Escalated
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    setFilterStage('negotiation');
+                    setFilterStage('resolved');
                     setShowFilterDropdown(false);
                   }}
                   className={`w-full text-left px-3 py-1.5 hover:bg-slate-50 cursor-pointer ${
-                    filterStage === 'negotiation' ? 'font-semibold text-indigo-600' : 'text-slate-700'
+                    filterStage === 'resolved' ? 'font-semibold text-indigo-600' : 'text-slate-700'
                   }`}
                 >
-                  Negotiation
+                  Resolved
                 </button>
               </div>
             )}
@@ -494,7 +494,7 @@ export const TicketsPage: React.FC = () => {
                 autoFocus
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search opportunities..."
+                placeholder="Search tickets..."
                 className="text-xs bg-transparent focus:outline-none w-36 text-slate-800"
               />
               <button
@@ -626,12 +626,12 @@ export const TicketsPage: React.FC = () => {
                       </span>
                     </div>
 
-                    {col.key !== 'negotiation' ? (
+                    {col.key !== 'resolved' ? (
                       <button
                         type="button"
                         onClick={() => openCreateForStage(col.key as any)}
                         className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-700 cursor-pointer transition-colors"
-                        title={`Add opportunity to ${col.title}`}
+                        title={`Add ticket to ${col.title}`}
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>
@@ -655,7 +655,7 @@ export const TicketsPage: React.FC = () => {
                       ))
                     ) : colItems.length === 0 ? (
                       <div className="py-12 text-center text-xs text-slate-400 border border-dashed border-slate-100 rounded-xl">
-                        No opportunities
+                        No tickets
                       </div>
                     ) : (
                       colItems.map((item) => (
@@ -717,14 +717,14 @@ export const TicketsPage: React.FC = () => {
                     )}
 
                     {/* Bottom Column "+ Create opportunity" ghost button matching reference image */}
-                    {(col.key === 'proposal' || col.key === 'negotiation') && (
+                    {(col.key === 'escalated' || col.key === 'resolved') && (
                       <button
                         type="button"
                         onClick={() => openCreateForStage(col.key as any)}
                         className="w-full py-2 px-3 text-[12px] text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
                       >
                         <Plus className="h-3.5 w-3.5" />
-                        <span>Create opportunity</span>
+                        <span>Create ticket</span>
                       </button>
                     )}
                   </div>
@@ -760,9 +760,9 @@ export const TicketsPage: React.FC = () => {
             <table className="w-full text-left text-xs text-slate-700">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/70 text-slate-500 font-medium">
-                  <th className="px-4 py-3">Opportunity / Ticket</th>
+                  <th className="px-4 py-3">Ticket</th>
                   <th className="px-4 py-3">Account</th>
-                  <th className="px-4 py-3">Stage</th>
+                  <th className="px-4 py-3">Status / State</th>
                   <th className="px-4 py-3">Value</th>
                   <th className="px-4 py-3">Assignee</th>
                   <th className="px-4 py-3">Close Date</th>
@@ -854,7 +854,7 @@ export const TicketsPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4 text-slate-700" />
                 <h2 className="text-sm font-semibold text-slate-900">
-                  New Opportunity
+                  New Ticket
                 </h2>
               </div>
               <button
@@ -909,10 +909,10 @@ export const TicketsPage: React.FC = () => {
                     onChange={(e) => setModalStage(e.target.value as any)}
                     className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 bg-slate-50/50 cursor-pointer"
                   >
-                    <option value="qualification">Qualification</option>
-                    <option value="discovery">Discovery</option>
-                    <option value="proposal">Proposal</option>
-                    <option value="negotiation">Negotiation</option>
+                    <option value="open">Open</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="escalated">Escalated</option>
+                    <option value="resolved">Resolved</option>
                   </select>
                 </div>
               </div>
@@ -943,7 +943,7 @@ export const TicketsPage: React.FC = () => {
                   type="submit"
                   className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium cursor-pointer transition-colors"
                 >
-                  Create Opportunity
+                  Create Ticket
                 </button>
               </div>
             </form>

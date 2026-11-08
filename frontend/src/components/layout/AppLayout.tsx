@@ -251,7 +251,7 @@ export const AppLayout: React.FC = () => {
 
               <NavLink
                 to="/tickets"
-                title={collapsed ? 'Opportunities' : undefined}
+                title={collapsed ? 'Tickets' : undefined}
                 className={({ isActive }) =>
                   `flex items-center ${
                     collapsed ? 'justify-center' : 'gap-2.5'
@@ -263,7 +263,7 @@ export const AppLayout: React.FC = () => {
                 }
               >
                 <Tag className="h-3.5 w-3.5 shrink-0 text-slate-500" />
-                {!collapsed && <span>Opportunities</span>}
+                {!collapsed && <span>Tickets</span>}
               </NavLink>
 
               <NavLink
