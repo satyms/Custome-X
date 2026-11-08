@@ -163,3 +163,27 @@ This log records key architectural and technical decisions made for **Custome-X*
 * **Consequences:**
   - **Pros:** Full relational model compliance across all 18 tables; zero silent webhook drops due to DLQ persistence and manual retry; verifiable multi-tenant security from database to dashboard.
   - **Cons:** Outbound webhooks require network egress or valid n8n endpoint target URL in production configuration.
+
+
+---
+
+## ADR-012: Client Token Storage Strategy (localStorage for Demo/Prototype vs. httpOnly Cookie BFF for Production)
+
+* **Status:** Accepted (with staged production migration roadmap)
+* **Context:**
+  Custome-X consists of a React Single Page Application (SPA) communicating with FastAPI and Supabase Auth. The client application needs access to authentication JWT tokens (access token and refresh token) to attach Bearer tokens to outgoing API requests and rehydrate user session state across page reloads. The architectural trade-off is between client-accessible storage (`localStorage`) and server-managed cookies (`httpOnly` cookies).
+* **Decision:**
+  1. **Demo, Development, and Staging Environments:** Storing JWT tokens in `localStorage` is explicitly accepted for the current demo and evaluation phase.
+     * **Rationale:**
+       - Enables rapid end-to-end evaluation, local testing across distinct origins and ports (e.g., `localhost:5173` to `localhost:8000`), and automated integration testing without requiring complex cross-domain cookie, domain-level CORS, or SSL certificate provisioning.
+       - Direct interoperability with Supabase JavaScript SDK session persistence conventions.
+     * **Active Mitigations during Demo:**
+       - Strict input sanitization and automatic JSX output escaping to prevent Cross-Site Scripting (XSS) vectors.
+       - Outbound URL allowlisting via `strip_unknown_urls()` in the agent orchestrator.
+       - Dependency lockfiles (`package-lock.json`) and automated CI dependency checks.
+  2. **Production Transition Requirement:**
+     - Prior to commercial production release with live customer PII and payment data, token storage will transition to **`httpOnly`, `Secure`, `SameSite=Strict` cookies** issued and managed by a Backend-for-Frontend (BFF) proxy or reverse proxy (e.g., Nginx, Cloudflare Workers).
+     - Production deployment must enforce a strict `Content-Security-Policy` (CSP) header prohibiting inline script execution (`unsafe-inline`) and unauthorized script sources.
+* **Consequences:**
+  * **Pros:** Rapid iteration and developer velocity during demo and evaluation stages; frictionless local multi-port developer experience.
+  * **Cons:** `localStorage` is vulnerable if an XSS vulnerability is introduced in the client bundle; production transition to httpOnly cookies and BFF routing is documented as a mandatory pre-launch security milestone.
