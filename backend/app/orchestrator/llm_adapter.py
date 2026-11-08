@@ -10,7 +10,7 @@ logger = logging.getLogger("customex.llm_adapter")
 
 class LLMProviderAdapter:
     """
-    LLM Provider Adapter for Google Gemini API and Anthropic Claude
+    LLM Provider Adapter for Google Gemini API
     with deterministic fallback synthesis (AI_security.md §4.9).
     """
 
@@ -25,7 +25,7 @@ class LLMProviderAdapter:
         hitl_reason: Optional[str] = None,
     ) -> str:
         """
-        Synthesizes grounded support response using configured LLM provider (Gemini / Claude)
+        Synthesizes grounded support response using configured Google Gemini LLM
         or high-fidelity deterministic fallback.
         """
         # If Gemini API key is configured, call Gemini API
@@ -67,7 +67,7 @@ class LLMProviderAdapter:
             return None
 
         # Build candidate models with graceful degradation
-        candidate_models = [settings.GEMINI_MODEL, "gemini-2.0-flash"]
+        candidate_models = [settings.GEMINI_MODEL, settings.GEMINI_FALLBACK_MODEL]
 
         # Construct fenced context prompt
         system_instruction = (
